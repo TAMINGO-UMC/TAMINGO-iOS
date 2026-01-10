@@ -1,6 +1,7 @@
 # TAMINGO!
 
-![배너 이미지 또는 로고](링크)
+!<img width="240" height="204" alt="Group 2085665799" src="https://github.com/user-attachments/assets/0e0ef5ea-b4e2-4b6c-bf1a-09a8b46d6ec9" />
+
 
 > 간단한 한 줄 소개 – 지금 해야돼, 지금 가야돼! TIMINGGO!
 
