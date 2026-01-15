@@ -29,6 +29,7 @@ struct IdCreateView: View {
                 title: "아이디 생성",
                 onBack: onBack
             )
+            
 
             VStack(alignment: .leading, spacing: 30) {
 
