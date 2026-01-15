@@ -82,10 +82,10 @@ Swift 6.2.3
 <br>
 
 ## 🔖 브랜치 컨벤션
-main        → 최종 결과물(배포/제출용)
-develop     → 주차별 개발 통합 브랜치
-feat/*      → 기능(Flow) 단위 작업 브랜치
-release/week1,2, .. -> 중간 작업 고정용
+main        → 최종 결과물(배포/제출용) <br>
+develop     → 주차별 개발 통합 브랜치 <br>
+feat/*      → 기능(Flow) 단위 작업 브랜치 <br>
+release/week1,2, .. -> 중간 작업 고정용 <br>
 
 ** 모든 PR은 develop 위주로
 
