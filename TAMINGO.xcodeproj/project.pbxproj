@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2C5D6CA62F15E23700470689 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 2C5D6CA52F15E23700470689 /* Alamofire */; };
+		2CC227D52F15E15200BEE158 /* CombineMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 2CC227D42F15E15200BEE158 /* CombineMoya */; };
+		2CC227D72F15E15200BEE158 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 2CC227D62F15E15200BEE158 /* Moya */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		2CB2BA2B2F0F51D000469454 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +58,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C5D6CA62F15E23700470689 /* Alamofire in Frameworks */,
+				2CC227D72F15E15200BEE158 /* Moya in Frameworks */,
+				2CC227D52F15E15200BEE158 /* CombineMoya in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +87,7 @@
 				2CB2BA1F2F0F51CF00469454 /* TAMINGO */,
 				2CB2BA2D2F0F51D000469454 /* TAMINGOTests */,
 				2CB2BA372F0F51D000469454 /* TAMINGOUITests */,
+				2CC227D32F15E15200BEE158 /* Frameworks */,
 				2CB2BA1E2F0F51CF00469454 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +100,13 @@
 				2CB2BA342F0F51D000469454 /* TAMINGOUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2CC227D32F15E15200BEE158 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +129,9 @@
 			);
 			name = TAMINGO;
 			packageProductDependencies = (
+				2CC227D42F15E15200BEE158 /* CombineMoya */,
+				2CC227D62F15E15200BEE158 /* Moya */,
+				2C5D6CA52F15E23700470689 /* Alamofire */,
 			);
 			productName = TAMINGO;
 			productReference = 2CB2BA1D2F0F51CF00469454 /* TAMINGO.app */;
@@ -195,6 +215,10 @@
 			);
 			mainGroup = 2CB2BA142F0F51CF00469454;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2CC227CB2F15DFF300BEE158 /* XCRemoteSwiftPackageReference "Moya" */,
+				2C5D6CA42F15E22A00470689 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2CB2BA1E2F0F51CF00469454 /* Products */;
 			projectDirPath = "";
@@ -578,6 +602,43 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2C5D6CA42F15E22A00470689 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.11.0;
+			};
+		};
+		2CC227CB2F15DFF300BEE158 /* XCRemoteSwiftPackageReference "Moya" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Moya/Moya";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 15.0.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2C5D6CA52F15E23700470689 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2C5D6CA42F15E22A00470689 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		2CC227D42F15E15200BEE158 /* CombineMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2CC227CB2F15DFF300BEE158 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = CombineMoya;
+		};
+		2CC227D62F15E15200BEE158 /* Moya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2CC227CB2F15DFF300BEE158 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = Moya;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2CB2BA152F0F51CF00469454 /* Project object */;
 }
