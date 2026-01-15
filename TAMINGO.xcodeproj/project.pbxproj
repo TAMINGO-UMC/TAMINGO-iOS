@@ -36,9 +36,22 @@
 		2CB2BA342F0F51D000469454 /* TAMINGOUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAMINGOUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0B60FCFD2F194C05003EC3A0 /* Exceptions for "TAMINGO" folder in "TAMINGO" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2CB2BA1C2F0F51CF00469454 /* TAMINGO */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2CB2BA1F2F0F51CF00469454 /* TAMINGO */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0B60FCFD2F194C05003EC3A0 /* Exceptions for "TAMINGO" folder in "TAMINGO" target */,
+			);
 			path = TAMINGO;
 			sourceTree = "<group>";
 		};
@@ -289,6 +302,8 @@
 /* Begin XCBuildConfiguration section */
 		2CB2BA3C2F0F51D000469454 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 2CB2BA1F2F0F51CF00469454 /* TAMINGO */;
+			baseConfigurationReferenceRelativePath = Common/Network/Config.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -353,6 +368,8 @@
 		};
 		2CB2BA3D2F0F51D000469454 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 2CB2BA1F2F0F51CF00469454 /* TAMINGO */;
+			baseConfigurationReferenceRelativePath = Common/Network/Config.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -410,6 +427,8 @@
 		};
 		2CB2BA3F2F0F51D000469454 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 2CB2BA1F2F0F51CF00469454 /* TAMINGO */;
+			baseConfigurationReferenceRelativePath = Common/Network/Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -418,6 +437,7 @@
 				DEVELOPMENT_TEAM = UFY93MC9ZB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TAMINGO/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -442,6 +462,8 @@
 		};
 		2CB2BA402F0F51D000469454 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 2CB2BA1F2F0F51CF00469454 /* TAMINGO */;
+			baseConfigurationReferenceRelativePath = Common/Network/Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -450,6 +472,7 @@
 				DEVELOPMENT_TEAM = UFY93MC9ZB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TAMINGO/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

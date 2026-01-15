@@ -177,6 +177,8 @@ struct IdCreateView: View {
                                 .font(.system(size: 16, weight: .medium))
                                 .disabled(!isEditable)
                                 .opacity(isEditable ? 1.0 : 0.45)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never) // 기본 택스트 필드도 자동완성 및 첫 문자 대문자 안 되게 설정
                         }
                     }
 
@@ -198,4 +200,9 @@ struct IdCreateView: View {
             }
         }
     }
+}
+
+#Preview {
+    IdCreateView(vm: IdCreateViewModel(email: "Test@gmail.com"))
+        .environment(SignupProgressStore())
 }

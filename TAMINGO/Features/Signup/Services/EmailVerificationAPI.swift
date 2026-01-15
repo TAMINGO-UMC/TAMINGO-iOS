@@ -2,14 +2,15 @@ import Foundation
 import Moya
 import Alamofire
 
-struct EmailVerificationAPI: TargetType {
+// TargetType 대신 APITargetType 채택
+struct EmailVerificationAPI: APITargetType {
 
     enum Endpoint {
         case sendCode(email: String)
         case verifyCode(code: String)
     }
 
-    let baseURL: URL
+    // baseURL 프로퍼티 삭제 (APITargetType의 기본 구현 사용)
     let endpoint: Endpoint
 
     var path: String {
@@ -46,4 +47,3 @@ struct EmailVerificationAPI: TargetType {
         }
     }
 }
-

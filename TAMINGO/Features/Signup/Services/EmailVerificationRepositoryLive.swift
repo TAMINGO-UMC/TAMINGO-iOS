@@ -4,27 +4,22 @@ import Moya
 final class EmailVerificationRepositoryLive: EmailVerificationProtocol {
 
     private let provider: MoyaProvider<EmailVerificationAPI>
-    private let baseURL: URL
     private let decoder = JSONDecoder()
 
-    init(
-        baseURL: URL,
-        provider: MoyaProvider<EmailVerificationAPI>? = nil
-    ) {
-        self.baseURL = baseURL
-
+    // 초기화시 BaseURL을 받을 필요 
+    init(provider: MoyaProvider<EmailVerificationAPI>? = nil) {
         let logger = NetworkLoggerPlugin(configuration: .init(logOptions: [.verbose]))
         self.provider = MoyaProvider<EmailVerificationAPI>(plugins: [logger])
     }
 
     func sendCode(email: String) async throws -> SendCodeResponseDTO {
-        let target = EmailVerificationAPI(baseURL: baseURL, endpoint: .sendCode(email: email))
-        let response = try await provider.requestAsync(target)
+        let target = EmailVerificationAPI(endpoint: .sendCode(email: email))
+        let response = try await provider.requestAsync(target) // MoyaProvider+Extension 사용
         return try decodeOrThrow(response, as: SendCodeResponseDTO.self)
     }
 
     func verifyCode(code: String) async throws -> VerifyCodeResponseDTO {
-        let target = EmailVerificationAPI(baseURL: baseURL, endpoint: .verifyCode(code: code))
+        let target = EmailVerificationAPI(endpoint: .verifyCode(code: code))
         let response = try await provider.requestAsync(target)
         return try decodeOrThrow(response, as: VerifyCodeResponseDTO.self)
     }

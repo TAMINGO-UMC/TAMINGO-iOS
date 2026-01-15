@@ -14,11 +14,8 @@ final class EmailSignupViewModel {
         case .mock:
             self.repo = EmailVerificationRepositoryMock()
         case .live:
-            guard let baseURL else {
-                self.repo = EmailVerificationRepositoryMock()
-                return
-            }
-            self.repo = EmailVerificationRepositoryLive(baseURL: baseURL)
+            // Live 호출 시에 BaseURL은 APITargetType에 의해 자동으로 들어감 (따로 guard let 사용할 필요 없음.)
+            self.repo = EmailVerificationRepositoryLive()
         }
     }
 
