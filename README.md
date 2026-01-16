@@ -15,11 +15,11 @@
 
 ## 👥 멤버
 
-| 카일/엄지용 | 제이드/한정현 | 애옹/권예원 |
-|:----------:|:------------:|:----------:|
-| <img width="120" src="https://github.com/user-attachments/assets/78e4d3c4-6927-4d0f-8cd0-c7971b85fd97" /> | <img width="120" src="https://github.com/user-attachments/assets/47c5eda6-0261-421c-8777-714e7185aed2" /> | <img width="120" src="https://github.com/user-attachments/assets/b336bf18-27d3-4bb6-bd74-215060227ce9" />|
-| **PL** | **FE** | **FE** |
-| [GitHub] eom175@naver.com | [GitHub] @JungHyunHann | [GitHub] @e0ng |
+| 카일/엄지용 | 제이드/한정현 | 애옹/권예원 | 도도/김도연 |
+|:----------:|:------------:|:----------:|:----------:|
+| <img width="120" src="https://github.com/user-attachments/assets/78e4d3c4-6927-4d0f-8cd0-c7971b85fd97" /> | <img width="120" src="https://github.com/user-attachments/assets/47c5eda6-0261-421c-8777-714e7185aed2" /> | <img width="120" src="https://github.com/user-attachments/assets/b336bf18-27d3-4bb6-bd74-215060227ce9" />| <img width="120" src="https://github.com/user-attachments/assets/d375f81a-de7e-4851-8b0f-79e29cbf7fde" />|
+| **PL** | **FE** | **FE** | **FE** |
+| [GitHub] eom175@naver.com | [JungHyunHann](https://github.com/JungHyunHann) | [e0ng](https://github.com/e0ng) | [ddodle](https://github.com/ddodle) |
 
 <br>
 
