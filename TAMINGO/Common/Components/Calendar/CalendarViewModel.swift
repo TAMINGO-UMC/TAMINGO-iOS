@@ -18,7 +18,7 @@ final class CalendarViewModel: ObservableObject {
     private let calendar = Calendar.current  //Calendar.current를 반복적으로 호출하는 것을 방지하기 위해 프로퍼티로 선언
     
     @Published var selectDate: Date = Date()
-    @Published var previousMonth: Int = Calendar.current.component(.month, from: Date())
+    @Published var previousMonth: Int = 0
     
     /// 각 날짜에 대한 마커 정보를 저장하는 딕셔너리
     /// 키는 `Date` (년, 월, 일만 고려), 값은 `Marker` 배열
@@ -26,15 +26,12 @@ final class CalendarViewModel: ObservableObject {
     @Published var dateMarkers: [Date: [Marker]] = [:]
     
     /// 월 기준 날짜 (1일)
-    @Published var displayedMonthDate: Date = {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month], from: Date())
-        return calendar.date(from: components) ?? Date()
-    }()
+    @Published var displayedMonthDate: Date = Date()
         
     init() {
         let now = Date().startOfDay
         self.selectDate = now
+        self.previousMonth = calendar.component(.month, from: now)
         let components = calendar.dateComponents([.year, .month], from: now)
         self.displayedMonthDate = calendar.date(from: components) ?? now
     }
@@ -61,7 +58,6 @@ final class CalendarViewModel: ObservableObject {
         }
         markers.append(newMarker)
         dateMarkers[dayKey] = markers
-        print("마커 정보 \(dateMarkers)")
     }
     
     /// 특정 날짜의 특정 색상 마커를 제거
