@@ -14,14 +14,14 @@ struct OnboardingHeaderView: View {
     var body: some View {
         VStack(spacing: 9) {
             Text(title)
-                .font(.system(size: 22, weight: .bold))
+                .font(.system(size: 22, weight: .bold)) // TODO: 폰트 변경 필요
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
             switch subtitle {
             case .text(let text):
                 Text(text)
-                    .font(.system(size: 10))
+                    .font(.regular09) // TODO: regualr10 변경
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)

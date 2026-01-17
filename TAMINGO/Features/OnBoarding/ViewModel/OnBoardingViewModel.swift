@@ -9,29 +9,59 @@ import Foundation
 
 @Observable
 final class OnboardingViewModel {
-
-    // MARK: - State
+    
+    // intro, setup, done
     var step: OnboardingStep = .intro
+    // intro 1~4
     var introPage: IntroPage = .overview
 
-    // MARK: - Constants
-    let totalPages: Int = IntroPage.allCases.count + 1 // intro 4 + setup 1
+    let totalPages: Int = IntroPage.allCases.count + 1
+    
+    // MARK: - Intro 완료 조건들
+    var didConnectCalendar: Bool = false
+    var didGrantPermission: Bool = false
 
-    // MARK: - Computed
+    // MARK: - Setup 완료 여부
+    var isSetupCompleted: Bool = false
 
-    /// 전체 기준 페이지 인덱스 (PageIndicator용)
+    // MARK: - Next 가능 여부
+    var canGoNext: Bool {
+        switch step {
+        case .intro:
+            return canGoNextIntro
+        case .setup:
+            return isSetupCompleted
+//        case .done:
+//            return false
+        }
+    }
+
+    private var canGoNextIntro: Bool {
+        switch introPage {
+        case .overview:
+            return true
+        case .calendar:
+            return didConnectCalendar
+        case .flow:
+            return true
+        case .permission:
+            return didGrantPermission
+        }
+    }
+
+    // MARK: - 전체 기준 페이지 인덱스(PageIndicator용)
     var currentGlobalIndex: Int {
         switch step {
         case .intro:
             return introPage.rawValue
         case .setup:
             return IntroPage.allCases.count
-        case .done:
-            return totalPages - 1
+//        case .done:
+//            return totalPages - 1
         }
     }
 
-    /// 현재 헤더 정보
+    // 현재 헤더 정보
     var header: (title: String, subtitle: OnboardingSubtitle) {
         switch step {
         case .intro:
@@ -41,18 +71,17 @@ final class OnboardingViewModel {
                 "당신에게 딱 맞는\n하루를 설계 중입니다",
                 .none
             )
-        case .done:
-            return ("", .none)
+//        case .done:
+//            return ("", .none)
         }
     }
 
-    /// StepIndicator에 보여줄 스텝 번호
+    // MARK: - 스텝 번호(StepIndicator용)
     var stepIndex: Int {
         currentGlobalIndex + 1
     }
 
-    // MARK: - Actions
-
+    // 다음 버튼 동작
     func goNext() {
         switch step {
         case .intro:
@@ -63,10 +92,12 @@ final class OnboardingViewModel {
             }
 
         case .setup:
-            step = .done
-
-        case .done:
+//            step = .done
             break
+
+
+//        case .done:
+//            break
         }
     }
 }

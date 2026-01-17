@@ -9,7 +9,8 @@ import SwiftUI
 
 struct IntroContainerView: View {
 
-    let page: IntroPage  
+    @Binding  var vm: OnboardingViewModel
+    let page: IntroPage
 
     var body: some View {
         Group {
@@ -18,32 +19,32 @@ struct IntroContainerView: View {
                 IntroOverViewSection()
 
             case .calendar:
-                IntroCalenderSection()
+                IntroCalenderSection(vm:$vm)
 
             case .flow:
                 IntroFlowSection()
 
             case .permission:
-                IntroPermissionSection()
+                IntroPermissionSection(vm:$vm)
             }
         }
         .frame(width:330, height: 459)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white)
+                .fill(.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray1, lineWidth: 1)
+                .stroke(.gray1, lineWidth: 1)
         )
     }
     
 }
 
 
-
-#Preview {
-    IntroContainerView(page:.permission)
-}
-
+//
+//#Preview {
+//    IntroContainerView(page:.permission)
+//}
+//
 

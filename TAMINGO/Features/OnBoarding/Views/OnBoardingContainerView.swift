@@ -27,32 +27,31 @@ struct OnBoardingContainerView: View {
                 )
                 .padding(.top, 5)
             }
-            .frame(height: 140)
-            
+            .frame(height: 140, alignment: .top)
 
-            VStack(spacing: 0) {
+            contentView
+                .padding(.top, 31)
+                .padding(.bottom, 22)
+            PageIndicatorView(
+                currentPage: vm.currentGlobalIndex,
+                totalPages: vm.totalPages
+            )
+            .padding(.bottom, 47)
 
-                contentView
-                    .padding(.top, 31)
-                    .padding(.bottom, 22)
-
-                PageIndicatorView(
-                    currentPage: vm.currentGlobalIndex,
-                    totalPages: vm.totalPages
-                )
-                .padding(.bottom, 47)
-
-                Button("다음") {
-                    vm.goNext()
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(.mainMint)
-                .foregroundColor(.white)
-                .cornerRadius(5)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 26)
+            Button("다음") {
+                vm.goNext()
             }
+            .disabled(!vm.canGoNext)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .font(.semiBold14)
+            .background(vm.canGoNext ? .mainMint : .gray1)
+            .foregroundColor(vm.canGoNext ? .white : .gray2)
+            .cornerRadius(5)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 26)
+
+
         }
     }
 
@@ -61,12 +60,22 @@ struct OnBoardingContainerView: View {
     private var contentView: some View {
         switch vm.step {
         case .intro:
-            IntroContainerView(page: vm.introPage)
+            IntroContainerView(
+                vm: $vm,
+                page: vm.introPage
+            )
+            .shadow(
+                color: .black.opacity(0.05),
+                radius: 4,
+                x: 0,
+                y: 2.069
+            )
         case .setup:
-            SetupView()
-        case .done:
-            Text("온보딩 완료")
+            SetupView(isCompleted: $vm.isSetupCompleted)
+//        case .done:
+//            EmptyView()
         }
+        
     }
 }
 

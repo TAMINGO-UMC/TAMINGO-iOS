@@ -7,8 +7,6 @@
 
 import Foundation
 
-
-
 enum IntroPage : Int, CaseIterable {
     case overview = 0
     case calendar = 1

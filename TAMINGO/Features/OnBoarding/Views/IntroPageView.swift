@@ -26,6 +26,12 @@ struct IntroOverViewSection: View {
             
             FeatureCard(icon: Image("OnBoarding_icon_time"), title: "정시 도착 보장", text: "실시간 교통을 역산하여 지각 없는 최적의 출발 시각을 알려드려요", highlights: ["실시간 교통을 역산"])
         }
+        .shadow(
+            color: .black.opacity(0.05),
+            radius: 4,
+            x: 0,
+            y: 2.069
+        )
     }
     
 }
@@ -46,10 +52,18 @@ struct IntroFlowSection: View {
             
             FeatureCard(icon: Image("OnBoarding_icon_todo"), title: "이동 중 비실행 To-do 처리", text: "대중교통 이용 시간 등 이동 중에 발생하는 틈새 시간을 활용하여\n회의록 확인 등 장소 무관 To-do를 처리하도록 제안해요", highlights: ["틈새 시간을 활용","장소 무관 To-do를 처리하도록 제안"])
         }
+        .shadow(
+            color: .black.opacity(0.05),
+            radius: 4,
+            x: 0,
+            y: 2.069
+        )
     }
 }
 
 struct IntroCalenderSection: View {
+    @Binding var vm : OnboardingViewModel
+    
     var body: some View {
         VStack() {
             images
@@ -79,8 +93,11 @@ struct IntroCalenderSection: View {
 
     var appleCalButton: some View {
         Button {
+            vm.didConnectCalendar = true
+            // TODO: 애플캘린더 연동 구현
         } label: {
             Text("apple 캘린더 연동하기")
+                .font(.semiBold14)
                 .foregroundStyle(.mainPink)
                 .frame(width: 272, height: 47)
                 .background(
@@ -99,6 +116,8 @@ struct IntroCalenderSection: View {
 
 
 struct IntroPermissionSection: View {
+    @Binding var vm : OnboardingViewModel
+
     var body: some View {
         VStack(spacing: 0) {
             images
@@ -113,7 +132,7 @@ struct IntroPermissionSection: View {
         .padding(.bottom, 31)
     }
 
-    // MARK: - Images
+
     var images: some View {
         ZStack {
             Image("OnBoarding_permission02")
@@ -128,7 +147,7 @@ struct IntroPermissionSection: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Feature Cards
+
     var features: some View {
         VStack(spacing: 14) {
             FeatureCard(
@@ -147,12 +166,14 @@ struct IntroPermissionSection: View {
         }
     }
 
-    // MARK: - Button
+
     var permissionButton: some View {
         Button {
-            // 권한 요청
+            vm.didGrantPermission = true
+            // TODO: 약관 동의 연동 구현
         } label: {
             Text("위치 및 알림 권한 허용하기")
+                .font(.semiBold14)
                 .foregroundStyle(.mainPink)
                 .frame(width: 272, height: 47)
                 .background(
@@ -170,14 +191,14 @@ struct IntroPermissionSection: View {
 struct Border: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
-            .fill(Color.white)
+            .fill(.white)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.gray1, lineWidth: 1)
+                    .stroke(.gray1, lineWidth: 1)
             )
     }
 }
 
-#Preview {
-    IntroPermissionSection()
-}
+//#Preview {
+//    IntroPermissionSection()
+//}

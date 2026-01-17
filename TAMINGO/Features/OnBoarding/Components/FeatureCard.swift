@@ -9,24 +9,22 @@ import SwiftUI
 
 struct FeatureCard: View {
 
-    // MARK: - Inputs
     let icon: Image
     let title: String
     let text: String
     let highlights: [String]   // 강조할 문구들만 전달
 
-    // MARK: - Body
     var body: some View {
         HStack(spacing: 14) {
             iconBadge
 
             VStack(alignment: .leading, spacing: 3.54) {
                 Text(title)
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 11, weight: .bold)) // TODO: 폰트 변경 필요
                     .foregroundStyle(.black)
 
                 Text(attributedText)
-                    .font(.system(size: 8))
+                    .font(.system(size: 8)) // TODO: 폰트 변경 필요
                     .foregroundStyle(.gray2)
             }
         }
@@ -38,10 +36,8 @@ struct FeatureCard: View {
     }
 }
 
-// MARK: - Subviews
 private extension FeatureCard {
 
-    /// 아이콘 배지 (모든 카드 동일)
     var iconBadge: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
@@ -78,11 +74,9 @@ private extension FeatureCard {
                     endPoint: .bottom
                 )
             )
-            .shadow(
-                color: .black.opacity(0.10),
-                radius: 6.207,
-                x: 0,
-                y: 2.069
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.white)
             )
     }
 
@@ -93,7 +87,7 @@ private extension FeatureCard {
         for highlight in highlights {
             if let range = attributed.range(of: highlight) {
                 attributed[range].foregroundColor = .mainMint
-                attributed[range].font = .system(size: 8, weight: .semibold)
+                attributed[range].font = .system(size: 8, weight: .semibold) // TODO: 폰트 변경 필요
             }
         }
 
