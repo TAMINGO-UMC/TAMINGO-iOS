@@ -205,7 +205,7 @@ struct TrafficTimeSectionView: View {
             }
 
             Text(buffer.description)
-                .font(.regular12) // TODO: regular10 변경 필요
+                .font(.regular10)
                 .foregroundStyle(.gray2)
         }
         .modifier(FormCard())
