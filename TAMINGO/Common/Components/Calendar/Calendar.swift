@@ -194,7 +194,7 @@ struct MonthlyCalendarView: View {
                         value: value,
                         isToday: isToday,
                         isSelected: isSelected,
-                        isCorrentMonth: value.isCurrentMonth,
+                        isCurrentMonth: value.isCurrentMonth,
                         onSelectDate: {
                             calendarViewModel.updateSelectedDate(value.date, onDateSelected: onDateSelected)
                         },
@@ -211,7 +211,7 @@ struct DateButton: View {
     var value: DateValue
     var isToday: Bool
     var isSelected: Bool
-    var isCorrentMonth: Bool
+    var isCurrentMonth: Bool
     var onSelectDate: () -> Void
     var markers: [Marker] // 마커 배열
     
@@ -223,7 +223,7 @@ struct DateButton: View {
                 Text("\(value.day)")
                     .frame(width: 36, height: 36)
                     .font(.regular13)
-                    .foregroundStyle(isSelected ? .mainMint : (isCorrentMonth ? .black00 : .gray1))
+                    .foregroundStyle(isSelected ? .mainMint : (isCurrentMonth ? .black00 : .gray1))
                 
                 HStack(spacing: 1) {
                     if markers.isEmpty {
