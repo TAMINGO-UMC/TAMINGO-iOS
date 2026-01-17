@@ -8,26 +8,31 @@
 import Foundation
 
 // 달력 셀 하나에 해당하는 데이터 모델
+// DateValue.swift 수정 제안
 struct DateValue: Identifiable, Equatable {
     
-    // 날짜를 문자열로 포맷하여 항상 같은 날짜에는 같은 id가 부여되도록 함
-    var id: String {
+    // 포매터는 그대로 유지
+    private static let idFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: date)
-    }
-
-    let day: Int
-
-    let date: Date
+        return formatter
+    }()
     
+    let id: String
+    let day: Int
+    let date: Date
     let isCurrentMonth: Bool
-
-    // 두 날짜가 같은 날인지 비교하는 Equatable 구현
-    // 시, 분, 초는 무시하고 연·월·일만 비교
-    // -day 값까지 비교해서 공백 셀(-1)을 구분
+    
+    // 생성자(init) 추가
+    init(day: Int, date: Date, isCurrentMonth: Bool) {
+        self.day = day
+        self.date = date
+        self.isCurrentMonth = isCurrentMonth
+        self.id = Self.idFormatter.string(from: date)
+    }
+    
     static func == (lhs: DateValue, rhs: DateValue) -> Bool {
-        let calendar = Calendar.current
-        return calendar.isDate(lhs.date, inSameDayAs: rhs.date) && lhs.day == rhs.day
+        // id가 이미 날짜 정보를 담고 있으므로 id끼리 비교해도 충분히 정확하고 훨씬 빠름
+        return lhs.id == rhs.id
     }
 }
