@@ -8,36 +8,31 @@
 import SwiftUI
 
 struct ScheduleCard: View {
-    let title: String
-    let place: String
-    let category: String
-    let startTime: String
-    let endTime: String
-    let color: Color
+    let schedule: Schedule
     
     var body: some View {
         HStack(spacing: 10) {
             Capsule()
-                .fill(color)
+                .fill(schedule.color)
                 .frame(width: 4)
             
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text("\(startTime)  \(title)")
+                    Text("\(schedule.startTime)  \(schedule.title)")
                         .font(.medium14)
                         .foregroundStyle(.black00)
                     
-                    Text(category)
+                    Text(schedule.category)
                         .font(.medium12)
-                        .foregroundStyle(color)
+                        .foregroundStyle(schedule.color)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(color.opacity(0.15))
+                                .fill(schedule.color.opacity(0.15))
                         )
                 }
-                Text("\(endTime)  \(place)")
+                Text("\(schedule.endTime)  \(schedule.place)")
                     .font(.medium12)
                     .foregroundStyle(.gray2)
             }
@@ -54,7 +49,7 @@ struct ScheduleCard: View {
 }
 
 #Preview {
-    ScheduleCard(title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainPink)
-    ScheduleCard(title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .blue)
-    ScheduleCard(title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainMint)
+    ScheduleCard(schedule: Schedule(id: 1, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainPink))
+    ScheduleCard(schedule: Schedule(id: 2, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .blue))
+    ScheduleCard(schedule: Schedule(id: 3, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainMint))
 }
