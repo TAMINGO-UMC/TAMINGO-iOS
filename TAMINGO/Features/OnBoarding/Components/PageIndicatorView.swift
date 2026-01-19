@@ -20,7 +20,10 @@ struct PageIndicatorView: View {
             ForEach(0..<totalPages, id: \.self) { index in
                 Circle()
                     .fill(index == currentPage ? activeColor : inactiveColor)
-                    .stroke(.mainMint, lineWidth:1)
+                    .overlay(
+                        Circle()
+                            .stroke(.mainMint, lineWidth:1)
+                    )
                     .frame(width: 8, height: 8)
                     .animation(.easeInOut(duration: 0.2), value: currentPage)
             }

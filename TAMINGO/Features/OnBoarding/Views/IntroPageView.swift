@@ -101,7 +101,7 @@ struct IntroCalenderSection: View {
                 .foregroundStyle(.mainPink)
                 .frame(width: 272, height: 47)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 5)
                         .fill(.subPink)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
@@ -177,7 +177,7 @@ struct IntroPermissionSection: View {
                 .foregroundStyle(.mainPink)
                 .frame(width: 272, height: 47)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 5)
                         .fill(.subPink)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)

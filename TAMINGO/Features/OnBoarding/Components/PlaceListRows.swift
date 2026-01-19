@@ -16,7 +16,7 @@ struct PlaceListRow: View {
     var body: some View {
         HStack {
             Text("\(address), \(name)")
-                .font(.regular09) // TODO: regular10 변경 필요
+                .font(.regular10) 
                 .foregroundStyle(.black)
                 .lineLimit(1)
                 .truncationMode(.tail)

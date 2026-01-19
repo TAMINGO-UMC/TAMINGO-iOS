@@ -31,8 +31,8 @@ final class OnboardingViewModel {
             return canGoNextIntro
         case .setup:
             return isSetupCompleted
-//        case .done:
-//            return false
+        case .done:
+            return false
         }
     }
 
@@ -56,8 +56,8 @@ final class OnboardingViewModel {
             return introPage.rawValue
         case .setup:
             return IntroPage.allCases.count
-//        case .done:
-//            return totalPages - 1
+        case .done:
+            return totalPages - 1
         }
     }
 
@@ -71,8 +71,8 @@ final class OnboardingViewModel {
                 "당신에게 딱 맞는\n하루를 설계 중입니다",
                 .none
             )
-//        case .done:
-//            return ("", .none)
+        case .done:
+            return ("", .none)
         }
     }
 
@@ -92,12 +92,11 @@ final class OnboardingViewModel {
             }
 
         case .setup:
-//            step = .done
+            step = .done
+
+
+        case .done:
             break
-
-
-//        case .done:
-//            break
         }
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 enum OnboardingStep: Int {
     case intro // 1~4
     case setup // 5
-//    case done
+    case done
 }
 
 enum OnboardingSubtitle {

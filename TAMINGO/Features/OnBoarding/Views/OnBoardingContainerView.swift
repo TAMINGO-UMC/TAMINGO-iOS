@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct OnBoardingContainerView: View {
-
+    
+    @Environment(\.dismiss) private var dismiss
     @State private var vm = OnboardingViewModel()
 
     var body: some View {
@@ -17,7 +18,6 @@ struct OnBoardingContainerView: View {
             VStack(spacing: 0) {
                 StepIndicatorView(
                     currentStep: vm.stepIndex,
-                    totalSteps: vm.totalPages
                 )
                 .padding(.top, 28)
 
@@ -38,20 +38,25 @@ struct OnBoardingContainerView: View {
             )
             .padding(.bottom, 47)
 
-            Button("다음") {
+            Button {
                 vm.goNext()
+            } label: {
+                Text("다음")
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .font(.semiBold14)
+                    .foregroundColor(vm.canGoNext ? .white : .gray2)
+                    .background(vm.canGoNext ? .mainMint : .gray1)
+                    .cornerRadius(5)
             }
             .disabled(!vm.canGoNext)
-            .frame(maxWidth: .infinity)
-            .frame(height: 52)
-            .font(.semiBold14)
-            .background(vm.canGoNext ? .mainMint : .gray1)
-            .foregroundColor(vm.canGoNext ? .white : .gray2)
-            .cornerRadius(5)
             .padding(.horizontal, 24)
             .padding(.bottom, 26)
-
-
+        }
+        .onChange(of: vm.step) { oldValue, newValue in
+            if newValue == .done {
+                dismiss()
+            }
         }
     }
 
@@ -72,8 +77,8 @@ struct OnBoardingContainerView: View {
             )
         case .setup:
             SetupView(isCompleted: $vm.isSetupCompleted)
-//        case .done:
-//            EmptyView()
+        case .done:
+            EmptyView()
         }
         
     }

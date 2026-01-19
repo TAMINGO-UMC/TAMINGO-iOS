@@ -141,7 +141,7 @@ struct TrafficSectionView: View {
     var body: some View {
         VStack{
             HStack {
-                Text("선호하는 교통 수단")
+                Text("선호하는 이동 수단")
                     .font(.semiBold16)
                 Spacer()
             }
@@ -174,7 +174,7 @@ struct TrafficTimeSectionView: View {
         VStack(alignment: .leading, spacing: 8) {
 
             HStack {
-                Text("선호하는 이동 수단")
+                Text("목표 도착 시간") // TODO: 디자인 확정 후 섹션 제목 변경 예정
                     .font(.semiBold16)
 
                 Spacer()

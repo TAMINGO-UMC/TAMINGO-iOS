@@ -21,7 +21,7 @@ struct OnboardingHeaderView: View {
             switch subtitle {
             case .text(let text):
                 Text(text)
-                    .font(.regular09) // TODO: regualr10 변경
+                    .font(.regular10) 
                     .foregroundStyle(.gray)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)

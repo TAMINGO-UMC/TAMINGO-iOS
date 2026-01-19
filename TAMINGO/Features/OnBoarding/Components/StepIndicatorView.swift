@@ -9,7 +9,6 @@ import SwiftUI
 
 struct StepIndicatorView: View {
     let currentStep: Int
-    let totalSteps: Int
     
     var activeColor: Color = .mainMint
     var inactiveColor: Color = .mint.opacity(0.3)
@@ -59,5 +58,5 @@ struct DottedGradientLineView: View {
 
 
 #Preview {
-    StepIndicatorView(currentStep: 1, totalSteps: 5)
+    StepIndicatorView(currentStep: 1)
 }
