@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ScheduleCard: View {
-    let schedule: Schedule
+    let schedule: ScheduleItem
     
     var body: some View {
         HStack(spacing: 10) {
@@ -49,7 +49,7 @@ struct ScheduleCard: View {
 }
 
 #Preview {
-    ScheduleCard(schedule: Schedule(id: 1, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainPink))
-    ScheduleCard(schedule: Schedule(id: 2, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .blue))
-    ScheduleCard(schedule: Schedule(id: 3, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainMint))
+    ScheduleCard(schedule: ScheduleItem(id: 1, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainPink))
+    ScheduleCard(schedule: ScheduleItem(id: 2, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .blue))
+    ScheduleCard(schedule: ScheduleItem(id: 3, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainMint))
 }

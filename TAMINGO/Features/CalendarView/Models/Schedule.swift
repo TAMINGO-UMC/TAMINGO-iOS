@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct Schedule: Identifiable {
+struct ScheduleItem: Identifiable {
     let id: Int
     var title: String
     var place: String
