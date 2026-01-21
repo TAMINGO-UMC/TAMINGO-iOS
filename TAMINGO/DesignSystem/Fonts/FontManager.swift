@@ -63,12 +63,14 @@ extension Font {
     static var regular18: Font { .pretendard(.regular, size: 18) }
     static var regular13: Font { .pretendard(.regular, size: 13) }
     static var regular12: Font { .pretendard(.regular, size: 12) }
+    static var regular10: Font { .pretendard(.regular, size: 10) }
     static var regular09: Font { .pretendard(.regular, size: 9) }
     
     // MARK: - Medium
     static var medium18: Font { .pretendard(.medium, size: 18) }
     static var medium16: Font { .pretendard(.medium, size: 16) }
     static var medium14: Font { .pretendard(.medium, size: 14) }
+    static var medium12: Font { .pretendard(.medium, size: 12) }
     static var medium13: Font { .pretendard(.medium, size: 13) }
     static var medium12: Font { .pretendard(.medium, size: 12) } // 추가
     static var medium10: Font { .pretendard(.medium, size: 10) }
