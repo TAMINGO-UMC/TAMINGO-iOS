@@ -38,7 +38,6 @@ struct SetupView: View {
                 TrafficTimeSectionView(buffer: $vm.arrivalBuffer)
             }
             .padding(.vertical,10)
-            .padding(.horizontal, 30)
         }
         .scrollIndicators(.hidden)
         .frame(width:330, height: 459)
@@ -174,6 +173,9 @@ struct PlacesSectionView: View {
 struct TrafficSectionView: View {
     @Binding var vm: SetupViewModel
     
+    @State private var showPicker = false
+    @State private var selectedRank: Int = 1
+    
     var body: some View {
         VStack{
             HStack {
@@ -182,24 +184,68 @@ struct TrafficSectionView: View {
                 Spacer()
             }
             .padding(.bottom, 15)
-            HStack(spacing: 15) {
-                ForEach(TransportType.allCases) { type in
-                    TransportButton(
-                        type: type,
-                        priority: vm.priority(of: type),
-                        isSelected: vm.isSelected(type),
-                        backgroundOpacity: vm.backgroundOpacity(for: type),
-                        onTap: {
-                            vm.toggle(type)
-                        }
-                    )
+            HStack(spacing: 18) {
+                ForEach(1...3, id: \.self) { rank in
+                    RankLabel(
+                        rank: rank,
+                        title: vm.transport(for: rank)?.title ?? "Label"
+                    ) {
+                        selectedRank = rank
+                        showPicker = true
+                    }
+                    .frame(maxWidth: .infinity)
+                    .popover(
+                        isPresented: Binding(
+                                    get: {
+                                        showPicker && selectedRank == rank
+                                    },
+                                    set: { newValue in
+                                        showPicker = newValue
+                                    }
+                                ),
+                        attachmentAnchor: .rect(.bounds),
+                        arrowEdge: .bottom
+                    ) {
+                        RankWheelPicker(
+                            selection: Binding(
+                                get: {
+                                    vm.transport(for: rank) ?? .bus
+                                },
+                                set: { newValue in
+                                    vm.updateTransport(newValue, for: rank)
+                                }
+                            ),
+                            isDisabled: { type in
+                                vm.isTransportSelected(type, excluding: selectedRank)
+                            }
+                        )
+                        .presentationCompactAdaptation(.popover)
+                    }
                 }
             }
+
         }
         .modifier(FormCard())
     }
 }
 
+// 임시 픽커
+struct RankWheelPicker: View {
+    @Binding var selection: TransportType
+    let isDisabled: (TransportType) -> Bool
+
+    var body: some View {
+        Picker("", selection: $selection) {
+            ForEach(TransportType.allCases) { type in
+                Text(type.title)
+                    .tag(type)
+                    .disabled(isDisabled(type) || type == selection)
+            }
+        }
+        .pickerStyle(.wheel)
+        .frame(width: 220, height: 200)
+    }
+}
 
 
 
@@ -222,19 +268,20 @@ struct TrafficTimeSectionView: View {
                         Text(buffer.title)
                             .font(.medium13)
                             .foregroundStyle(.mainPink)
+                        Image("icon_pinkChevron")
 
-                        VStack(spacing:2.5){
-                            Image(systemName: "chevron.up")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 10)
-                                .foregroundStyle(.mainPink)
-                            Image(systemName: "chevron.down")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 10)
-                                .foregroundStyle(.mainPink)
-                        }
+//                        VStack(spacing:2.5){
+//                            Image(systemName: "chevron.up")
+//                                .resizable()
+//                                .scaledToFit()
+//                                .frame(width: 10)
+//                                .foregroundStyle(.mainPink)
+//                            Image(systemName: "chevron.down")
+//                                .resizable()
+//                                .scaledToFit()
+//                                .frame(width: 10)
+//                                .foregroundStyle(.mainPink)
+//                        }
                     }
                 }
                 .buttonStyle(.plain)

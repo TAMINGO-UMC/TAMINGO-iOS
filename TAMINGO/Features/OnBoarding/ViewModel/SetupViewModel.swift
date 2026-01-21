@@ -34,8 +34,9 @@ final class SetupViewModel {
         endTime > startTime
     }
     
-    // 이동 수단들
-    var selectedTransports: [TransportType] = []
+    // 순위별 이동수단
+    var transportRanks: [Int: TransportType] = [:]
+
     
     // 역산 시간
     var arrivalBuffer: ArrivalBufferType = .ten
@@ -44,7 +45,7 @@ final class SetupViewModel {
     var isValid: Bool {
         guard endTime > startTime else { return false }
 //        guard !places.isEmpty && places.count <= 5 else { return false } // 조건 보류
-        guard selectedTransports.count == TransportType.allCases.count else {
+        guard transportRanks.count == 3 else {
             return false
         }
         return true
@@ -77,36 +78,24 @@ final class SetupViewModel {
     
     // MARK: - 선호 수단
     // 순서 조회
-    func priority(of type: TransportType) -> Int? {
-        guard let index = selectedTransports.firstIndex(of: type) else { return nil }
-        return index + 1
+    func transport(for rank: Int) -> TransportType? {
+        transportRanks[rank]
     }
-    
-    // 선택되어있는지 검사
-    func isSelected(_ type: TransportType) -> Bool {
-        selectedTransports.contains(type)
-    }
-    
-    func backgroundOpacity(for type: TransportType) -> Double {
-        guard let priority = priority(of: type) else {
-            return 0.3
-        }
 
-        switch priority {
-        case 1: return 1.0
-        case 2: return 0.7
-        case 3: return 0.4
-        default: return 0.4
-        }
+    // 선택된 수단 
+    func isTransportSelected(_ type: TransportType, excluding rank: Int) -> Bool {
+        transportRanks
+            .filter { $0.key != rank }
+            .contains { $0.value == type }
     }
     
     // 수단 선택/해제
-    func toggle(_ type: TransportType) {
-        if let index = selectedTransports.firstIndex(of: type) {
-            selectedTransports.remove(at: index)
-        } else {
-            selectedTransports.append(type)
-        }
+    func updateTransport(_ type: TransportType, for rank: Int) {
+        guard !isTransportSelected(type, excluding: rank) else { return }
+        guard transportRanks[rank] != type else { return }
+        transportRanks[rank] = type
     }
+    
+
 }
 

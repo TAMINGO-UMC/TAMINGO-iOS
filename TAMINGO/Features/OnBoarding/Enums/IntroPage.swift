@@ -9,8 +9,8 @@ import Foundation
 
 enum IntroPage : Int, CaseIterable {
     case overview = 0
-    case calendar = 1
-    case flow = 2
+    case flow = 1
+    case calendar = 2
     case permission = 3
     
     var title: String {
