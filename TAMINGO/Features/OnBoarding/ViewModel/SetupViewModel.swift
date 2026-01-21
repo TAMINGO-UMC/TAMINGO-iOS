@@ -29,7 +29,7 @@ final class SetupViewModel {
         places.count < maxPlaces
     }
 
-    // 시작 시간, 종료 시간 적합성 확인
+    // 시작 시간, 종료 시간 적합성 확인 : 시작 시간 < 종료 시간
     var isEndTimeValid: Bool {
         endTime > startTime
     }

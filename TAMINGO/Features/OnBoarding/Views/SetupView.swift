@@ -8,17 +8,25 @@
 import SwiftUI
 import UIKit
 
+
+
 struct SetupView: View {
     
     @State private var vm: SetupViewModel = .init()
     @Binding var isCompleted: Bool
+    
+    @State private var isStartActive: Bool = false
+    @State private var isEndActive: Bool = false
+
 
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
                 TimeSectionView(
                     startTime: $vm.startTime,
-                    endTime: $vm.endTime
+                    endTime: $vm.endTime,
+                    isStartActive: $isStartActive,
+                    isEndActive: $isEndActive
                 )
 
                 PlacesSectionView(
@@ -44,16 +52,31 @@ struct TimeSectionView: View {
     @Binding var startTime: Date
     @Binding var endTime: Date
 
+    @Binding var isStartActive: Bool
+    @Binding var isEndActive: Bool
+    
     var body: some View {
         VStack(spacing: 12) {
             TimeRow(
                 title: "주요 활동 시작 시각",
-                date: $startTime
+                isSelected: isStartActive,
+                backgroundColor: .subMint,
+                highlightColor: .mainMint,
+                date: $startTime,
+                onTimeChanged: {
+                    isStartActive = true
+                }
             )
 
             TimeRow(
                 title: "주요 활동 종료 시각",
-                date: $endTime
+                isSelected: isEndActive,
+                backgroundColor: .subPink,
+                highlightColor: .mainPink,
+                date: $endTime,
+                onTimeChanged: {
+                    isEndActive = true
+                }
             )
         }
     }
@@ -61,14 +84,27 @@ struct TimeSectionView: View {
 
 struct TimeRow: View {
     let title: String
+    let isSelected: Bool
+    let backgroundColor: Color
+    let highlightColor: Color
+    
     @Binding var date: Date
+    
+    let onTimeChanged: () -> Void
+    
 
     var body: some View {
         HStack {
             Text(title)
                 .font(.semiBold16)
             Spacer()
-            CapsuleTimePicker(date: $date)
+            CapsuleTimePicker(
+                date: $date,
+                isSelected: isSelected,
+                backgroundColor: backgroundColor,
+                highlightColor: highlightColor,
+                onTimeChanged: onTimeChanged
+            )
         }
         .modifier(FormCard())
     }
