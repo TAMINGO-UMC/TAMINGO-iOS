@@ -8,11 +8,11 @@ struct PrimaryActionButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .font(.semiBold14)
+                .foregroundStyle(isEnabled ? Color(.white) : Color("Gray2"))
                 .frame(width: 332, height: 47)
-                .background(isEnabled ? Color("MainMint") : Color("Gray1").opacity(0.25))
-                .cornerRadius(8)
+                .background(isEnabled ? Color("MainMint") : Color("Gray1"))
+                .cornerRadius(5)
         }
         .disabled(!isEnabled)
     }

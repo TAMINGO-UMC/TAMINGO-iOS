@@ -14,6 +14,3 @@ struct BackChevronButton: View {
     }
 }
 
-#Preview {
-    BackChevronButton { print("back") }
-}

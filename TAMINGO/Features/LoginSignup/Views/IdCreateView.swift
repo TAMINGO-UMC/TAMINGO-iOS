@@ -6,34 +6,33 @@ private enum Asset {
     static let error = "Error"
 }
 
-private enum RightIconType { case none, check, error }
-
 struct IdCreateView: View {
-    @State var vm: IdCreateViewModel
     @Environment(SignupProgressStore.self) private var progressStore
-
-    // Root가 네비게이션 처리할 수 있게 콜백
-    var onNext: ((String, String) -> Void)? = nil   // nickname, password
-    var onBack: (() -> Void)? = nil
+    @Environment(SignupSessionStore.self) private var sessionStore
+    @Environment(\.dismiss) private var dismiss
+    @State var vm: IdCreateViewModel = .init(email: "")
+    @State private var goToComplete = false
 
     private enum Field: Hashable { case nickname, password, confirm }
     @FocusState private var focus: Field?
-
-    @State private var cancellable: AnyCancellable?
-
+  
+    
     var body: some View {
         VStack(spacing: 0) {
 
             SignupTopBar(
                 progress: progressStore.progress,
                 title: "아이디 생성",
-                onBack: onBack
+                onBack: {
+                    Task { @MainActor in
+                        progressStore.set(2.0/3.0, animated: true)
+                    }
+                    dismiss()
+                }
             )
-            
 
             VStack(alignment: .leading, spacing: 30) {
 
-                // 이메일
                 FieldRow(
                     title: "이메일",
                     valueText: vm.email,
@@ -43,7 +42,6 @@ struct IdCreateView: View {
                     isSecure: false
                 )
 
-                // 닉네임
                 FieldRow(
                     title: "닉네임",
                     binding: $vm.nickname,
@@ -55,7 +53,6 @@ struct IdCreateView: View {
                 .focused($focus, equals: .nickname)
                 .submitLabel(.next)
 
-                // 비밀번호
                 FieldRow(
                     title: "비밀번호",
                     binding: $vm.password,
@@ -67,7 +64,6 @@ struct IdCreateView: View {
                 .focused($focus, equals: .password)
                 .submitLabel(.next)
 
-                // 비밀번호 재입력 + 상태 문구
                 VStack(alignment: .leading, spacing: 8) {
                     FieldRow(
                         title: "비밀번호 재입력",
@@ -92,26 +88,40 @@ struct IdCreateView: View {
             }
             .padding(.horizontal, 28)
             .padding(.top, 36)
-
+            
             Spacer()
-
+            
             PrimaryActionButton(title: "다음", isEnabled: vm.canNext) {
-                vm.primaryAction { nickname, password in
-                    onNext?(nickname, password)   // EmailInputView와 동일하게 Root로 이벤트 전달
+                // 세션 저장
+                sessionStore.nickname = vm.nickname
+                sessionStore.password = vm.password
+                
+                Task { @MainActor in
+                    progressStore.set(1.0, animated: true)
                 }
+                goToComplete = true
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .navigationBar)
+        .background(Color.white)
+        .navigationDestination(isPresented: $goToComplete) {
+            SignupCompleteView()
+                .navigationBarBackButtonHidden(true)
+        }
+        .onAppear {
+            if vm.email.isEmpty {
+                vm = IdCreateViewModel(email: sessionStore.email)
+            }
+        }
+        .navigationBarBackButtonHidden(true) 
     }
+}
 
-
+    private enum RightIconType { case none, check, error }
 
     private struct FieldRow: View {
         let title: String
-
         var valueText: String? = nil
         var binding: Binding<String>? = nil
 
@@ -120,14 +130,7 @@ struct IdCreateView: View {
         let isEditable: Bool
         let isSecure: Bool
 
-        init(
-            title: String,
-            valueText: String,
-            rightIcon: RightIconType,
-            isFocused: Bool,
-            isEditable: Bool,
-            isSecure: Bool
-        ) {
+        init(title: String, valueText: String, rightIcon: RightIconType, isFocused: Bool, isEditable: Bool, isSecure: Bool) {
             self.title = title
             self.valueText = valueText
             self.rightIcon = rightIcon
@@ -136,14 +139,7 @@ struct IdCreateView: View {
             self.isSecure = isSecure
         }
 
-        init(
-            title: String,
-            binding: Binding<String>,
-            rightIcon: RightIconType,
-            isFocused: Bool,
-            isEditable: Bool,
-            isSecure: Bool
-        ) {
+        init(title: String, binding: Binding<String>, rightIcon: RightIconType, isFocused: Bool, isEditable: Bool, isSecure: Bool) {
             self.title = title
             self.binding = binding
             self.rightIcon = rightIcon
@@ -156,20 +152,20 @@ struct IdCreateView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color("Gray1").opacity(0.7))
+                    .foregroundStyle(Color("Gray2"))
 
                 HStack(spacing: 8) {
                     if let valueText {
                         Text(valueText)
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color("Gray1").opacity(0.85))
+                            .foregroundStyle(Color("Gray2"))
                     } else if let binding {
                         if isSecure {
                             SecureField("", text: binding)
                                 .font(.system(size: 16, weight: .medium))
                                 .disabled(!isEditable)
                                 .opacity(isEditable ? 1.0 : 0.45)
-                                .textContentType(.oneTimeCode) 
+                                .textContentType(.oneTimeCode)
                                 .autocorrectionDisabled()
                                 .textInputAutocapitalization(.never)
                         } else {
@@ -177,20 +173,15 @@ struct IdCreateView: View {
                                 .font(.system(size: 16, weight: .medium))
                                 .disabled(!isEditable)
                                 .opacity(isEditable ? 1.0 : 0.45)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never) // 기본 택스트 필드도 자동완성 및 첫 문자 대문자 안 되게 설정
                         }
                     }
 
                     Spacer()
 
                     switch rightIcon {
-                    case .none:
-                        EmptyView()
-                    case .check:
-                        Image(Asset.check).resizable().frame(width: 18, height: 18)
-                    case .error:
-                        Image(Asset.error).resizable().frame(width: 18, height: 18)
+                    case .none: EmptyView()
+                    case .check: Image(Asset.check).resizable().frame(width: 18, height: 18)
+                    case .error: Image(Asset.error).resizable().frame(width: 18, height: 18)
                     }
                 }
 
@@ -200,9 +191,4 @@ struct IdCreateView: View {
             }
         }
     }
-}
 
-#Preview {
-    IdCreateView(vm: IdCreateViewModel(email: "Test@gmail.com"))
-        .environment(SignupProgressStore())
-}

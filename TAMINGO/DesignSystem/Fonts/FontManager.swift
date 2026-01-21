@@ -70,6 +70,7 @@ extension Font {
     static var medium16: Font { .pretendard(.medium, size: 16) }
     static var medium14: Font { .pretendard(.medium, size: 14) }
     static var medium13: Font { .pretendard(.medium, size: 13) }
+    static var medium12: Font { .pretendard(.medium, size: 12) } // 추가
     static var medium10: Font { .pretendard(.medium, size: 10) }
     static var medium8: Font { .pretendard(.medium, size: 8) }
     

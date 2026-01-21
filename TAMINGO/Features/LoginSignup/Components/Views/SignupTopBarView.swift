@@ -5,7 +5,7 @@ struct SignupTopBar: View {
     var onBack: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 5) {
 
             
             StepProgressBar(progress: progress)
@@ -18,7 +18,7 @@ struct SignupTopBar: View {
                 BackChevronButton { onBack?() }
 
                 Text(title)
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.bold24)
                     .foregroundStyle(.black)
 
                 Spacer()

@@ -1,9 +1,15 @@
 import SwiftUI
+
 @main
-struct TAMINGOApp: App {
+struct TamingoApp: App {
+    @State private var signupProgressStore = SignupProgressStore()
+    @State private var signupSessionStore  = SignupSessionStore()
+
     var body: some Scene {
         WindowGroup {
-            SignupFlowRootView()
+            LoginRootView()
+                .environment(signupProgressStore)
+                .environment(signupSessionStore)
         }
     }
 }
