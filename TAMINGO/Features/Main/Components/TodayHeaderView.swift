@@ -8,12 +8,20 @@
 import SwiftUI
 
 struct TodayHeaderView: View {
+    private static let todayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "M월 d일 EEEE"
+        return formatter
+    }()
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 7.5) {
             Text("오늘")
                 .font(.bold22)
 
-            Text("12월 4일 화요일")
+            Text(Self.todayFormatter.string(from: Date()))
                 .font(.medium14)
                 .foregroundStyle(.gray2)
         }

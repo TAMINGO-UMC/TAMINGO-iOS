@@ -16,10 +16,14 @@ struct ScheduleCardView: View {
                 Text("\(schedule.time) \(schedule.title)")
                     .font(.medium14)
                     .foregroundStyle(.black00)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
 
                 Text(schedule.location)
                     .font(.regular12)
                     .foregroundStyle(.gray2)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
             Spacer()
@@ -28,6 +32,7 @@ struct ScheduleCardView: View {
                 Text(remaining)
                     .font(.regular12)
                     .foregroundStyle(.gray2)
+                    .layoutPriority(1)
             }
         }
         .padding()
