@@ -27,7 +27,7 @@ struct MainView: View {
             }
             .padding(.vertical, 22)
             .padding(.horizontal, 12)
-            .frame(height: 536, alignment: .top)
+            .frame(minHeight: 536, alignment: .top)
             .background{
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color.white)
