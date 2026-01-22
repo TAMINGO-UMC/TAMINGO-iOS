@@ -11,6 +11,7 @@ enum TransportType: CaseIterable, Identifiable {
     case walk
     case subway
     case bus
+    case none
 
     var id: Self { self }
 
@@ -19,6 +20,7 @@ enum TransportType: CaseIterable, Identifiable {
         case .walk: return "도보"
         case .subway: return "지하철"
         case .bus: return "버스"
+        case .none: return "선택없음"
         }
     }
 

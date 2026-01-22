@@ -209,7 +209,7 @@ struct TrafficSectionView: View {
                         RankWheelPicker(
                             selection: Binding(
                                 get: {
-                                    vm.transport(for: rank) ?? .bus
+                                    vm.transport(for: rank) ?? .none
                                 },
                                 set: { newValue in
                                     vm.updateTransport(newValue, for: rank)
@@ -239,7 +239,7 @@ struct RankWheelPicker: View {
             ForEach(TransportType.allCases) { type in
                 Text(type.title)
                     .tag(type)
-                    .disabled(isDisabled(type) || type == selection)
+                    .disabled(isDisabled(type))
             }
         }
         .pickerStyle(.wheel)
