@@ -18,14 +18,14 @@ struct Marker: Hashable {
 class CalendarViewModel {
     // Observation에서는 프로퍼티가 ObservationIgnored가 아닌 이상 자동으로 추적됩니다.
     private let calendar = Calendar.current
-
+    
     var selectDate: Date = Date()
     var previousMonth: Int = 0
     
     var dateMarkers: [Date: [Marker]] = [:]
     
     var displayedMonthDate: Date = Date()
-        
+    
     init() {
         let now = Date().startOfDay
         self.selectDate = now
@@ -35,7 +35,16 @@ class CalendarViewModel {
     }
     
     // MARK: - 마커 관리
-    
+    func setMarkers(from schedules: [ScheduleItem]) {
+        // 기존 마커 초기화 (중복 방지)
+        clearAllMarkers()
+        
+        // 일정 리스트를 순회하며 마커 생성
+        for schedule in schedules {
+            addMarker(for: schedule.startDateTime, color: schedule.category.color)
+        }
+    }
+
     func addMarker(for date: Date, color: Color) {
         let dayKey = date.startOfDay
         
@@ -105,7 +114,7 @@ class CalendarViewModel {
             }
         }
     }
-
+    
     // MARK: - 달력 데이터 생성
     
     func extractDate() -> [DateValue] {
@@ -163,7 +172,7 @@ class CalendarViewModel {
         guard let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: selectDate)) else {
             return []
         }
-
+        
         return (0..<7).compactMap { offset in
             if let date = calendar.date(byAdding: .day, value: offset, to: startOfWeek) {
                 let day = calendar.component(.day, from: date)
@@ -173,13 +182,13 @@ class CalendarViewModel {
             return nil
         }
     }
-
+    
     func getMarkersForThisWeek() -> [[Marker]] {
         return getThisWeekDateValues().map { dateValue in
             dateMarkers[dateValue.date.startOfDay] ?? []
         }
     }
-
+    
     private func firstDayOfMonth() -> Date {
         let components = calendar.dateComponents([.year, .month], from: displayedMonthDate)
         return calendar.date(from: components) ?? Date()
@@ -187,5 +196,29 @@ class CalendarViewModel {
     
     private func numberOfDays(in month: Date) -> Int {
         return calendar.range(of: .day, in: .month, for: month)?.count ?? 0
+    }
+    
+    /// 선택된 날짜의 '월' (숫자)
+    var selectedMonth: Int {
+        calendar.component(.month, from: selectDate)
+    }
+    
+    /// 선택된 날짜의 '일' (숫자)
+    var selectedDay: Int {
+        calendar.component(.day, from: selectDate)
+    }
+    
+    /// 선택된 날짜의 요일 (예: "월", "화", "수")
+    var selectedWeekday: String {
+        let weekdayIndex = calendar.component(.weekday, from: selectDate)
+        // calendar.component(.weekday, ...)는 일요일(1) ~ 토요일(7)을 반환합니다.
+        // 배열 인덱스(0~6)로 맞추기 위해 1을 뺍니다.
+        let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+        
+        // 안전하게 인덱스 접근
+        if weekdayIndex >= 1 && weekdayIndex <= 7 {
+            return weekdays[weekdayIndex - 1]
+        }
+        return ""
     }
 }
