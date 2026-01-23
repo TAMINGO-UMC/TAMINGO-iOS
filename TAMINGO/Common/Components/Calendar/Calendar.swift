@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @ObservedObject var calendarViewModel: CalendarViewModel
+    @State var calendarViewModel: CalendarViewModel
     var onDateSelected: ((Date) -> Void)?
     var enableSwipe: Bool = true            // 좌우 스와이프 기능 여부
     var contentPadding: CGFloat
@@ -72,7 +72,7 @@ struct CalendarView: View {
 
 // 캘린더 헤더
 struct CalendarHeaderView: View {
-    @ObservedObject var calendarViewModel: CalendarViewModel
+    @State var calendarViewModel: CalendarViewModel
     var onDateSelected: ((Date) -> Void)? = nil
     var onAddTapped: (() -> Void)? = nil
     
@@ -177,7 +177,7 @@ struct WeekdayHeaderView: View {
 
 // 월 캘린더
 struct MonthlyCalendarView: View {
-    @ObservedObject var calendarViewModel: CalendarViewModel
+    @State var calendarViewModel: CalendarViewModel
     var onDateSelected: ((Date) -> Void)?
     
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
