@@ -4,7 +4,6 @@ import Combine
 struct LoginView: View {
     
     @ObservedObject var vm: LoginViewModel
-    @State private var goSignup = false
     @Environment(SignupProgressStore.self) private var progressStore
     @Environment(SignupSessionStore.self) private var sessionStore
     
@@ -16,13 +15,10 @@ struct LoginView: View {
     }
     var body: some View {
             content
-                .navigationDestination(isPresented: $goSignup) {
-                    SignupEntryView()
-                }
                 .onReceive(vm.actionPublisher) { action in
                     switch action {
                     case .goSignup:
-                        goSignup = true
+                        break
                         
                     case .loginSuccess(let id):
                         print("로그인 성공:", id)
@@ -45,7 +41,7 @@ struct LoginView: View {
                     .scaledToFit()
                     .frame(width: 120, height: 120)
                 
-                Image("Title")
+                Image("Tamingo_logo_text")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 220, height: 46)

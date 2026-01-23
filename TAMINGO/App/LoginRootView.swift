@@ -24,6 +24,8 @@ struct LoginRootView: View {
                     
                     //회원가입 플로우 종료
                     goSignup = false
+                    signupSessionStore.reset()
+                    signupProgressStore.set(0, animated: false)
                     signupSessionStore.didFinishSignup = false
                 }
         }

@@ -165,7 +165,7 @@ struct IdCreateView: View {
                                 .font(.system(size: 16, weight: .medium))
                                 .disabled(!isEditable)
                                 .opacity(isEditable ? 1.0 : 0.45)
-                                .textContentType(.oneTimeCode)
+                                .textContentType(.newPassword)
                                 .autocorrectionDisabled()
                                 .textInputAutocapitalization(.never)
                         } else {

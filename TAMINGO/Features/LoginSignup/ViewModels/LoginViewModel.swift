@@ -61,12 +61,13 @@ final class LoginViewModel: ObservableObject {
     }
 
     func loginTapped() {
-        let ok = allowed.contains { $0.0 == id && $0.1 == password }
-
-        if ok {
+        let trimmedId = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        let ok = allowed.contains{ $0.0 == trimmedId && $0.1 == trimmedPassword }
+        if ok{
             isLoginFailed = false
-            actionSubject.send(.loginSuccess(id: id))
-        } else {
+            actionSubject.send(.loginSuccess(id: trimmedId))
+        }else{
             isLoginFailed = true
             resetInputsForRetry()
         }

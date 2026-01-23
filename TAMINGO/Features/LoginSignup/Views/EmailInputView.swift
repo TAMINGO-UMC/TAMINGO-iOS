@@ -15,7 +15,7 @@ struct EmailInputView: View {
             SignupTopBar(
                 progress: progressStore.progress,
                 title: "이메일 인증",
-                onBack: nil   // 첫 화면이면 nil 처리 (또는 dismiss 처리)
+                onBack: {dismiss()}  // 첫 화면이면 nil 처리 (또는 dismiss 처리)
             )
 
             VStack(alignment: .leading, spacing: 10) {
