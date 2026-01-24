@@ -33,6 +33,7 @@ struct SectionContainerView<Content: View>: View  {
             
             contents
         }
+        .padding(.bottom, 8)
         .cardStyle()
     }
     

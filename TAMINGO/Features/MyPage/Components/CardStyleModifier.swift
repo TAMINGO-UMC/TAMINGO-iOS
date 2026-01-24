@@ -13,14 +13,13 @@ struct CardStyleModifier: ViewModifier {
         content
             .padding(.horizontal, 16)
             .padding(.top, 16)
-            .padding(.bottom, 8)
-            .background(Color.white)
-            .cornerRadius(16)
+            .background(.white)
+            .cornerRadius(5)
             .shadow(
                 color: Color.black.opacity(0.06),
-                radius: 6.89,
-                x: 0,
-                y: 2.3
+                radius: 4,
+                x: 1,
+                y: 1.5
             )
     }
 }

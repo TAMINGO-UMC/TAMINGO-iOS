@@ -23,9 +23,10 @@ struct CategorySettingRowView: View {
                     subView
                 }
                 Spacer()
-                Image("icon_rChevron")
+                Image(systemName: "chevron.right")
                     .resizable()
-                    .frame(width: 20, height: 20)
+                    .frame(width: 5, height: 10)
+                    .foregroundStyle(.gray2)
             }
         }
         .frame(width: .infinity)

@@ -7,7 +7,7 @@
 
 struct NotificationSetting {
     let departAlertEnabled: Bool
-    let departAlertMinutes: ArrivalBufferType
+    let departAlertMinutes: ArrivalBufferType?
     let lateRiskAlertEnabled: Bool
     let realtimeTransitEnabled: Bool
     let todoRecommendEnabled: Bool

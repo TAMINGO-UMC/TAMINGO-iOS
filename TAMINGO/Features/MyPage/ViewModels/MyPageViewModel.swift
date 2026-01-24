@@ -15,26 +15,26 @@ final class MyPageViewModel {
     var activityTime: ActivityTime
 //    var transportPreference: TransportPreference
 //    var favoritePlaces: [FavoritePlace]
-//    var notificationSetting: NotificationSetting
+    var notificationSetting: NotificationSetting
 
     // MARK: - Init (Mock 기준)
     init(
         activityTime: ActivityTime = ActivityTimeMock.weekdayDefault,
 //        transportPreference: TransportPreference = TransportPreferenceMock.default,
 //        favoritePlaces: [FavoritePlace] = FavoritePlaceMock.list,
-//        notificationSetting: NotificationSetting = NotificationSettingMock.default
+        notificationSetting: NotificationSetting = NotificationSettingMock.allDisabled
     ) {
         self.activityTime = activityTime
 //        self.transportPreference = transportPreference
 //        self.favoritePlaces = favoritePlaces
-//        self.notificationSetting = notificationSetting
+        self.notificationSetting = notificationSetting
     }
 
-    // MARK: - 조회용 Computed Properties
+    // MARK: - 조회용
 
     // 활동 시간 반환
     var activityTimeText: String {
-        "\(activityTime.startTime.formattedTime) - \(activityTime.endTime.formattedTime)"
+        "\(activityTime.startTime.toTimeString()) - \(activityTime.endTime.toTimeString())"
     }
 
 //    /// 이동수단 요약 "버스 > 지하철 > 도보"
@@ -49,8 +49,8 @@ final class MyPageViewModel {
 //        favoritePlaces.count
 //    }
 //
-//    /// 알림 상태 텍스트
-//    var notificationStatusText: String {
-//        notificationSetting.isDepartureAlertEnabled ? "출발 알림 켜짐" : "출발 알림 꺼짐"
-//    }
+    // 알림 상태 텍스트
+    var notificationStatusText: String {
+        notificationSetting.departAlertEnabled ? "출발 알림 켜짐" : "출발 알림 꺼짐"
+    }
 }

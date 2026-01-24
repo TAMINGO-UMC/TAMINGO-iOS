@@ -7,12 +7,121 @@
 
 import SwiftUI
 
-struct WeeklyReportCardView: View {
+// mock 데이터
+let weeklyMetricMocks: [WeeklyMetric] = [
+    WeeklyMetric(
+        title: "정시 도착률",
+        value: "92%",
+        subValue: "+5% 상승",
+        iconName: "MyPage_icon_report01",
+        textColor: .subBlue2,
+        backgroundColor: .subBlue1
+    ),
+    WeeklyMetric(
+        title: "할 일 완료율",
+        value: "92%",
+        subValue: "17/20개",
+        iconName: "MyPage_icon_report02",
+        textColor: .subPP2,
+        backgroundColor: .subPP1
+    ),
+    WeeklyMetric(
+        title: "생산성 점수",
+        value: "87점",
+        subValue: "우수",
+        iconName: "MyPage_icon_report03",
+        textColor: .subPink2,
+        backgroundColor: .subPink1
+    )
+]
+
+
+struct WeeklyReportSection: View {
+    let metrics: [WeeklyMetric]
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Button(action:{
+            
+        }, label:{
+            VStack(alignment: .leading, spacing: 12) {
+                header
+
+                HStack() {
+                    ForEach(metrics) { metric in
+                        WeeklyMetricItemView(metric: metric)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .padding(.bottom, 16)
+            .cardStyle()
+            .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                    .stroke(.mainMint, lineWidth: 1)
+            )
+        })
+    }
+    
+    var header: some View {
+        HStack{
+            Image("MyPage_graph")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16)
+                .padding(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(.gray1, lineWidth: 1)
+                )
+
+            
+            Text("주간 리포트")
+                .font(.medium14)
+                .foregroundStyle(.black00)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .resizable()
+                .frame(width: 5, height: 10)
+                .foregroundStyle(.black00)
+        }
+
     }
 }
 
+struct WeeklyMetricItemView : View {
+    let metric: WeeklyMetric
+    var body: some View {
+        VStack(alignment:.leading, spacing:3){
+            HStack(spacing:5.4){
+                Image(metric.iconName)
+                    .resizable()
+                    .frame(width: 10, height: 10)
+                Text(metric.title)
+                    .font(.regular10)
+                    .foregroundStyle(metric.textColor)
+                Spacer()
+            }
+            Text(metric.value)
+                .font(.semiBold16)
+                .foregroundStyle(metric.textColor)
+            Text(metric.subValue)
+                .font(.regular10)
+                .foregroundStyle(metric.textColor)
+        }
+        .frame(width: 95, height: 66)
+        .padding(.horizontal, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 5)
+                .fill(metric.backgroundColor)
+        )
+    }
+}
+
+
+
 #Preview {
-    WeeklyReportCardView()
+    WeeklyReportSection(metrics: weeklyMetricMocks)
+        .padding()
 }

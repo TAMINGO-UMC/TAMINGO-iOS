@@ -17,13 +17,15 @@ struct MyPageView: View {
                 Text("마이페이지")
                     .font(.semiBold18)
                 profile
+                WeeklyReportSection(metrics: weeklyMetricMocks)
                 CategorySection()
                 SyncSection()
                 PlaceTimeSection(vm:vm)
-                NotificationSection()
+                NotificationSection(vm:vm)
                 AppInfoSection()
             }
         }
+        .scrollIndicators(.hidden)
         .padding(.horizontal, 30)
     }
     
@@ -38,9 +40,11 @@ struct MyPageView: View {
             VStack(alignment:.leading, spacing: 4){
                 Text("사용자님")
                     .font(.medium14)
-                Text("aaa@aaa.aaa")
+                    .foregroundStyle(.black00)
+                Text(verbatim: "aaa@aaa.aaa")
                     .font(.regular12)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.gray2)
+                    
             }
             Spacer()
         }
@@ -128,12 +132,13 @@ struct PlaceTimeSection: View {
 }
 
 struct NotificationSection: View {
+    let vm: MyPageViewModel
     var body: some View {
         SectionContainerView(title: "알림 & 데이터"){
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "알림 설정",
-                    sub: .comment("출발 알림 켜짐", .mainMint)
+                    sub: .comment(vm.notificationStatusText, .mainMint)
                 ) {
                     print("알림 설정 이동")
                 }
