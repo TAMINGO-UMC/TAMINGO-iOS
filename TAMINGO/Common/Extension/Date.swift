@@ -63,3 +63,12 @@ extension Date {
     }
 
 }
+
+extension String {
+    func toTimeDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.date(from: self)
+    }
+}
