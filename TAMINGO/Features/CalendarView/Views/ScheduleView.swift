@@ -10,12 +10,16 @@ import SwiftUI
 struct ScheduleView: View {
     @State var calendarVM = CalendarViewModel()
     @State var scheduleVM = ScheduleViewModel()
+    @State private var showAddSheet = false
     
     var body: some View {
         CalendarView(
             calendarViewModel: calendarVM,
             onDateSelected: { date in
                 print("선택된 날짜: \(date)")
+            },
+            onAddPress: {
+                showAddSheet.toggle()
             }
         )
         
@@ -75,6 +79,12 @@ struct ScheduleView: View {
         }
         .task(id: scheduleVM.allSchedules.count) {
             calendarVM.setMarkers(from: scheduleVM.allSchedules)
+        }
+        .sheet(isPresented: $showAddSheet) {
+            AddScheduleView {
+                // TODO: 저장이 완료되면 실행되는 클로저 추가
+                // 여기서 리스트 새로고침(fetch)을 수행
+            }
         }
     }
 }
