@@ -24,8 +24,14 @@ struct AIAnalyzeResponse: Codable {
 // MARK: - [Request] 최종 일정 저장 요청
 struct ScheduleSaveRequest: Codable {
     let title: String
-    let place: String
-    let category: String // 서버에는 "SCHOOL" 문자열로 전송
     let startTime: String
     let endTime: String
+    let placeName: String
+    let latitude: String
+    let longitude: String
+    let category: String // 서버에는 "SCHOOL" 문자열로 전송
+    let repeatType: String
+    let repeatEndDate: String?
+    let memo: String
+    let relatedTodoIds: [Int]
 }

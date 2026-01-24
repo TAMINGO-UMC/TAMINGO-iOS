@@ -20,9 +20,16 @@ class AddScheduleViewModel {
     }
     
     var place: String = ""
-    var category: ScheduleCategory = .school
     var startTime: Date = Date()
     var endTime: Date = Date().addingTimeInterval(3600)
+    var placeName: String = ""
+    var latitude: String = ""
+    var longitude: String = ""
+    var category: ScheduleCategory = .none
+    var repeatType: RepeatType = .none
+    var repeatEndDate: Date? = nil
+    var memo: String = ""
+    var relatedTodoIds: [Int] = []
     
     var isAnalyzing: Bool = false // AI 분석중 로딩
     var isSaving: Bool = false    // 저장중 로딩
@@ -81,10 +88,16 @@ class AddScheduleViewModel {
         Task {
             let request = ScheduleSaveRequest(
                 title: titleInput,
-                place: place,
-                category: category.rawValue, // "SCHOOL"
                 startTime: startTime.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
-                endTime: endTime.toString(format: "yyyy-MM-dd'T'HH:mm:ss")
+                endTime: endTime.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
+                placeName: place,
+                latitude: latitude,
+                longitude: longitude,
+                category: category.rawValue, // "SCHOOL"
+                repeatType: repeatType.rawValue,
+                repeatEndDate: repeatEndDate?.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
+                memo: memo,
+                relatedTodoIds: relatedTodoIds
             )
             
             do {
