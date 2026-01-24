@@ -10,7 +10,7 @@ struct IdCreateView: View {
     @Environment(SignupProgressStore.self) private var progressStore
     @Environment(SignupSessionStore.self) private var sessionStore
     @Environment(\.dismiss) private var dismiss
-    @State var vm: IdCreateViewModel = .init(email: "")
+    @State private var vm: IdCreateViewModel = .init(email: "")
     @State private var goToComplete = false
 
     private enum Field: Hashable { case nickname, password, confirm }
@@ -111,7 +111,7 @@ struct IdCreateView: View {
         }
         .onAppear {
             if vm.email.isEmpty {
-                vm = IdCreateViewModel(email: sessionStore.email)
+                vm.email = sessionStore.email
             }
         }
         .navigationBarBackButtonHidden(true) 
@@ -191,4 +191,5 @@ struct IdCreateView: View {
             }
         }
     }
+
 

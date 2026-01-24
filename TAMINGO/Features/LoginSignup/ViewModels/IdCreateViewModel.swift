@@ -3,7 +3,7 @@ import Foundation
 @Observable
 final class IdCreateViewModel {
 
-    let email: String
+    var email: String
 
     // 입력 데이터
     var nickname: String = ""
