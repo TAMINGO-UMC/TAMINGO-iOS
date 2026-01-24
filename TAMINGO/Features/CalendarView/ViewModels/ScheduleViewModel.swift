@@ -32,9 +32,10 @@ class ScheduleViewModel {
     private func generateDummyData() -> [ScheduleItem] {
         let calendar = Calendar.current
         let today = Date()
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
         
         // 오늘 날짜 기준으로 더미 데이터 생성 (테스트용)
-        let date1 = calendar.date(bySettingHour: 9, minute: 40, second: 0, of: today)!
+        let date1 = calendar.date(bySettingHour: 9, minute: 40, second: 0, of: yesterday)!
         let date2 = calendar.date(bySettingHour: 10, minute: 40, second: 0, of: today)!
         
         let date3 = calendar.date(bySettingHour: 14, minute: 00, second: 0, of: today)!
@@ -43,7 +44,7 @@ class ScheduleViewModel {
         return [
             ScheduleItem(id: 1, title: "팀플 미팅", place: "S관 301", category: .school, startDateTime: date1, endDateTime: date2, memo: "발표 자료 준비"),
             ScheduleItem(id: 2, title: "전공 강의", place: "공학관", category: .partTimeJob, startDateTime: date3, endDateTime: date4, memo: nil),
-            ScheduleItem(id: 3, title: "동아리 모임", place: "학생회관", category: .club, startDateTime: date1, endDateTime: date2, memo: nil)
+            ScheduleItem(id: 3, title: "동아리 모임", place: "학생회관", category: .club, startDateTime: date2, endDateTime: date3, memo: nil)
         ]
     }
 }
