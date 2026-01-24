@@ -11,6 +11,7 @@ enum ScheduleCategory: String, Codable, CaseIterable {
     case school = "SCHOOL"
     case club = "CLUB"
     case partTimeJob = "PARTTIMEJOB"
+    case none = "NONE"
     
     // 화면에 보여줄 한글 이름
     var title: String {
@@ -18,6 +19,7 @@ enum ScheduleCategory: String, Codable, CaseIterable {
         case .school: return "학교"
         case .club: return "동아리"
         case .partTimeJob: return "알바"
+        case .none: return "없음"
         }
     }
     
@@ -27,6 +29,7 @@ enum ScheduleCategory: String, Codable, CaseIterable {
         case .school: return .mainMint
         case .club: return .mainPink
         case .partTimeJob: return .yellow
+        case .none: return .gray2
         }
     }
 }
