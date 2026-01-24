@@ -38,20 +38,7 @@ struct OnBoardingContainerView: View {
             )
             .padding(.bottom, 47)
 
-            Button {
-                vm.goNext()
-            } label: {
-                Text("다음")
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .font(.semiBold14)
-                    .foregroundColor(vm.canGoNext ? .white : .gray2)
-                    .background(vm.canGoNext ? .mainMint : .gray1)
-                    .cornerRadius(5)
-            }
-            .disabled(!vm.canGoNext)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 26)
+            buttons
         }
         .onChange(of: vm.step) { oldValue, newValue in
             if newValue == .done {
@@ -81,6 +68,44 @@ struct OnBoardingContainerView: View {
             EmptyView()
         }
         
+    }
+    
+    var buttons: some View {
+        HStack{
+            if vm.canGoPrevious {
+                Button {
+                    vm.goPrevious()
+                } label: {
+                    Text("이전")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .font(.semiBold14)
+                        .foregroundColor(.mainMint)
+                        .background(.subMint)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(.mainMint, lineWidth: 1)
+                        )
+                        .cornerRadius(5)
+                }
+                .padding(.bottom, 26)
+            }
+            
+            Button {
+                vm.goNext()
+            } label: {
+                Text("다음")
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .font(.semiBold14)
+                    .foregroundColor(vm.canGoNext ? .white : .gray2)
+                    .background(vm.canGoNext ? .mainMint : .gray1)
+                    .cornerRadius(5)
+            }
+            .disabled(!vm.canGoNext)
+            .padding(.bottom, 26)
+        }
+        .padding(.horizontal, 24)
     }
 }
 

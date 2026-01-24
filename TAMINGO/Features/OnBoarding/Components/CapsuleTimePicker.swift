@@ -7,9 +7,22 @@
 
 import SwiftUI
 
+// 캡슐 형태로 시간을 표시, 선택 시 UIDatePicker를 popover로 보여줌
 struct CapsuleTimePicker: View {
     @Binding var date: Date
     @State private var showPicker = false
+    let isSelected: Bool
+    let backgroundColor: Color
+    let highlightColor: Color
+    
+    let onTimeChanged: () -> Void
+
+    var defaultBackgroundColor: Color = Color(
+        red: 118/255,
+        green: 118/255,
+        blue: 128/255
+    ).opacity(0.12)
+
 
     var body: some View {
         Button {
@@ -17,19 +30,20 @@ struct CapsuleTimePicker: View {
         } label: {
             Text(timeString)
                 .font(.medium13)
-                .foregroundStyle(.black)
+                .foregroundStyle(isSelected ? highlightColor : .black)
                 .padding(.horizontal, 8.7)
                 .padding(.vertical, 4.74)
                 .background(
                     Capsule()
                         .fill(
-                            Color(
-                                red: 118/255,
-                                green: 118/255,
-                                blue: 128/255
-                            )
-                            .opacity(0.12)
+                            isSelected
+                            ? backgroundColor
+                            : defaultBackgroundColor
                         )
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(isSelected ? highlightColor : .clear, lineWidth: 1)
                 )
         }
         .popover(
@@ -40,7 +54,11 @@ struct CapsuleTimePicker: View {
             UIKitTimePicker(date: $date)
                 .frame(width: 260, height: 280)
                 .presentationCompactAdaptation(.popover)
+                .onChange(of: date) {
+                    onTimeChanged()
+                }
         }
+
     }
 
     private var timeString: String {
@@ -51,7 +69,7 @@ struct CapsuleTimePicker: View {
 }
 
 
-
+// SwiftUI에서 UIDatePicker(wheels)를 사용하기 위한 래퍼
 struct UIKitTimePicker: UIViewRepresentable {
     @Binding var date: Date
 
@@ -89,5 +107,11 @@ struct UIKitTimePicker: UIViewRepresentable {
 }
 
 #Preview {
-    CapsuleTimePicker(date: .constant(Date()))
+    CapsuleTimePicker(
+        date: .constant(Date()),
+        isSelected: true,
+        backgroundColor: .subMint,
+        highlightColor: .mainMint,
+        onTimeChanged: {}
+    )
 }

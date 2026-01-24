@@ -48,6 +48,17 @@ final class OnboardingViewModel {
             return didGrantPermission
         }
     }
+    
+    // MARK: - Prev 가능 여부
+    var canGoPrevious: Bool {
+        switch step {
+        case .intro:
+            return introPage != .overview
+        case .setup, .done:
+            return true
+        }
+    }
+
 
     // MARK: - 전체 기준 페이지 인덱스(PageIndicator용)
     var currentGlobalIndex: Int {
@@ -99,5 +110,22 @@ final class OnboardingViewModel {
             break
         }
     }
+    
+    func goPrevious() {
+        switch step {
+        case .intro:
+            guard let prev = IntroPage(rawValue: introPage.rawValue - 1) else {
+                return
+            }
+            introPage = prev
+            
+        case .setup:
+            step = .intro
+            introPage = IntroPage.allCases.last ?? .overview
+        case .done:
+            break
+        }
+    }
+    
 }
 
