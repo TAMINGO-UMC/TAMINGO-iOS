@@ -262,25 +262,23 @@ private extension AddScheduleView {
             
             if viewModel.isAnalyzing {
                 loadingRow(text: "카테고리 추론중 ...")
+            } else if viewModel.titleInput.isEmpty {
+                Text("제목 입력 시 AI가 카테고리를 추론합니다")
+                    .font(.medium12)
+                    .foregroundStyle(.gray)
+                    .padding(.top, 4)
             } else {
-                if viewModel.titleInput.isEmpty {
-                    Text("제목 입력 시 AI가 카테고리를 추론합니다")
+                HStack {
+                    Text("학교")
                         .font(.medium12)
-                        .foregroundStyle(.gray)
-                        .padding(.top, 4)
-                } else {
-                    HStack {
-                        Text("학교")
-                            .font(.medium12)
-                        Spacer()
-                        Button("수정") { }
-                            .font(.medium12)
-                            .foregroundStyle(Color.gray)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.gray0)
-                            .cornerRadius(6)
-                    }
+                    Spacer()
+                    Button("수정") { }
+                        .font(.medium12)
+                        .foregroundStyle(Color.gray)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.gray0)
+                        .cornerRadius(6)
                 }
             }
         }

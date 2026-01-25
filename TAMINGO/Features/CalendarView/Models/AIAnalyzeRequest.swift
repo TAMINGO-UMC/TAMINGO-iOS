@@ -1,5 +1,5 @@
 //
-//  ScheduleDTO.swift
+//  AIAnalyzeRequest.swift
 //  TAMINGO
 //
 //  Created by 김도연 on 1/23/26.

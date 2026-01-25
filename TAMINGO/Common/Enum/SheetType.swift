@@ -1,5 +1,5 @@
 //
-//  DatePickerType.swift
+//  SheetType.swift
 //  TAMINGO
 //
 //  Created by 김도연 on 1/25/26.

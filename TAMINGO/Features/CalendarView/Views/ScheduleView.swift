@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ScheduleView: View {
-    @State var calendarVM = CalendarViewModel()
-    @State var scheduleVM = ScheduleViewModel()
+    @State private var calendarVM = CalendarViewModel()
+    @State private var scheduleVM = ScheduleViewModel()
     @State private var showAddSheet = false
     
     var body: some View {
@@ -49,8 +49,10 @@ struct ScheduleView: View {
             let todaySchedules = scheduleVM.getSchedules(for: calendarVM.selectDate)
             
             HStack {
-                calendarVM.selectDate.isToday ? Text("오늘 일정   ·")
-                    .foregroundStyle(.gray2) : Text("")
+                if calendarVM.selectDate.isToday {
+                    Text("오늘 일정   ·")
+                        .foregroundStyle(.gray2)
+                }
                 Text("\(calendarVM.selectedMonth)/\(calendarVM.selectedDay) (\(calendarVM.selectedWeekday))")
                     .foregroundStyle(.gray2)
                 Spacer()

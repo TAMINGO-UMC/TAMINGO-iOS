@@ -12,12 +12,6 @@ struct ScheduleOptionRow: View {
     let image: String
     let action: () -> Void
     
-    init(title: String, image: String, action: @escaping () -> Void) {
-        self.title = title
-        self.image = image
-        self.action = action
-    }
-    
     var body: some View {
         Button(action: action) {
             HStack {
