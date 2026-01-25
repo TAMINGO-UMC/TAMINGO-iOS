@@ -9,20 +9,25 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @ObservedObject var calendarViewModel: CalendarViewModel
+    @State var calendarViewModel: CalendarViewModel
     var onDateSelected: ((Date) -> Void)?
     var enableSwipe: Bool = true            // 좌우 스와이프 기능 여부
     var contentPadding: CGFloat
+    
+    var onAddPress: (() -> Void)?
+    
     init(
         calendarViewModel: CalendarViewModel,
         enableSwipe: Bool = true,
         contentPadding: CGFloat = 20,
         onDateSelected: ((Date) -> Void)? = nil,
+        onAddPress: (() -> Void)? = nil // 추가됨
     ) {
         self.calendarViewModel = calendarViewModel
         self.enableSwipe = enableSwipe
         self.contentPadding = contentPadding
         self.onDateSelected = onDateSelected
+        self.onAddPress = onAddPress // 연결
     }
     
     var body: some View {
@@ -30,7 +35,8 @@ struct CalendarView: View {
             VStack(spacing: 0) {
                 CalendarHeaderView(
                     calendarViewModel: calendarViewModel,
-                    onDateSelected: onDateSelected
+                    onDateSelected: onDateSelected,
+                    onAddPress: onAddPress
                 )
                 VStack(spacing: 0) {
                     WeekdayHeaderView()
@@ -72,9 +78,9 @@ struct CalendarView: View {
 
 // 캘린더 헤더
 struct CalendarHeaderView: View {
-    @ObservedObject var calendarViewModel: CalendarViewModel
+    @State var calendarViewModel: CalendarViewModel
     var onDateSelected: ((Date) -> Void)? = nil
-    var onAddTapped: (() -> Void)? = nil
+    var onAddPress: (() -> Void)? = nil
     
     @State private var showDatePicker = false
     // 사용자가 휠을 돌릴 때 임시로 값을 저장할 변수
@@ -137,7 +143,7 @@ struct CalendarHeaderView: View {
             Spacer()
             
             Button {
-                //TODO: 일정 추가 기능 제작
+                onAddPress?()
             } label: {
                 HStack(spacing: 4) {
                     Text("추가")
@@ -177,7 +183,7 @@ struct WeekdayHeaderView: View {
 
 // 월 캘린더
 struct MonthlyCalendarView: View {
-    @ObservedObject var calendarViewModel: CalendarViewModel
+    @State var calendarViewModel: CalendarViewModel
     var onDateSelected: ((Date) -> Void)?
     
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)

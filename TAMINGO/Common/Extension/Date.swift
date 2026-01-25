@@ -42,24 +42,4 @@ extension Date {
         formatter.locale = Locale(identifier: "ko_KR") // 한국 시간 기준
         return formatter.string(from: self)
     }
-    
-    // MARK: 연, 월, 일 정수로부터 Date 객체를 생성합니다. (Static 함수)
-    /// ```
-    /// let specificDate = Date.from(year: 2025, month: 8, day: 7)
-    /// ```
-    static func from(year: Int, month: Int, day: Int) -> Date? {
-        var components = DateComponents()
-        components.year = year
-        components.month = month
-        components.day = day
-        return Calendar.current.date(from: components)
-    }
-    
-    // MARK: - Date 타입을 HH:mm으로 변환 합니다.
-    func toTimeString() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: self)
-    }
-
 }
