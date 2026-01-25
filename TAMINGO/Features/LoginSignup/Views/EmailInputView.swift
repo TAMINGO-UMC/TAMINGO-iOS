@@ -15,7 +15,9 @@ struct EmailInputView: View {
             SignupTopBar(
                 progress: progressStore.progress,
                 title: "이메일 인증",
-                onBack: {dismiss()}  // 첫 화면이면 nil 처리 (또는 dismiss 처리)
+                onBack: {
+                    sessionStore.popToLoginFromEmail = true   // ✅ 추가
+                    dismiss()         }  // 첫 화면이면 nil 처리 (또는 dismiss 처리)
             )
 
             VStack(alignment: .leading, spacing: 10) {
@@ -137,7 +139,7 @@ struct EmailInputView: View {
             HStack(alignment: .center) {
                 Text("인증번호")
                     .font(.medium12)
-                    .foregroundStyle(Color("Gray1"))
+                    .foregroundStyle(Color("Gray2"))
 
                 Spacer()
 
@@ -175,7 +177,7 @@ struct EmailInputView: View {
                 HStack {
                     Spacer()
                     Text("인증완료")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.semiBold12)
                         .foregroundStyle(Color("MainMint"))
                 }
             } else {

@@ -2,13 +2,15 @@ import SwiftUI
 
 struct TermsAgreementView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(SignupSessionStore.self) private var sessionStore
 
-  
+    // 필수
     @State private var agreeService = false
     @State private var agreePrivacy = false
     @State private var agreeAI = false
     @State private var agreeLocation = false
 
+    // 선택
     @State private var agreeMarketing = false
 
     @State private var goToEmail = false
@@ -27,12 +29,28 @@ struct TermsAgreementView: View {
 
                 Spacer().frame(height: geo.safeAreaInsets.top)
 
-                // 로고, 문구
                 VStack(spacing: 45.53) {
-                    Image("Title")
+
+                    Image("Tamingo_logo_text")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 180, height: 29.55)
+                        //뒤로가기 버튼 추가
+                        .overlay(alignment: .leading) {
+                            Button {
+                                sessionStore.popToLoginFromEmail = true
+                                dismiss()
+                            } label: {
+                                Image("Previous_Chevron")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 9.05, height: 15.35)
+                                    .contentShape(Rectangle())
+                                    .padding(12) // 터치영역 확보
+                            }
+                            .buttonStyle(.plain)
+                            .offset(x: -90, y: -40)
+                        }
 
                     agreementTitle
                         .multilineTextAlignment(.center)
@@ -79,7 +97,7 @@ struct TermsAgreementView: View {
     private var agreementTitle: some View {
         let full = "시작을 위해서는,\n약관 동의가 필요해요."
         var attr = AttributedString(full)
-        attr.font = .bold22
+        attr.font = .pretendard(.semibold, size: 22)
         attr.foregroundColor = Color("Gray2")
 
         if let range = attr.range(of: "약관 동의") {
@@ -96,7 +114,6 @@ struct TermsAgreementView: View {
         agreeMarketing = on
     }
 }
-
 
 private struct AgreementBox: View {
 
@@ -115,7 +132,11 @@ private struct AgreementBox: View {
     // Row 공통 패딩/간격 (전체동의/항목 동일)
     private let rowHPadding: CGFloat = 14
     private let rowSpacing: CGFloat = 18
-
+    
+    private let titleFont: Font = .semiBold14
+    private let subtitleFont: Font = .medium12
+    private let titleColor: Color = Color(.black)     // 또는 .black
+    private let subtitleColor: Color = Color("Gray2")  // 또는 .gray
     var body: some View {
         VStack(spacing: rowSpacing) {
 
@@ -124,7 +145,11 @@ private struct AgreementBox: View {
                 title: allTitle,
                 subtitle: allSubtitle,
                 isOn: allIsOn,
-                rowHPadding: rowHPadding
+                rowHPadding: rowHPadding,
+                titleFont: titleFont,
+                subtitleFont: subtitleFont,
+                titleColor: titleColor,
+                subtitleColor: subtitleColor
             )
 
             VStack(spacing: rowSpacing) {
@@ -135,6 +160,7 @@ private struct AgreementBox: View {
                         required: item.required,
                         isOn: item.isOn,
                         rowHPadding: rowHPadding
+                        
                     )
                 }
             }
@@ -152,21 +178,26 @@ private struct AllAgreementRow: View {
 
     let rowHPadding: CGFloat
 
+  
+    var titleFont: Font? = nil
+    var subtitleFont: Font? = nil
+    var titleColor: Color? = nil
+    var subtitleColor: Color? = nil
+
     var body: some View {
         HStack(spacing: 10) {
             HStack(spacing: 5) {
                 Text(title)
-                    .font(.semiBold14)
-                    .foregroundStyle(.black)
+                    .font(titleFont ?? .semiBold14)
+                    .foregroundStyle(titleColor ?? .black)
 
                 Text(subtitle)
-                    .font(.medium12)
-                    .foregroundStyle(Color("Gray2"))
+                    .font(subtitleFont ?? .medium12)
+                    .foregroundStyle(subtitleColor ?? Color("Gray2"))
             }
 
             Spacer(minLength: 0)
 
-            
             Button {
                 isOn.toggle()
             } label: {
@@ -199,8 +230,8 @@ private struct AgreementItemRow: View {
             HStack(spacing: 2) {
                 Text(title)
                     .font(.medium12)
-                    .foregroundStyle(Color.black.opacity(0.35))
-                    .underline(true, color: Color("Gray1"))
+                    .foregroundStyle(Color("Gray2"))
+                    .underline(true, color: Color("Gray2"))
 
                 Text(subtitle)
                     .font(.medium12)
@@ -227,7 +258,7 @@ private struct GhostCheckBox: View {
     let isOn: Bool
     let activeColor: Color
 
-    private let size: CGFloat = 28
+    private let size: CGFloat = 23
     private let radius: CGFloat = 6
 
     var body: some View {
@@ -235,8 +266,9 @@ private struct GhostCheckBox: View {
             .stroke(isOn ? activeColor : Color("Gray1"), lineWidth: 1.5)
             .frame(width: size, height: size)
             .overlay {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 13, weight: .bold))
+                Image(isOn ? "MintVector": "Vector")
+                    .resizable()
+                    .frame(width:12.76, height:9.26)
                     .foregroundStyle(isOn ? activeColor : Color("Gray1"))
             }
             .contentShape(Rectangle())

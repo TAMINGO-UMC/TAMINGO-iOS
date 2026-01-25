@@ -10,6 +10,7 @@ final class SignupSessionStore {
     var password: String = ""
     
     var didFinishSignup: Bool = false
+    var popToLoginFromEmail: Bool = false
 }
 extension SignupSessionStore {
     func reset() {
