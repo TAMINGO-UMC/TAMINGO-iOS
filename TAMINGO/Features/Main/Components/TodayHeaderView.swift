@@ -17,7 +17,7 @@ struct TodayHeaderView: View {
     }()
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 7.5) {
+        VStack(alignment: .leading, spacing: 5) {
             Text("오늘")
                 .font(.bold22)
 
@@ -25,7 +25,6 @@ struct TodayHeaderView: View {
                 .font(.medium14)
                 .foregroundStyle(.gray2)
         }
-        .padding(.bottom, 22)
-        .padding(.horizontal, 15)
+        .padding(.bottom, 5)
     }
 }
