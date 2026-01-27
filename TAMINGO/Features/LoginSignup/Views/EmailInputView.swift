@@ -9,6 +9,9 @@ struct EmailInputView: View {
     @State private var goToIdCreate = false
     @FocusState private var isCodeFocused: Bool
 
+    @State private var isDomainMenuOpen = false      // ✅ 리스트(메뉴) 열렸다고 “간주”하는 상태
+    @State private var didPickDomain = false         // ✅ 한 번이라도 도메인 선택/입력 했는지
+
     var body: some View {
         VStack(spacing: 0) {
 
@@ -16,8 +19,9 @@ struct EmailInputView: View {
                 progress: progressStore.progress,
                 title: "이메일 인증",
                 onBack: {
-                    sessionStore.popToLoginFromEmail = true   // ✅ 추가
-                    dismiss()         }  // 첫 화면이면 nil 처리 (또는 dismiss 처리)
+                    sessionStore.popToLoginFromEmail = true
+                    dismiss()
+                }
             )
 
             VStack(alignment: .leading, spacing: 10) {
@@ -26,50 +30,80 @@ struct EmailInputView: View {
                     .foregroundStyle(Color("Gray2"))
 
                 Text("이메일")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.medium12)
                     .foregroundStyle(Color("Gray2"))
                     .padding(.top, 45)
+
+                // ✅ 인증 완료 시 잠금
+                let locked = vm.isVerified
+
+                // ✅ 입력 전/후 활성화 상태
+                let isEmailActive = !vm.emailLocal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
                 HStack(spacing: 8) {
                     TextField("", text: $vm.emailLocal)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.emailAddress)
-                        .font(.system(size: 16))
-                        .padding(.vertical, 8)
+                        .font(.medium16)
+                        .padding(.vertical, 4)
+                        .disabled(locked) // ✅ 인증 완료 시 입력 잠금
 
                     Text("@")
-                        .font(.system(size: 16))
-                        .foregroundStyle(Color("Gray1"))
+                        .font(.semiBold20)
+                        .foregroundStyle(isEmailActive ? Color("Gray2") : Color("Gray1"))
+                        .opacity(locked ? 0.6 : 1.0) // (선택) 잠금 느낌
 
                     Menu {
                         ForEach(vm.domainOptions, id: \.self) { d in
                             Button(d) {
                                 vm.domain = d
                                 if d != "직접입력" { vm.customDomain = "" }
+
+                                didPickDomain = true          // ✅ 선택 이후
+                                isDomainMenuOpen = false
                             }
                         }
                     } label: {
-                        HStack(spacing: 6) {
-                            Text(vm.isCustomDomain ? "직접입력" : vm.domain)
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color("Gray1"))
+                        let textColor: Color = didPickDomain ? .black : Color("Gray1")
+                        let chevronColor: Color = didPickDomain ? Color("Gray2") : Color("Gray1")
+                        let strokeColor: Color =
+                            isDomainMenuOpen ? Color("MainMint")
+                            : (didPickDomain ? Color("Gray2") : Color("Gray1"))
 
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(Color("Gray1").opacity(0.8))
+                        HStack(spacing: 20) {                 // ✅ 텍스트-아이콘 간격 20
+                            Text(vm.isCustomDomain ? "직접입력" : vm.domain)
+                                .font(.medium12)
+                                .foregroundStyle(textColor)
+                                .lineLimit(1)
+                            let chevronName = didPickDomain ? "Chevron_under" : "Chevron_under2"
+                            let chevronColor: Color = didPickDomain ? Color("Gray2") : Color("Gray1")
+
+                            Image(chevronName)            // ✅ 에셋 사용
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 12, height: 12)
+                                .foregroundStyle(chevronColor) // ✅ 초기 Gray1 → 선택 후 Gray2
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
+                        .frame(width: 114, height: 32)        // ✅ 박스 크기
                         .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color("Gray1").opacity(0.25), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(strokeColor, lineWidth: 1)
                         )
                     }
+                    .disabled(locked) // ✅ 인증 완료 시 도메인 변경 잠금
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            // ✅ 잠겨있으면 열림 상태로 바꾸지 않기
+                            guard !locked else { return }
+                            isDomainMenuOpen = true
+                        }
+                    )
                 }
 
+                // ✅ 밑줄 색상: 입력 전 Gray1, 입력 후 Gray2
                 Rectangle()
-                    .fill(Color("MainMint").opacity(vm.emailLocal.isEmpty ? 0.35 : 1.0))
+                    .fill(isEmailActive ? Color("Gray2") : Color("Gray1"))
                     .frame(height: 2)
                     .padding(.top, 2)
 
@@ -80,6 +114,7 @@ struct EmailInputView: View {
                         .keyboardType(.URL)
                         .font(.system(size: 14))
                         .padding(.top, 10)
+                        .disabled(locked) // ✅ 인증 완료 시 직접입력도 잠금
 
                     Rectangle()
                         .fill(Color("Gray1").opacity(0.25))
@@ -123,55 +158,69 @@ struct EmailInputView: View {
         .background(Color.white)
         .navigationDestination(isPresented: $goToIdCreate) {
             IdCreateView()
-                .navigationBarBackButtonHidden(true)  
+                .navigationBarBackButtonHidden(true)
         }
         .onAppear {
             Task { @MainActor in
                 progressStore.set(1.0/3.0, animated: false)
             }
         }
+        .onChange(of: vm.isVerified) { _, v in
+            // ✅ 인증 완료 순간 메뉴 열림 상태 정리
+            if v { isDomainMenuOpen = false }
+        }
     }
 
     @ViewBuilder
     private var codeSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        let locked = vm.isVerified
+        let confirmButtonEnabled =
+            vm.isCodeSectionVisible && !vm.isLoading && vm.secondsRemaining > 0
 
-            HStack(alignment: .center) {
-                Text("인증번호")
-                    .font(.medium12)
-                    .foregroundStyle(Color("Gray2"))
+        VStack(alignment: .leading, spacing: 6) {
 
-                Spacer()
+            Text("인증번호")
+                .font(.medium12)
+                .foregroundStyle(Color("Gray2"))
 
-                // "인증번호 보내기" 눌러서 codeSection 뜨면 바로 활성화
-                let confirmButtonEnabled = vm.isCodeSectionVisible && !vm.isLoading && vm.secondsRemaining > 0
+            VStack(spacing: 4) {
 
-                Button {
-                    guard vm.inputCode.count == 6 else {
-                        vm.errorMessage = "인증번호를 입력해주세요."
-                        return
-                    }
-                    Task { await vm.confirmCode() }
-                } label: {
-                    Text("인증하기")
-                        .font(.medium12)
-                        .padding(.horizontal, 14)
+                HStack(spacing: 12) {
+                    TextField("6자리 숫자", text: $vm.inputCode)
+                        .keyboardType(.numberPad)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .font(.medium16)
                         .padding(.vertical, 10)
-                        .foregroundStyle(confirmButtonEnabled ? .white : Color("Gray1"))
-                        .background(confirmButtonEnabled ? Color("MainMint") : Color("Gray1"))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                }
-                .disabled(!confirmButtonEnabled)
-            }
+                        .disabled(locked)
+                        .frame(maxWidth: .infinity)
 
-            TextField("6자리 숫자", text: $vm.inputCode)
-                .keyboardType(.numberPad)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .font(.system(size: 16))
-                .padding(.vertical, 10)
-                .focused($isCodeFocused)
-                .underline(isFocused: isCodeFocused)
+                    Button {
+                        guard vm.inputCode.count == 6 else {
+                            vm.errorMessage = "인증번호를 입력해주세요."
+                            return
+                        }
+                        Task { await vm.confirmCode() }
+                    } label: {
+                        Text("인증하기")
+                            .font(.medium12)
+                            .frame(width: 78, height: 32)
+                            .foregroundStyle(
+                                (!locked && confirmButtonEnabled) ? .white : Color("Gray2")
+                            )
+                            .background(
+                                (!locked && confirmButtonEnabled) ? Color("MainMint") : Color("Gray1")
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 5))
+                    }
+                    .disabled(locked || !confirmButtonEnabled)
+                    .opacity(locked ? 0.6 : 1.0)
+                }
+
+                Rectangle()
+                    .fill(Color("Gray2"))
+                    .frame(height: 2)
+            }
 
             if vm.isVerified {
                 HStack {
@@ -198,10 +247,9 @@ struct EmailInputView: View {
                             .foregroundStyle(.black)
                             .underline()
                     }
-                    .disabled(!vm.canSendCode)
+                    .disabled(locked || !vm.canSendCode)
                 }
             }
         }
     }
 }
-

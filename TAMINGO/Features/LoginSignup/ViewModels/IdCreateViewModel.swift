@@ -9,7 +9,6 @@ final class IdCreateViewModel {
     var nickname: String = ""
     var password: String = ""
     var confirmPassword: String = ""
-
     init(email: String) {
         self.email = email
     }

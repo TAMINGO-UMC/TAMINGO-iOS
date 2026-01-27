@@ -52,6 +52,7 @@ extension Font {
     // MARK: - SemiBold
     static var semiBold38: Font { .pretendard(.semibold, size: 38) }
     static var semiBold24: Font { .pretendard(.semibold, size: 24) }
+    static var semiBold20: Font { .pretendard(.semibold, size: 20) } //추가
     static var semiBold18: Font { .pretendard(.semibold, size: 18) }
     static var semiBold16: Font { .pretendard(.semibold, size: 16) }
     static var semiBold14: Font { .pretendard(.semibold, size: 14) }
@@ -67,6 +68,7 @@ extension Font {
     static var regular09: Font { .pretendard(.regular, size: 9) }
     
     // MARK: - Medium
+    static var medium24: Font { .pretendard(.medium, size: 24) } //추가
     static var medium18: Font { .pretendard(.medium, size: 18) }
     static var medium16: Font { .pretendard(.medium, size: 16) }
     static var medium14: Font { .pretendard(.medium, size: 14) }
