@@ -42,12 +42,12 @@ struct ScheduleCardView: View {
                                 Text("다음 일정")
                                     .font(.regular12)
                                     .foregroundStyle(Color("Gray2"))
-                                    .padding(.horizontal, 6)
+                                    .padding(.horizontal, 8)
                                     .padding(.vertical, 2)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 6)
+                                    .background{
+                                        RoundedRectangle(cornerRadius: 4)
                                             .fill(Color("Gray0"))
-                                    )
+                                    }
                             }
                         }
                         

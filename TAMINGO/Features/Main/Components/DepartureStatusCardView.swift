@@ -89,6 +89,18 @@ struct DepartureStatusCardView: View {
                 .fill(status.backgroundColor)
         )
         
+        RouteLinkCardView(
+            routeLink: RouteLink(
+                time: "12:30",
+                title: "약 수령",
+                location: "명동역 약국",
+                detourText: "+2분 우회",
+                suggestionText: "팀플 미팅 가는 길에 들를 수 있어요"
+            ),
+            onVisitTap: {},
+            onDeleteTap: {}
+        )
+        
         // MARK: - 길 찾기 버튼
         Button {
             print("길찾기 시작")
