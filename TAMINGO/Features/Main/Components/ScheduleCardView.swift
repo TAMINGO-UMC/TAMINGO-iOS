@@ -21,7 +21,7 @@ struct ScheduleCardView: View {
             Text(schedule.time)
                 .font(.medium14)
                 .foregroundStyle(timeColor)
-                .frame(width: 48, alignment: .leading)
+                .frame(alignment: .leading)
 
             // 카드
             VStack(alignment: .leading, spacing: 16) {

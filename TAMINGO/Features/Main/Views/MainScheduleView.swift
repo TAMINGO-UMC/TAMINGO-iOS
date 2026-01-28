@@ -29,6 +29,17 @@ struct MainScheduleView: View {
                         }
                     )
                 }
+                
+                GapTimeCardView(
+                    gapTime: GapTime(
+                        time: "18:30",
+                        title: "도서 반납",
+                        location: "도서관 · 5–7분",
+                        availableText: "12:10–12:30 공강에 처리 가능"
+                    ),
+                    onAssignTap: {},
+                    onLaterTap: {}
+                )
             }
             .padding(.vertical, 22)
 
