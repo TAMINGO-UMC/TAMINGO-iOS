@@ -13,4 +13,3 @@ struct BackChevronButton: View {
         .contentShape(Rectangle()) 
     }
 }
-
