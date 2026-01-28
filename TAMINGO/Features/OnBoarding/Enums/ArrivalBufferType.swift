@@ -5,8 +5,6 @@
 //  Created by 권예원 on 1/17/26.
 //
 
-import Foundation
-
 enum ArrivalBufferType: Int, CaseIterable, Identifiable {
     case ten = 10
     case fifteen = 15

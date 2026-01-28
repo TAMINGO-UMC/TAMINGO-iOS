@@ -15,6 +15,9 @@ struct CapsuleTimePicker: View {
     let backgroundColor: Color
     let highlightColor: Color
     
+    let onActivate: () -> Void
+    let onDismiss: () -> Void
+    
     let onTimeChanged: () -> Void
 
     var defaultBackgroundColor: Color = Color(
@@ -26,6 +29,7 @@ struct CapsuleTimePicker: View {
 
     var body: some View {
         Button {
+            onActivate()        
             showPicker = true
         } label: {
             Text(timeString)
@@ -51,12 +55,19 @@ struct CapsuleTimePicker: View {
             attachmentAnchor: .rect(.bounds),
             arrowEdge: .top
         ) {
-            UIKitTimePicker(date: $date)
-                .frame(width: 260, height: 280)
-                .presentationCompactAdaptation(.popover)
-                .onChange(of: date) {
+            UIKitTimePicker(
+                date: $date,
+                onTimeChanged: {
                     onTimeChanged()
                 }
+            )
+            .frame(width: 260, height: 280)
+            .presentationCompactAdaptation(.popover)
+        }
+        .onChange(of: showPicker) { _, isShown in
+            if !isShown {
+                onDismiss()  
+            }
         }
 
     }
@@ -72,6 +83,7 @@ struct CapsuleTimePicker: View {
 // SwiftUI에서 UIDatePicker(wheels)를 사용하기 위한 래퍼
 struct UIKitTimePicker: UIViewRepresentable {
     @Binding var date: Date
+    let onTimeChanged: () -> Void
 
     func makeUIView(context: Context) -> UIDatePicker {
         let picker = UIDatePicker()
@@ -102,16 +114,18 @@ struct UIKitTimePicker: UIViewRepresentable {
 
         @objc func changed(_ sender: UIDatePicker) {
             parent.date = sender.date
+            parent.onTimeChanged()
         }
     }
 }
 
-#Preview {
-    CapsuleTimePicker(
-        date: .constant(Date()),
-        isSelected: true,
-        backgroundColor: .subMint,
-        highlightColor: .mainMint,
-        onTimeChanged: {}
-    )
-}
+
+//#Preview {
+//    CapsuleTimePicker(
+//        date: .constant(Date()),
+//        isSelected: true,
+//        backgroundColor: .subMint,
+//        highlightColor: .mainMint,
+//        onTimeChanged: {}
+//    )
+//}
