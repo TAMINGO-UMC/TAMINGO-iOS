@@ -5,7 +5,7 @@ enum Mode {
     case live
 }
 @Observable
-final class EmailSignupViewModel {
+final class EmailInputViewModel {
     //주입
     private let repo: EmailVerificationProtocol
 
@@ -14,7 +14,7 @@ final class EmailSignupViewModel {
         case .mock:
             self.repo = EmailVerificationRepositoryMock()
         case .live:
-            // Live 호출 시에 BaseURL은 APITargetType에 의해 자동으로 들어감 (따로 guard let 사용할 필요 없음.)
+            // Live 호출 시에 BaseURL은 APITargetType에 의해 자동으로 들어감
             self.repo = EmailVerificationRepositoryLive()
         }
     }
@@ -91,7 +91,7 @@ final class EmailSignupViewModel {
             let res = try await repo.sendCode(email: email)
             expiresInSec = res.expiresInSec
 
-            // UI: 같은 화면에서 인증번호 입력 섹션 등장
+          
             isCodeSectionVisible = true
             inputCode = ""
             verificationToken = nil
@@ -137,7 +137,6 @@ final class EmailSignupViewModel {
         stopTimer()
     }
     // MARK: - Timer
-
     private func startTimer(seconds: Int) {
         stopTimer()
         secondsRemaining = seconds
@@ -167,7 +166,7 @@ final class EmailSignupViewModel {
     deinit { timer?.invalidate() }
 }
 
-extension EmailSignupViewModel {
+extension EmailInputViewModel {
     enum PrimaryButtonState {
         case nextDisabled            // 초기 (다음 비활성)
         case sendCodeEnabled         // 이메일 유효 (인증번호 보내기 활성)

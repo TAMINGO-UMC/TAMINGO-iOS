@@ -18,11 +18,11 @@ struct ScheduleCard: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text("\(schedule.startTime)  \(schedule.title)")
+                    Text("\(schedule.startTimeString)  \(schedule.title)")
                         .font(.medium14)
                         .foregroundStyle(.black00)
                     
-                    Text(schedule.category)
+                    Text(schedule.category.title)
                         .font(.medium12)
                         .foregroundStyle(schedule.color)
                         .padding(.horizontal, 6)
@@ -32,7 +32,7 @@ struct ScheduleCard: View {
                                 .fill(schedule.color.opacity(0.15))
                         )
                 }
-                Text("\(schedule.endTime)  \(schedule.place)")
+                Text("\(schedule.endTimeString)  \(schedule.place)")
                     .font(.medium12)
                     .foregroundStyle(.gray2)
             }
@@ -46,10 +46,4 @@ struct ScheduleCard: View {
         }
         .frame(height: 60)
     }
-}
-
-#Preview {
-    ScheduleCard(schedule: ScheduleItem(id: 1, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainPink))
-    ScheduleCard(schedule: ScheduleItem(id: 2, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .blue))
-    ScheduleCard(schedule: ScheduleItem(id: 3, title: "강의", place: "공학관", category: "학교", startTime: "09:40", endTime: "10:40", color: .mainMint))
 }
