@@ -31,7 +31,7 @@ final class MyPageViewModel {
     // MARK: - 조회용
     // 활동 시간 반환
     var activityTimeText: String {
-        "\(activityTime.startTime.toString(format: "HH:mm")) - \(activityTime.endTime.toString(format: "HH:mm")) "
+        "\(activityTime.startTime.toString(format: "HH:mm")) - \(activityTime.endTime.toString(format: "HH:mm"))"
     }
     // 자주 가는 장소
     var favoritePlacesText : String {

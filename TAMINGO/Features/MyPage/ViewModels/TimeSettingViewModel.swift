@@ -17,8 +17,8 @@ enum ActivityTimeMock {
     )
 
     static let weekendOnly = ActivityTime(
-        startTime: "10:00".toTimeDate()!,
-        endTime: "18:00".toTimeDate()!,
+        startTime: "10:00".toTimeDateOrFail(),
+        endTime: "18:00".toTimeDateOrFail(),
         activeDays: [.sat, .sun]
     )
 }

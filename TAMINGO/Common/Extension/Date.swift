@@ -51,4 +51,19 @@ extension String {
         formatter.locale = Locale(identifier: "ko_KR")
         return formatter.date(from: self)
     }
+    
+    // Mock 데이터 용 - 실제 개발에서는 사용 X
+    func toTimeDateOrFail(
+        file: StaticString = #file,
+        line: UInt = #line
+    ) -> Date {
+        guard let date = toTimeDate() else {
+            preconditionFailure(
+                "Invalid time format: \(self)",
+                file: file,
+                line: line
+            )
+        }
+        return date
+    }
 }

@@ -73,7 +73,7 @@ struct CategorySection: View {
                     sub: "6개",
                     textColor: .gray2
                 ) {
-                    print("일정 카테고리 이동")
+                    print("할일 카테고리 이동")
                 }
 
             }

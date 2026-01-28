@@ -40,7 +40,7 @@ extension NotificationSettingDTO {
 
         return NotificationSetting(
             departAlertEnabled: departAlertEnabled,
-            departAlertMinutes: buffer!,
+            departAlertMinutes: buffer,
             lateRiskAlertEnabled: lateRiskAlertEnabled,
             realtimeTransitEnabled: realtimeTransitEnabled,
             todoRecommendEnabled: todoRecommendEnabled,
