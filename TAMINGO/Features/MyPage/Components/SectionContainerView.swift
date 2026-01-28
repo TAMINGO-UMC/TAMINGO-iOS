@@ -33,6 +33,8 @@ struct SectionContainerView<Content: View>: View  {
             
             contents
         }
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
         .padding(.bottom, 8)
         .cardStyle()
     }
@@ -44,7 +46,7 @@ struct SectionContainerView<Content: View>: View  {
         VStack(spacing: 0) {
             CategorySettingRowView(
                 title: "일정 카테고리",
-                sub: .count(4)
+                sub: "4개", textColor: .gray2
             ) {
                 print("일정 카테고리 탭")
             }
@@ -53,7 +55,8 @@ struct SectionContainerView<Content: View>: View  {
 
             CategorySettingRowView(
                 title: "캘린더 연동",
-                sub: .status(3, .mint)
+                sub: "3개 연동됨",
+                textColor: .mainMint
             ) {
                 print("캘린더 연동 탭")
             }
@@ -62,18 +65,10 @@ struct SectionContainerView<Content: View>: View  {
 
             CategorySettingRowView(
                 title: "활동 시간 설정",
-                sub: .timeRange("09:00 - 22:00")
+                sub: "매일 6:00 ~ 22:00",
+                textColor: .gray2
             ) {
                 print("활동 시간 설정 탭")
-            }
-
-            Divider()
-
-            CategorySettingRowView(
-                title: "이동수단 설정",
-                sub: .summary(["버스","지하철","도보"])
-            ) {
-                print("이동수단 설정 탭")
             }
         }
     }

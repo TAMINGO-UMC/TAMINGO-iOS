@@ -24,9 +24,9 @@ struct MyPageView: View {
                 NotificationSection(vm:vm)
                 AppInfoSection()
             }
+            .padding(.horizontal, 30)
         }
         .scrollIndicators(.hidden)
-        .padding(.horizontal, 30)
     }
     
     var profile: some View {
@@ -60,7 +60,8 @@ struct CategorySection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "일정 카테고리",
-                    sub: .count(4)
+                    sub: "4개",
+                    textColor: .gray2
                 ) {
                     print("일정 카테고리 이동")
                 }
@@ -69,7 +70,8 @@ struct CategorySection: View {
 
                 CategorySettingRowView(
                     title: "할일 카테고리",
-                    sub: .count(6)
+                    sub: "6개",
+                    textColor: .gray2
                 ) {
                     print("일정 카테고리 이동")
                 }
@@ -85,7 +87,8 @@ struct SyncSection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "캘린더 연동",
-                    sub: .status(3, .mainMint)
+                    sub: "3개 연동",
+                    textColor: .mainMint
                 ) {
                     print("캘린더 연동 이동")
                 }
@@ -102,7 +105,8 @@ struct PlaceTimeSection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "자주 가는 장소",
-                    sub: .placeCount(4)
+                    sub: vm.favoritePlacesText,
+                    textColor: .gray2
                 ) {
                     print("자주 가는 장소 이동")
                 }
@@ -113,7 +117,8 @@ struct PlaceTimeSection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "활동 시간 설정",
-                    sub: .timeRange(vm.activityTimeText)
+                    sub: vm.activityTimeText,
+                    textColor: .gray2
                 ) {
                     print("활동 시간 설정 이동")
                 }
@@ -123,7 +128,8 @@ struct PlaceTimeSection: View {
             
             CategorySettingRowView(
                 title: "이동수단 설정",
-                sub: .summary(["버스","지하철","도보"])
+                sub: "버스 > 지하철 > 도보",
+                textColor: .gray2
             ) {
                 print("이동수단 설정 이동")
             }
@@ -138,7 +144,7 @@ struct NotificationSection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "알림 설정",
-                    sub: .comment(vm.notificationStatusText, .mainMint)
+                    sub: vm.notificationStatusText, textColor: .mainMint
                 ) {
                     print("알림 설정 이동")
                 }
@@ -149,7 +155,8 @@ struct NotificationSection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "개인화 학습 데이터",
-                    sub: .comment("오차 로그 수집 중", .gray2)
+                    sub: vm.errorLogSettingText,
+                    textColor: .gray2
                 ) {
                     print("개인화 학습 데이터 이동")
                 }
@@ -165,7 +172,8 @@ struct AppInfoSection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "설정",
-                    sub: .comment("앱 설정 및 정보", .gray2)
+                    sub: "앱 설정 및 정보",
+                    textColor: .gray2
                 ) {
                     print("설정 이동")
                 }

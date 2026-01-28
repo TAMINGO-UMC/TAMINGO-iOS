@@ -46,14 +46,18 @@ struct WeeklyReportSection: View {
             VStack(alignment: .leading, spacing: 12) {
                 header
 
-                HStack() {
-                    ForEach(metrics) { metric in
+                HStack {
+                    ForEach(Array(metrics.enumerated()), id: \.element.id) { index, metric in
                         WeeklyMetricItemView(metric: metric)
-                            .frame(maxWidth: .infinity)
+
+                        if index != metrics.count - 1 {
+                            Spacer(minLength: 0)
+                        }
                     }
                 }
+
             }
-            .padding(.bottom, 16)
+            .padding(16)
             .cardStyle()
             .overlay(
                 RoundedRectangle(cornerRadius: 5)
@@ -110,12 +114,11 @@ struct WeeklyMetricItemView : View {
                 .font(.regular10)
                 .foregroundStyle(metric.textColor)
         }
-        .frame(width: 95, height: 66)
         .padding(.horizontal, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 5)
-                .fill(metric.backgroundColor)
-        )
+        .padding(.vertical, 4)
+        .frame(width: 95, height: 66, alignment: .center)
+        .background(metric.backgroundColor)
+        .cornerRadius(5)
     }
 }
 

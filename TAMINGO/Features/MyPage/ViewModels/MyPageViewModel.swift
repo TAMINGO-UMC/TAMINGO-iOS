@@ -13,44 +13,38 @@ final class MyPageViewModel {
 
     // MARK: - Stored Domain Models (조회 대상)
     var activityTime: ActivityTime
-//    var transportPreference: TransportPreference
-//    var favoritePlaces: [FavoritePlace]
     var notificationSetting: NotificationSetting
-
+    var favoritePlaces : [FavoritePlace]
+    var errorLogSetting : ErrorLogSetting
+    
     // MARK: - Init (Mock 기준)
     init(
         activityTime: ActivityTime = ActivityTimeMock.weekdayDefault,
-//        transportPreference: TransportPreference = TransportPreferenceMock.default,
-//        favoritePlaces: [FavoritePlace] = FavoritePlaceMock.list,
         notificationSetting: NotificationSetting = NotificationSettingMock.allDisabled
     ) {
         self.activityTime = activityTime
-//        self.transportPreference = transportPreference
-//        self.favoritePlaces = favoritePlaces
         self.notificationSetting = notificationSetting
+        self.favoritePlaces = FavoritePlaceMock.default
+        self.errorLogSetting = ErrorLogSettingMock.enabled
     }
 
     // MARK: - 조회용
-
     // 활동 시간 반환
     var activityTimeText: String {
-        "\(activityTime.startTime.toTimeString()) - \(activityTime.endTime.toTimeString())"
+        "\(activityTime.startTime.toString(format: "HH:mm")) - \(activityTime.endTime.toString(format: "HH:mm")) "
     }
-
-//    /// 이동수단 요약 "버스 > 지하철 > 도보"
-//    var transportPreferenceText: String {
-//        transportPreference.orderedTypes
-//            .map { $0.displayName }
-//            .joined(separator: " > ")
-//    }
-//
-//    /// 자주 가는 장소 개수
-//    var favoritePlaceCount: Int {
-//        favoritePlaces.count
-//    }
-//
+    // 자주 가는 장소
+    var favoritePlacesText : String {
+        favoritePlaces.isEmpty ? "등록된 장소 없음" : "\(favoritePlaces.count)개 등록됨"
+    }
     // 알림 상태 텍스트
     var notificationStatusText: String {
         notificationSetting.departAlertEnabled ? "출발 알림 켜짐" : "출발 알림 꺼짐"
     }
+    
+    // 오차 로그 수집
+    var errorLogSettingText: String {
+        errorLogSetting.isEnabled ? "오차 로그 수집 중" : "오차 로그 수집 안 함"
+    }
+    
 }

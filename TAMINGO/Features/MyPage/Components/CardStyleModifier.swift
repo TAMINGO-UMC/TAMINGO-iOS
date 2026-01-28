@@ -11,8 +11,6 @@ struct CardStyleModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
             .background(.white)
             .cornerRadius(5)
             .shadow(

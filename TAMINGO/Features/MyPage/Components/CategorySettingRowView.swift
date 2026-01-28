@@ -10,7 +10,8 @@ import SwiftUI
 
 struct CategorySettingRowView: View {
     let title: String
-    let sub: RowSubContent
+    let sub: String
+    let textColor: Color
     let action:() -> Void
     
     var body: some View {
@@ -20,53 +21,18 @@ struct CategorySettingRowView: View {
                     Text(title)
                         .font(.medium14)
                         .foregroundStyle(.black)
-                    subView
+                    Text(sub)
+                        .font(.regular12)
+                        .foregroundStyle(textColor)
                 }
-                Spacer()
+                Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
                     .resizable()
                     .frame(width: 5, height: 10)
                     .foregroundStyle(.gray2)
             }
         }
-        .frame(width: .infinity)
         .frame(height:61)
-    }
-}
-
-private extension CategorySettingRowView {
-
-    @ViewBuilder
-    var subView: some View {
-        switch sub {
-        case .count(let value):
-            Text("\(value)개")
-                .font(.regular12)
-                .foregroundColor(.gray2)
-
-        case .status(let value, let color):
-            Text("\(value)개 연동됨")
-                .font(.regular12)
-                .foregroundColor(color)
-
-        case .timeRange(let range):
-            Text(range)
-                .font(.regular12)
-                .foregroundColor(.gray2)
-
-        case .summary(let transports):
-            Text(transports.joined(separator: " > ") + " 선호")
-                .font(.caption)
-                .foregroundColor(.gray2)
-        case .placeCount(let count):
-            Text("\(count)개 등록됨")
-                .font(.regular12)
-                .foregroundColor(.gray2)
-        case .comment(let comment, let color):
-            Text(comment)
-                .font(.regular12)
-                .foregroundColor(color)
-        }
     }
 }
 
@@ -75,7 +41,7 @@ private extension CategorySettingRowView {
     VStack(spacing: 0) {
         CategorySettingRowView(
             title: "일정 카테고리",
-            sub: .count(4)
+            sub: "4개", textColor: .gray2
         ) {
             print("일정 카테고리 탭")
         }
@@ -84,7 +50,8 @@ private extension CategorySettingRowView {
 
         CategorySettingRowView(
             title: "캘린더 연동",
-            sub: .status(3, .mint)
+            sub: "3개 연동됨",
+            textColor: .mainMint
         ) {
             print("캘린더 연동 탭")
         }
@@ -93,18 +60,10 @@ private extension CategorySettingRowView {
 
         CategorySettingRowView(
             title: "활동 시간 설정",
-            sub: .timeRange("09:00 - 22:00")
+            sub: "매일 6:00 ~ 22:00",
+            textColor: .gray2
         ) {
             print("활동 시간 설정 탭")
-        }
-
-        Divider()
-
-        CategorySettingRowView(
-            title: "이동수단 설정",
-            sub: .summary(["버스","지하철","도보"])
-        ) {
-            print("이동수단 설정 탭")
         }
     }
 }
