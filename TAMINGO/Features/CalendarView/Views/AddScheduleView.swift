@@ -8,12 +8,8 @@
 import SwiftUI
 
 struct AddScheduleView: View {
+    @Bindable var viewModel: ScheduleViewModel
     @Environment(\.dismiss) var dismiss
-    @State private var viewModel = AddScheduleViewModel()
-    
-    // TODO: ViewModel에 연동, 더 작은 View파일로 나눌 예정
-    @State private var memoInput: String = ""
-    @State private var isTodoExpanded: Bool = true
     @State private var activeSheet: SheetType? = nil
     
     var onSave: (() -> Void)?
@@ -41,6 +37,9 @@ struct AddScheduleView: View {
                 .padding(.bottom, 40)
             }
             bottomButtonSection
+        }
+        .task(id: viewModel.startTime) {
+            viewModel.endTime = viewModel.startTime.addingTimeInterval(3600)
         }
         // MARK: - Sheet (날짜/시간 선택기)
         .sheet(item: $activeSheet) { type in
@@ -178,7 +177,18 @@ private extension AddScheduleView {
                         .foregroundStyle(.gray)
                         .padding(.top, 4)
                 } else {
-                    
+                    HStack {
+                        Text(viewModel.place)
+                            .font(.medium12)
+                        Spacer()
+                        Button("수정") { }
+                            .font(.medium12)
+                            .foregroundStyle(Color.gray)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.gray0)
+                            .cornerRadius(6)
+                    }
                 }
             }
         }
@@ -211,8 +221,17 @@ private extension AddScheduleView {
                     
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Image(systemName: "checkmark.square.fill")
-                                .foregroundStyle(Color.mainMint)
+                            Button {
+                                let demoId = 999 // 예시 ID
+                                if viewModel.relatedTodoIds.contains(demoId) {
+                                    viewModel.relatedTodoIds.removeAll { $0 == demoId }
+                                } else {
+                                    viewModel.relatedTodoIds.append(demoId)
+                                }
+                            } label: {
+                                Image(systemName: viewModel.relatedTodoIds.contains(999) ? "checkmark.square.fill" : "square")
+                                                                    .foregroundStyle(viewModel.relatedTodoIds.contains(999) ? Color.mainMint : Color.gray2)
+                            }
                             Text("도서 반납")
                                 .font(.medium14)
                             Spacer()
@@ -328,9 +347,9 @@ private extension AddScheduleView {
             }
             
             Button {
-                viewModel.saveSchedule {
-                    onSave?()
-                    dismiss()
+                Task {
+                    await viewModel.saveSchedule()
+                    dismiss() // 저장 후 닫기
                 }
             } label: {
                 ZStack {
@@ -397,5 +416,5 @@ private extension AddScheduleView {
 }
 
 #Preview {
-    AddScheduleView()
+    AddScheduleView(viewModel: ScheduleViewModel())
 }

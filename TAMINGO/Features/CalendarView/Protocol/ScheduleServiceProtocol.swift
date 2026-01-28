@@ -42,8 +42,8 @@ class MockScheduleService: ScheduleServiceProtocol {
             // 기본값
             return AIAnalyzeResponse(
                 title: text,
-                place: "장소 미정",
-                category: "CLUB",
+                place: "학교",
+                category: "SCHOOL",
                 startDateTime: now,
                 endDateTime: now.addingTimeInterval(3600)
             )

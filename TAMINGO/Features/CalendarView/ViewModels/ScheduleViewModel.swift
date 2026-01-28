@@ -7,44 +7,120 @@
 
 import SwiftUI
 import Observation
+import Combine
 
 @Observable
 class ScheduleViewModel {
-    
-    // 전체 일정 리스트 (서버에서 받아온 원본)
     var allSchedules: [ScheduleItem] = []
     
-    init() {
-        self.allSchedules = generateDummyData()
+    var titleInput: String = "" {
+        didSet { inputSubject.send(titleInput) }
+    }
+    var place: String = ""
+    var startTime: Date = Date()
+    var endTime: Date = Date().addingTimeInterval(3600)
+    var category: ScheduleCategory = .none
+    var repeatType: RepeatType = .none
+    var repeatEndDate: Date? = nil
+    var memo: String = ""
+    var relatedTodoIds: [Int] = []
+    
+    // 상태 변수
+    var isAnalyzing: Bool = false
+    var isSaving: Bool = false
+    
+    private let service: ScheduleServiceProtocol
+    private var cancellables = Set<AnyCancellable>()
+    private let inputSubject = PassthroughSubject<String, Never>()
+
+    init(service: ScheduleServiceProtocol = MockScheduleService()) {
+        self.service = service
+        self.allSchedules = []
+        setupAIAnalyze()
     }
     
-    // MARK: - 로직: 날짜별 필터링
+    // MARK: - AI 추론 로직 (Combine)
+    private func setupAIAnalyze() {
+        inputSubject
+            .debounce(for: .seconds(1.5), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .filter { !$0.isEmpty }
+            .sink { [weak self] text in
+                self?.analyzeTitleWithAI(text)
+            }
+            .store(in: &cancellables)
+    }
     
-    /// 달력에서 선택한 날짜(selectedDate)에 해당하는 일정만 반환
-    func getSchedules(for date: Date) -> [ScheduleItem] {
-        return allSchedules.filter { schedule in
-            // schedule.startDateTime과 선택된 date가 '같은 날'인지 확인
-            Calendar.current.isDate(schedule.startDateTime, inSameDayAs: date)
+    @MainActor
+    private func analyzeTitleWithAI(_ text: String) {
+        Task {
+            self.isAnalyzing = true
+            do {
+                let result = try await service.analyzeText(text)
+                withAnimation {
+                    self.place = result.place
+                    self.category = ScheduleCategory(rawValue: result.category) ?? .none
+                    self.startTime = result.startDateTime
+                    self.endTime = result.endDateTime
+                }
+            } catch {
+                print("AI 분석 실패: \(error)")
+            }
+            self.isAnalyzing = false
         }
     }
+
+    // MARK: - 저장 로직
+    @MainActor
+    func saveSchedule() async {
+        self.isSaving = true
+        
+        let request = ScheduleSaveRequest(
+            title: titleInput,
+            startTime: startTime.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
+            endTime: endTime.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
+            placeName: place,
+            latitude: "", // 필요한 경우 추가
+            longitude: "",
+            category: category.rawValue,
+            repeatType: repeatType.rawValue,
+            repeatEndDate: repeatEndDate?.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
+            memo: memo,
+            relatedTodoIds: relatedTodoIds
+        )
+        
+        do {
+            let success = try await service.saveSchedule(request)
+            if success {
+                let newId = (allSchedules.map { $0.id }.max() ?? 0) + 1
+                let newItem = ScheduleItem(
+                    id: newId,
+                    title: titleInput,
+                    place: place,
+                    category: category,
+                    startDateTime: startTime,
+                    endDateTime: endTime,
+                    memo: memo
+                )
+                allSchedules.append(newItem)
+                resetInputs()
+            }
+        } catch {
+            print("저장 실패: \(error)")
+        }
+        self.isSaving = false
+    }
     
-    // MARK: - 더미 데이터 생성 (API 연동 전 테스트용)
-    private func generateDummyData() -> [ScheduleItem] {
-        let calendar = Calendar.current
-        let today = Date()
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
-        
-        // 오늘 날짜 기준으로 더미 데이터 생성 (테스트용)
-        let date1 = calendar.date(bySettingHour: 9, minute: 40, second: 0, of: yesterday)!
-        let date2 = calendar.date(bySettingHour: 10, minute: 40, second: 0, of: today)!
-        
-        let date3 = calendar.date(bySettingHour: 14, minute: 00, second: 0, of: today)!
-        let date4 = calendar.date(bySettingHour: 15, minute: 30, second: 0, of: today)!
-        
-        return [
-            ScheduleItem(id: 1, title: "팀플 미팅", place: "S관 301", category: .school, startDateTime: date1, endDateTime: date2, memo: "발표 자료 준비"),
-            ScheduleItem(id: 2, title: "전공 강의", place: "공학관", category: .partTimeJob, startDateTime: date3, endDateTime: date4, memo: nil),
-            ScheduleItem(id: 3, title: "동아리 모임", place: "학생회관", category: .club, startDateTime: date2, endDateTime: date3, memo: nil)
-        ]
+    private func resetInputs() {
+        titleInput = ""
+        place = ""
+        category = .none
+        startTime = Date()
+        endTime = Date().addingTimeInterval(3600)
+        memo = ""
+    }
+    
+    func getSchedules(for date: Date) -> [ScheduleItem] {
+        return allSchedules.filter { Calendar.current.isDate($0.startDateTime, inSameDayAs: date) }
     }
 }

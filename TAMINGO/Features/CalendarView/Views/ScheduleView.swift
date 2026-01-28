@@ -84,10 +84,7 @@ struct ScheduleView: View {
                 calendarVM.setMarkers(from: scheduleVM.allSchedules)
             }
             .sheet(isPresented: $showAddSheet) {
-                AddScheduleView {
-                    // TODO: 저장이 완료되면 실행되는 클로저 추가
-                    // 여기서 리스트 새로고침(fetch)을 수행
-                }
+                AddScheduleView(viewModel: scheduleVM)
             }
         }
     }
