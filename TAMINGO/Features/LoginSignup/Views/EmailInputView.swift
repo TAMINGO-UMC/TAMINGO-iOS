@@ -9,8 +9,8 @@ struct EmailInputView: View {
     @State private var goToIdCreate = false
     @FocusState private var isCodeFocused: Bool
 
-    @State private var isDomainMenuOpen = false      // ✅ 리스트(메뉴) 열렸다고 “간주”하는 상태
-    @State private var didPickDomain = false         // ✅ 한 번이라도 도메인 선택/입력 했는지
+    @State private var isDomainMenuOpen = false      // 리스트 열렸다고 가정하는 상태
+    @State private var didPickDomain = false         // 한 번이라도  선택/입력 했는지
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,10 +34,10 @@ struct EmailInputView: View {
                     .foregroundStyle(Color("Gray2"))
                     .padding(.top, 45)
 
-                // ✅ 인증 완료 시 잠금
+                // 인증 완료 시 잠금
                 let locked = vm.isVerified
 
-                // ✅ 입력 전/후 활성화 상태
+                // 입력 전/후 활성화 상태
                 let isEmailActive = !vm.emailLocal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
                 HStack(spacing: 8) {
@@ -47,12 +47,11 @@ struct EmailInputView: View {
                         .keyboardType(.emailAddress)
                         .font(.medium16)
                         .padding(.vertical, 4)
-                        .disabled(locked) // ✅ 인증 완료 시 입력 잠금
+                        .disabled(locked) // 인증 완료 시 입력 잠금
 
                     Text("@")
                         .font(.semiBold20)
                         .foregroundStyle(isEmailActive ? Color("Gray2") : Color("Gray1"))
-                        .opacity(locked ? 0.6 : 1.0) // (선택) 잠금 느낌
 
                     Menu {
                         ForEach(vm.domainOptions, id: \.self) { d in
@@ -60,7 +59,7 @@ struct EmailInputView: View {
                                 vm.domain = d
                                 if d != "직접입력" { vm.customDomain = "" }
 
-                                didPickDomain = true          // ✅ 선택 이후
+                                didPickDomain = true          //선택 이후
                                 isDomainMenuOpen = false
                             }
                         }
@@ -71,7 +70,7 @@ struct EmailInputView: View {
                             isDomainMenuOpen ? Color("MainMint")
                             : (didPickDomain ? Color("Gray2") : Color("Gray1"))
 
-                        HStack(spacing: 20) {                 // ✅ 텍스트-아이콘 간격 20
+                        HStack(spacing: 20) {
                             Text(vm.isCustomDomain ? "직접입력" : vm.domain)
                                 .font(.medium12)
                                 .foregroundStyle(textColor)
@@ -79,29 +78,29 @@ struct EmailInputView: View {
                             let chevronName = didPickDomain ? "Chevron_under" : "Chevron_under2"
                             let chevronColor: Color = didPickDomain ? Color("Gray2") : Color("Gray1")
 
-                            Image(chevronName)            // ✅ 에셋 사용
+                            Image(chevronName)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 12, height: 12)
-                                .foregroundStyle(chevronColor) // ✅ 초기 Gray1 → 선택 후 Gray2
+                                .foregroundStyle(chevronColor)
                         }
-                        .frame(width: 114, height: 32)        // ✅ 박스 크기
+                        .frame(width: 114, height: 32)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(strokeColor, lineWidth: 1)
                         )
                     }
-                    .disabled(locked) // ✅ 인증 완료 시 도메인 변경 잠금
+                    .disabled(locked) // 인증 완료 시 도메인 변경 잠금
                     .simultaneousGesture(
                         TapGesture().onEnded {
-                            // ✅ 잠겨있으면 열림 상태로 바꾸지 않기
+                            // 잠겨있으면 열림 상태로 바꾸지 않기
                             guard !locked else { return }
                             isDomainMenuOpen = true
                         }
                     )
                 }
 
-                // ✅ 밑줄 색상: 입력 전 Gray1, 입력 후 Gray2
+               
                 Rectangle()
                     .fill(isEmailActive ? Color("Gray2") : Color("Gray1"))
                     .frame(height: 2)
@@ -114,7 +113,7 @@ struct EmailInputView: View {
                         .keyboardType(.URL)
                         .font(.system(size: 14))
                         .padding(.top, 10)
-                        .disabled(locked) // ✅ 인증 완료 시 직접입력도 잠금
+                        .disabled(locked) // 인증 완료 시 직접입력도 잠금
 
                     Rectangle()
                         .fill(Color("Gray1").opacity(0.25))
@@ -166,7 +165,7 @@ struct EmailInputView: View {
             }
         }
         .onChange(of: vm.isVerified) { _, v in
-            // ✅ 인증 완료 순간 메뉴 열림 상태 정리
+            // 인증 완료 후에 메뉴 열림 상태 
             if v { isDomainMenuOpen = false }
         }
     }

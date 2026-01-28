@@ -20,8 +20,7 @@ final class IdCreateViewModel {
     var passwordDone: Bool { !password.isEmpty }
     var confirmDone: Bool { !confirmPassword.isEmpty }
 
-    // ✅ 8~16자 + (영문/숫자/특수문자만 허용)
-    // ✅ "다른 문자가 들어가면" invalid
+    // 8~16자 + (영문/숫자/특수문자만 허용)
     private var passwordAllowedOnly: Bool {
         let pw = password
         let allowedPattern = "^[A-Za-z0-9!@#$%^&*()_+=\\-\\[\\]{};:'\",.<>/?`~\\\\|]+$"

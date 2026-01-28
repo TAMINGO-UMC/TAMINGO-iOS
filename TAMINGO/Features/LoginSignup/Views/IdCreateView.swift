@@ -157,7 +157,7 @@ private struct FieldRow: View {
     }
 
     var body: some View {
-        // ✅ (옵션) 입력칸-밑줄 간격까지 줄이고 싶으면 12 -> 8 정도로
+
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.system(size: 12, weight: .medium))
