@@ -39,14 +39,15 @@ class CalendarViewModel {
         self.displayedMonthDate = calendar.date(from: components) ?? now
     }
     
+    //TODO: 월별 일정 조회 API나오면 2번 수정
     func fetchData() async {
         do {
             // 1. 카테고리 정보 먼저 가져오기 (색상 매핑용)
-            let categoryResponse: BaseResponse<[ScheduleCategoryDTO]> = try await request(target: .getCategories)
+            let categoryResponse: BaseResponse<[ScheduleCategoryDTO]> = try await provider.request(.getCategories)
             updateCategoryMap(with: categoryResponse.result)
             
             // 2. 전체 일정 목록 가져오기
-            let scheduleResponse: BaseResponse<[ScheduleListDTO]> = try await request(target: .getScheduleList)
+            let scheduleResponse: BaseResponse<[ScheduleListDTO]> = try await provider.request(.getScheduleList(date: "2026-01-28"))
             self.allSchedules = scheduleResponse.result
             
             // 3. 마커 생성 (이미 완성된 categoryMap 활용)
@@ -54,25 +55,6 @@ class CalendarViewModel {
             
         } catch {
             print("데이터 로딩 중 에러 발생: \(error)")
-        }
-    }
-    
-    // Moya를 async/await으로 사용하는 헬퍼 함수
-    private func request<T: Decodable>(target: ScheduleTarget) async throws -> T {
-        return try await withCheckedThrowingContinuation { continuation in
-            provider.request(target) { result in
-                switch result {
-                case .success(let response):
-                    do {
-                        let decoded = try JSONDecoder().decode(T.self, from: response.data)
-                        continuation.resume(returning: decoded)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
         }
     }
     
@@ -105,9 +87,6 @@ class CalendarViewModel {
         var markers = dateMarkers[dayKey] ?? []
         let newMarker = Marker(color: color)
         
-        if markers.count >= 3 {
-            markers.removeFirst()
-        }
         markers.append(newMarker)
         dateMarkers[dayKey] = markers
     }
