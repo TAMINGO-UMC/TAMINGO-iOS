@@ -7,6 +7,11 @@
 
 import Foundation
 
+// MARK: - 일정 추가
+struct ScheduleCreationResponseDTO: Decodable {
+    let scheduleId: Int
+}
+
 // MARK: - 일정 목록
 struct ScheduleListDTO: Decodable {
     let scheduleId: Int
@@ -69,6 +74,9 @@ struct ScheduleCategoryDTO: Decodable {
 
 // MARK: - 내 장소 가져오기
 struct MyPlaceDTO: Decodable {
+    let id: Int
     let name: String
     let address: String
+    let latitude: Double
+    let longitude: Double
 }

@@ -44,11 +44,11 @@ class CalendarViewModel {
         do {
             // 1. 카테고리 정보 먼저 가져오기 (색상 매핑용)
             let categoryResponse: BaseResponse<[ScheduleCategoryDTO]> = try await provider.request(.getCategories)
-            updateCategoryMap(with: categoryResponse.result)
+            updateCategoryMap(with: categoryResponse.result ?? [])
             
             // 2. 전체 일정 목록 가져오기
             let scheduleResponse: BaseResponse<[ScheduleListDTO]> = try await provider.request(.getScheduleList(date: "2026-01-28"))
-            self.allSchedules = scheduleResponse.result
+            self.allSchedules = scheduleResponse.result ?? []
             
             // 3. 마커 생성 (이미 완성된 categoryMap 활용)
             self.setMarkers(from: self.allSchedules)

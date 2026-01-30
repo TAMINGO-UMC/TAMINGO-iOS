@@ -26,6 +26,22 @@ struct ScheduleRequestDTO: Encodable {
 }
 
 struct AIInferenceSource: Encodable {
-    let aiSuggestedPlaceName: String
-    let aiSuggestedCategoryName: String
+    var aiSuggestedPlaceName: String
+    var aiSuggestedCategoryName: String
+}
+
+struct ScheduleDTO: Encodable {
+    let title: String
+    let scheduleDate: String
+    let startTime: String
+    let endTime: String
+    let placeName: String?
+    let address: String?
+    let latitude: Double?
+    let longitude: Double?
+    let scheduleCategoryId: Int
+    let memo: String?
+    let repeatType: String
+    let repeatEndDate: String?
+    let linkedTodoIds: [Int]
 }

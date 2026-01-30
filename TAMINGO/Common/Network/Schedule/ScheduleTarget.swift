@@ -156,10 +156,27 @@ extension ScheduleTarget: APITargetType {
             // 내 장소 가져오기
         case .getFavoritePlaces:
             let json = """
-            [
-                {"name": "집", "address": "..."},
-                {"name": "학교", "address": "..."}
-            ]
+            {
+              "isSuccess": true,
+              "code": "SUCCESS-200",
+              "message": "요청에 성공했습니다.",
+              "result": [
+                {
+                  "id": 2,
+                  "name": "중랑구립정보도서관",
+                  "address": "서울 중랑구 신내로15길 197",
+                  "latitude": 37.61524044821545,
+                  "longitude": 127.0869527012108
+                },
+                {
+                  "id": 3,
+                  "name": "광운대학교",
+                  "address": "서울 노원구 광운로 20",
+                  "latitude": 37.6192404638865,
+                  "longitude": 127.058270608867
+                }
+              ]
+            }
             """
             return Data(json.utf8)
             

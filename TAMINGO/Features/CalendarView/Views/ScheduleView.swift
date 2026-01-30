@@ -17,74 +17,58 @@ struct ScheduleView: View {
             CalendarView(
                 calendarViewModel: calendarVM,
                 onDateSelected: { date in
-                    print("선택된 날짜: \(date)")
+                    print("선택된 날짜: \(date.toString(format: "yyyy-MM-dd HH:mm:ss"))")
                 },
                 onAddPress: {
                     showAddSheet.toggle()
                 }
             )
             
-            VStack {
-                HStack(spacing: 12) {
-                    Text("카테고리")
-                        .font(.regular10)
+            HStack {
+                if calendarVM.selectDate.isToday {
+                    Text("오늘 일정   ·")
                         .foregroundStyle(.gray2)
-                    
-                    // Enum을 순회하며 자동으로 뷰 생성
-                    ForEach(ScheduleCategory.allCases, id: \.self) { category in
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(category.color)
-                                .frame(width: 8, height: 8)
-                            
-                            Text(category.title)
-                                .font(.regular12)
-                                .foregroundStyle(.black00)
-                        }
-                    }
-                    
-                    Spacer()
                 }
-                .padding([.horizontal, .bottom])
-                // 선택된 날짜에 맞는 일정 가져오기
-                let todaySchedules = scheduleVM.getSchedules(for: calendarVM.selectDate)
-                
-                HStack {
-                    if calendarVM.selectDate.isToday {
-                        Text("오늘 일정   ·")
-                            .foregroundStyle(.gray2)
-                    }
-                    Text("\(calendarVM.selectedMonth)/\(calendarVM.selectedDay) (\(calendarVM.selectedWeekday))")
-                        .foregroundStyle(.gray2)
-                    Spacer()
-                    Text("\(todaySchedules.count)개") // 필터링된 개수 표시
-                        .foregroundStyle(.mainMint)
-                }
-                .padding(.horizontal)
-                .font(.regular10)
-                
-                ScrollView {
-                    // 필터링된 일정만 표시
-                    if todaySchedules.isEmpty {
-                        Text("일정이 없습니다.")
-                            .font(.regular13)
-                            .foregroundStyle(.gray2)
-                            .padding(.top, 20)
-                    } else {
-                        ForEach(todaySchedules) { schedule in
-                            ScheduleCard(schedule: schedule)
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-                
+                Text("\(calendarVM.selectedMonth)/\(calendarVM.selectedDay) (\(calendarVM.selectedWeekday))")
+                    .foregroundStyle(.gray2)
                 Spacer()
+                Text("\(scheduleVM.todaySchedules.count)개")
+                    .foregroundStyle(.mainMint)
             }
-            .task(id: scheduleVM.allSchedules.count) {
-                calendarVM.setMarkers(from: scheduleVM.allSchedules)
+            .padding(.horizontal)
+            .font(.regular10)
+            
+            ScrollView {
+                // 필터링된 일정만 표시
+                if scheduleVM.todaySchedules.isEmpty {
+                    Text("일정이 없습니다.")
+                        .font(.regular13)
+                        .foregroundStyle(.gray2)
+                        .padding(.top, 20)
+                } else {
+                    ForEach(scheduleVM.todaySchedules, id: \.scheduleId) { schedule in
+                        let color = scheduleVM.categoryMap[schedule.category] ?? .gray
+                        
+                        ScheduleCard(schedule: schedule, color: color)
+                    }
+                    .padding(.horizontal)
+                }
             }
-            .sheet(isPresented: $showAddSheet) {
-                AddScheduleView(viewModel: scheduleVM)
+            
+            Spacer()
+        }
+        .task(id: scheduleVM.todaySchedules.count) {
+            calendarVM.setMarkers(from: scheduleVM.todaySchedules)
+        }
+        .task(id: calendarVM.selectDate) {
+            await scheduleVM.getSchedules(date: calendarVM.selectDate.toString(format: "yyyy-MM-dd"))
+
+        }
+        .sheet(isPresented: $showAddSheet) {
+            AddScheduleView() {
+                Task {
+                    await scheduleVM.getSchedules(date: calendarVM.selectDate.toString(format: "yyyy-MM-dd"))
+                }
             }
         }
     }
