@@ -93,7 +93,6 @@ struct IntroCalenderSection: View {
 
     var appleCalButton: some View {
         Button {
-            vm.didConnectCalendar = true
             // TODO: 애플캘린더 연동 구현
         } label: {
             Text("apple 캘린더 연동하기")
