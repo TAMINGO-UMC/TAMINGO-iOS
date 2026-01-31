@@ -43,7 +43,17 @@ class AddScheduleViewModel {
     }
     var endTime: Date = Date().addingTimeInterval(3600)
     
-    var isTimeValid: Bool { return endTime > startTime }
+    var isTimeValid: Bool {
+        let calendar = Calendar.current
+        
+        let startComp = calendar.dateComponents([.hour, .minute], from: startTime)
+        let endComp = calendar.dateComponents([.hour, .minute], from: endTime)
+        
+        let startTotalMinutes = (startComp.hour ?? 0) * 60 + (startComp.minute ?? 0)
+        let endTotalMinutes = (endComp.hour ?? 0) * 60 + (endComp.minute ?? 0)
+        
+        return endTotalMinutes > startTotalMinutes
+    }
     
     var memo: String = ""
     var repeatType: RepeatType = .none
