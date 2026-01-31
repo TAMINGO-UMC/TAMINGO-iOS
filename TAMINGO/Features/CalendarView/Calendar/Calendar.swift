@@ -171,16 +171,14 @@ struct CalendarHeaderView: View {
             Button {
                 onAddPress?()
             } label: {
-                HStack(spacing: 4) {
-                    Text("추가")
-                    Image(systemName: "plus")
-                }
-                .font(.medium13)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.mainMint)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+                Image(systemName: "plus")
+                    .font(.medium13)
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .foregroundStyle(.mainMint)
+                    )
+                    .foregroundColor(.white)
             }
         }
         .padding(.horizontal, 10)
