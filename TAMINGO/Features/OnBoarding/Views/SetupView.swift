@@ -359,7 +359,7 @@ struct TrafficTimeSectionView: View {
                         activePicker = .arrivalTime
                     } label: {
                         HStack(spacing: 4) {
-                            Text(buffer.title)
+                            Text("\(buffer.rawValue)분 전")
                                 .font(.medium13)
                                 .foregroundStyle(.mainPink)
                             Image("icon_pinkChevron")
@@ -376,7 +376,7 @@ struct TrafficTimeSectionView: View {
                     )
                 }
 
-                Text(buffer.description)
+                Text("T-\(buffer.rawValue)분 기준으로 역산 알림이 전송됩니다.")
                     .font(.regular10)
                     .foregroundStyle(.gray2)
             }
@@ -400,7 +400,7 @@ struct TrafficTimeSectionView: View {
                     buffer = selected
                     activePicker = nil
                 } titleProvider: { item in
-                    item.title
+                    "\(item.rawValue)분 전"
                 }
                 .position(x: buttonFrame.midX , y: buttonFrame.minY - 35)
                 .transition(.scale.combined(with: .opacity))

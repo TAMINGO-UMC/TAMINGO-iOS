@@ -16,13 +16,4 @@ struct Place : Identifiable{
     let longitude: Double
 }
 
-extension Place {
-    func toCreateRequestDTO() -> CreatePlaceRequestDTO {
-        CreatePlaceRequestDTO(
-            name: name,
-            address: address,
-            latitude: latitude,
-            longitude: longitude
-        )
-    }
-}
+

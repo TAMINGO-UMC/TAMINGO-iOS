@@ -90,7 +90,28 @@ final class SetupViewModel {
         guard transportRanks[rank] != type else { return }
         transportRanks[rank] = type
     }
+
+    // MARK: - 도메인 모델 생성
+    func makeActiveTime() -> ActiveTime {
+        ActiveTime(
+            startTime: startTime,
+            endTime: endTime
+        )
+    }
+
+    func makeNotification() -> OnboardingNotification {
+        OnboardingNotification(
+            isEnabled: true,
+            arrivalBuffer: arrivalBuffer
+        )
+    }
     
+    // MARK: 최종 요청 생성
+    func makeOnboardingRequest() -> OnboardingRequestDTO? {
+        guard isValid else { return nil }
+        return OnboardingRequestDTO(viewModel: self)
+    }
+
 
 }
 
