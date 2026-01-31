@@ -20,7 +20,7 @@ struct SelectList<Item: Identifiable & Equatable>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(items) { item in
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 Button {
                     if !isDisabled(item) {
                         onSelect(item)
@@ -46,7 +46,7 @@ struct SelectList<Item: Identifiable & Equatable>: View {
                 }
                 .disabled(isDisabled(item))
 
-                if item != items.last {
+                if index < items.count - 1 {
                     Divider()
                 }
             }

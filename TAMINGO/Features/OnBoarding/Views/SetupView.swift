@@ -439,9 +439,17 @@ struct FormCard: ViewModifier {
 }
 
 
+// 프리뷰용
+struct SetupView_PreviewWrapper: View {
+    @State private var isCompleted: Bool = false
 
+    var body: some View {
+        SetupView(isCompleted: $isCompleted)
+            .padding()
+            .background(Color.gray.opacity(0.1))
+    }
+}
 
-
-//#Preview {
-//    SetupView()
-//}
+#Preview {
+    SetupView_PreviewWrapper()
+}

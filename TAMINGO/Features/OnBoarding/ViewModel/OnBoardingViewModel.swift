@@ -122,7 +122,7 @@ final class OnboardingViewModel {
             step = .intro
             introPage = IntroPage.allCases.last ?? .overview
         case .done:
-            break
+            step = .setup
         }
     }
     

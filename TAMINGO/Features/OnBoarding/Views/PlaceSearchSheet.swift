@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum PlaceSearchStep {
-    case webSearch      // 주소 검색 (웹뷰)
+    case webSearch      // 주소 검색
     case nameInput      // 장소 이름 입력
 }
 
@@ -26,7 +26,7 @@ struct PlaceSearchSheet: View {
 
             switch vm.step {
             case .webSearch:
-                AddressSearchWebView { result in
+                AddressSearchView { result in
                     vm.didSelectAddress(result)
                 }
                 .padding(.horizontal, 30)
@@ -62,21 +62,18 @@ struct PlaceSearchSheet: View {
         HStack {
             Button {
                 vm.reset()
+                dismiss()
             } label: {
-                cancelButton
+                cancelButtonLabel
             }
 
             Button {
-                let place = Place(
-                    name: vm.placeName,
-                    address: vm.address,
-                    latitude: 0,
-                    longitude: 0
-                )
-                onAdd(place)
-                vm.reset()
+                if let place = vm.makePlace() {
+                    onAdd(place)
+                    vm.reset()
+                }
             } label: {
-                addButton
+                addButtonLabel
             }
             .disabled(!vm.canProceed)
         }
@@ -84,37 +81,29 @@ struct PlaceSearchSheet: View {
         .padding(.horizontal,46)
     }
 
-    private var cancelButton: some View {
-        Button(action: {
-            dismiss()
-        }, label: {
-            Text("취소")
-                .frame(maxWidth: .infinity)
-                .frame(height: 47)
-                .font(.semiBold14)
-                .foregroundColor(.gray1)
-                .background(.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(.gray1, lineWidth: 1)
-                )
-                .cornerRadius(5)
-        })
+    private var cancelButtonLabel: some View {
+        Text("취소")
+            .frame(maxWidth: .infinity)
+            .frame(height: 47)
+            .font(.semiBold14)
+            .foregroundColor(.gray1)
+            .background(.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                    .stroke(.gray1, lineWidth: 1)
+            )
+            .cornerRadius(5)
 
     }
 
-    private var addButton: some View {
-        Button(action: {
-            
-        }, label: {
-            Text("장소추가")
-                .frame(maxWidth: .infinity)
-                .frame(height: 47)
-                .font(.semiBold14)
-                .foregroundColor(vm.canProceed ? .white : .gray2)
-                .background(vm.canProceed ? .mainMint : .gray1)
-                .cornerRadius(5)
-        })
+    private var addButtonLabel: some View {
+        Text("장소추가")
+            .frame(maxWidth: .infinity)
+            .frame(height: 47)
+            .font(.semiBold14)
+            .foregroundColor(vm.canProceed ? .white : .gray2)
+            .background(vm.canProceed ? .mainMint : .gray1)
+            .cornerRadius(5)
     }
 }
 
