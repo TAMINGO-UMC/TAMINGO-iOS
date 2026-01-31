@@ -45,3 +45,11 @@ struct ScheduleDTO: Encodable {
     let repeatEndDate: String?
     let linkedTodoIds: [Int]
 }
+
+struct addPlaceDTO: Encodable {
+    let name: String
+    let address: String
+    let latitude: Double
+    let longitude: Double
+    let isAiSuggested: Bool
+}

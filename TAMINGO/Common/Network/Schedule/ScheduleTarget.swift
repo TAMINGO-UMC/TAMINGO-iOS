@@ -13,6 +13,7 @@ enum ScheduleTarget {
     case createSchedule(body: ScheduleRequestDTO)
     case aiInference(title: String)
     case updateSchedule(id: Int, body: ScheduleRequestDTO)
+    case aiFavoritePlaces(body: addPlaceDTO)
     case getFavoritePlaces
     case getScheduleList(date: String)
     case getScheduleDetail(id: Int)
@@ -29,6 +30,8 @@ extension ScheduleTarget: APITargetType {
             return "/api/schedules/ai-inference"
         case .updateSchedule(let id, _):
             return "/api/schedules/\(id)"
+        case .aiFavoritePlaces:
+            return "/api/favorite-places/ai"
         case .getFavoritePlaces:
             return "/api/schedules/favorite-places"
         case .getScheduleList:
@@ -43,7 +46,7 @@ extension ScheduleTarget: APITargetType {
     // MARK: - Method
     var method: Moya.Method {
         switch self {
-        case .createSchedule, .aiInference:
+        case .createSchedule, .aiInference, .aiFavoritePlaces:
             return .post
         case .updateSchedule:
             return .put
@@ -63,6 +66,8 @@ extension ScheduleTarget: APITargetType {
                 parameters: ["title": title],
                 encoding: JSONEncoding.default
             )
+        case .aiFavoritePlaces(let body):
+            return .requestJSONEncodable(body)
             
         case .updateSchedule(_, let body):
             return .requestJSONEncodable(body)
@@ -176,6 +181,17 @@ extension ScheduleTarget: APITargetType {
                   "longitude": 127.058270608867
                 }
               ]
+            }
+            """
+            return Data(json.utf8)
+            
+        case .aiFavoritePlaces:
+            let json = """
+            {
+              "isSuccess": true,
+              "code": "SUCCESS-201",
+              "message": "리소스가 생성되었습니다.",
+              "result": 1
             }
             """
             return Data(json.utf8)

@@ -65,7 +65,7 @@ struct TodoSummaryDTO: Decodable {
 }
 
 // MARK: - 카테고리 정보
-struct ScheduleCategoryDTO: Decodable {
+struct ScheduleCategoryDTO: Decodable, Identifiable{
     let id: Int
     let name: String
     let iconCode: String
@@ -73,7 +73,7 @@ struct ScheduleCategoryDTO: Decodable {
 }
 
 // MARK: - 내 장소 가져오기
-struct MyPlaceDTO: Decodable {
+struct MyPlaceDTO: Decodable, Identifiable {
     let id: Int
     let name: String
     let address: String
