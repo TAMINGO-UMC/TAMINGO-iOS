@@ -42,7 +42,10 @@ extension AddScheduleView {
             }
             Button {
                 Task {
-                    _ = await viewModel.createSchedule()
+                    let success = await viewModel.createSchedule()
+                    if success {
+                        onSave?()  // 일정 목록 새로고침
+                    }
                     dismiss()
                 }
             } label: {

@@ -57,7 +57,7 @@ struct ScheduleView: View {
             
             Spacer()
         }
-        .task(id: scheduleVM.todaySchedules.count) {
+        .task(id: scheduleVM.todaySchedules.map { $0.scheduleId }) {
             calendarVM.setMarkers(from: scheduleVM.todaySchedules)
         }
         .task(id: calendarVM.selectDate) {
