@@ -30,7 +30,12 @@ class AddScheduleViewModel {
     
     // MARK: - Input Properties
     var title: String = "" {
-        didSet { inputSubject.send(title) }
+        didSet {
+            // 이전 값과 다를 때만 이벤트를 방출하여 불필요한 로딩 방지
+            if title != oldValue {
+                inputSubject.send(title)
+            }
+        }
     }
     
     var scheduleDate: Date = Date()
@@ -84,31 +89,28 @@ class AddScheduleViewModel {
     
     // MARK: - Binding Logic
     func bindInputs() {
-        // 1. [즉시 반응] 입력 감지 시 로딩 ON
+        // 1. [즉시 실행] 사용자가 타이핑을 시작하자마자 로딩 상태를 true로 변경
         inputSubject
-            .receive(on: RunLoop.main)
-            .sink { [weak self] query in
-                guard let self = self else { return }
-                
-                if !query.trimmingCharacters(in: .whitespaces).isEmpty {
-                    self.isLoading = true
+            .sink { [weak self] text in
+                if !text.isEmpty {
+                    self?.isLoading = true
                 } else {
-                    self.isLoading = false
-                    self.resetInferredData()
+                    // 만약 글자를 다 지우면 로딩도 끄고 데이터도 초기화
+                    self?.isLoading = false
+                    self?.resetInferredData()
                 }
             }
             .store(in: &cancellables)
-        
-        // 2. [지연 반응] API 호출
+
+        // 2. [지연 실행] 1초간 입력이 없을 때만 실제 AI API 호출
         inputSubject
-            .debounce(for: .seconds(0.8), scheduler: RunLoop.main)
+            .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
             .removeDuplicates()
-            .sink { [weak self] query in
-                guard let self = self else { return }
-                
-                if !query.trimmingCharacters(in: .whitespaces).isEmpty {
-                    self.performAIInference(query: query)
-                }
+            .filter { !$0.isEmpty }
+            .sink { [weak self] text in
+                // 여기서 performAIInference가 실행되며,
+                // 내부의 Moya closure에서 마지막에 isLoading = false가 호출됩니다.
+                self?.performAIInference(query: text)
             }
             .store(in: &cancellables)
     }
