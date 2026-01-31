@@ -20,11 +20,11 @@ struct IntroOverViewSection: View {
     
     var featureCards: some View {
         VStack(spacing:14.41){
-            FeatureCard(icon: Image("OnBoarding_icon_cal"), title: "하루 일과 보드 제공", text: "일정, To-do, 이동 시간이 모두 정리된 '오늘의 일과 보드'를 제공해요", highlights: ["'오늘의 일과 보드'"])
+            FeatureCard(icon: Image("OnBoarding_icon_cal"), title: "하루 일과 보드 제공", text: "일정, To-do, 이동 시간이 모두 정리된\n'오늘의 일과 보드'를 제공해요", highlights: ["'오늘의 일과 보드'"])
             
-            FeatureCard(icon: Image("OnBoarding_icon_noti"), title: "지각 없는 모닝 브리핑", text: "매일 아침, 오늘 하루 스케줄을 미리 확인하고 놓칠 일을 점검해 드려요", highlights: ["오늘 하루 스케줄을 미리 확인"])
+            FeatureCard(icon: Image("OnBoarding_icon_noti"), title: "지각 없는 모닝 브리핑", text: "매일 아침, 오늘 하루 스케줄을 미리 확인하고\n놓칠 일을 점검해 드려요", highlights: ["오늘 하루 스케줄을 미리 확인"])
             
-            FeatureCard(icon: Image("OnBoarding_icon_time"), title: "정시 도착 보장", text: "실시간 교통을 역산하여 지각 없는 최적의 출발 시각을 알려드려요", highlights: ["실시간 교통을 역산"])
+            FeatureCard(icon: Image("OnBoarding_icon_time"), title: "정시 도착 보장", text: "실시간 교통을 역산하여 지각 없는\n최적의 출발 시각을 알려드려요", highlights: ["실시간 교통을 역산"])
         }
         .shadow(
             color: .black.opacity(0.05),
@@ -48,9 +48,9 @@ struct IntroFlowSection: View {
     
     var featureCards: some View {
         VStack(spacing:14.41){
-            FeatureCard(icon: Image("OnBoarding_icon_earth"), title: "이동경로에 경유지 통합", text: "다음 일정으로 가는 길에 위치한 책 반납하기 등 장소 기반 To-do를\n자동으로 포함하여 가장 효율적인 동선을 설계해요", highlights: ["다음 일정으로 가는 길","장소 기반 To-do를\n자동으로 포함하여"])
+            FeatureCard(icon: Image("OnBoarding_icon_earth"), title: "이동경로에 경유지 통합", text: "다음 일정으로 가는 길에 위치한 책 반납하기 등\n장소 기반 To-do를 자동으로 포함하여\n가장 효율적인 동선을 설계해요", highlights: ["다음 일정으로 가는 길","장소 기반 To-do를 자동으로 포함하여"])
             
-            FeatureCard(icon: Image("OnBoarding_icon_todo"), title: "이동 중 비실행 To-do 처리", text: "대중교통 이용 시간 등 이동 중에 발생하는 틈새 시간을 활용하여\n회의록 확인 등 장소 무관 To-do를 처리하도록 제안해요", highlights: ["틈새 시간을 활용","장소 무관 To-do를 처리하도록 제안"])
+            FeatureCard(icon: Image("OnBoarding_icon_todo"), title: "이동 중 비실행 To-do 처리", text: "대중교통 이용 시간 등 이동 중에 발생하는 틈새 시간을\n활용하여 회의록 확인 등 장소 무관 To-do를\n처리하도록 제안해요", highlights: ["틈새 시간을 활용","장소 무관 To-do를\n처리하도록 제안"])
         }
         .shadow(
             color: .black.opacity(0.05),
@@ -152,7 +152,7 @@ struct IntroPermissionSection: View {
             FeatureCard(
                 icon: Image("OnBoarding_icon_pick"),
                 title: "위치권한 : 정시 도착의 책임감을 위해",
-                text: "지금 어디 계시는지 알아야 출발 시간 역산과\n경로상의 To-do를 정확히 추천해 드릴 수 있어요",
+                text: "지금 어디 계시는지 알아야 출발 시간 역산과 경로상의 To-do를 정확히 추천해 드릴 수 있어요",
                 highlights: []
             )
 
