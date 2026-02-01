@@ -55,6 +55,7 @@ struct CalendarView: View {
                         .stroke(Color(red: 0.95, green: 0.96, blue: 0.96), lineWidth: 0.07781)
                     
                 )
+                categories
             }
             .padding(contentPadding)
             .gesture(
@@ -72,6 +73,31 @@ struct CalendarView: View {
                 : nil
             )
         }
+        .task {
+            await calendarViewModel.fetchData()
+        }
+    }
+    
+    var categories: some View {
+        HStack(spacing: 12) {
+            Text("카테고리")
+                .font(.regular10)
+                .foregroundStyle(.gray2)
+            ForEach(calendarViewModel.categories, id: \.key) { category in
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(category.value)
+                        .frame(width: 8, height: 8)
+                    
+                    Text(category.key)
+                        .font(.regular12)
+                        .foregroundStyle(.black00)
+                }
+            }
+            
+            Spacer()
+        }
+        .padding(.top)
     }
 }
 
@@ -145,16 +171,14 @@ struct CalendarHeaderView: View {
             Button {
                 onAddPress?()
             } label: {
-                HStack(spacing: 4) {
-                    Text("추가")
-                    Image(systemName: "plus")
-                }
-                .font(.medium13)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.mainMint)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+                Image(systemName: "plus")
+                    .font(.medium13)
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .foregroundStyle(.mainMint)
+                    )
+                    .foregroundColor(.white)
             }
         }
         .padding(.horizontal, 10)
@@ -257,11 +281,5 @@ struct DateButton: View {
 }
 
 #Preview {
-    let viewModel = CalendarViewModel()
-    
-    // 프리뷰가 로드될 때 마커 데이터 주입
-    viewModel.addMarker(for: Date(), color: .red)
-    viewModel.addMarker(for: Date(), color: .blue)
-    
-    return CalendarView(calendarViewModel: viewModel)
+    CalendarView(calendarViewModel: CalendarViewModel())
 }

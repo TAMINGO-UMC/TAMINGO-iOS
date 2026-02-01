@@ -10,6 +10,7 @@ enum SheetType: Identifiable {
     case startTime
     case endTime
     case repeatType
+    case repeatEndDate
     
     var id: Self { self }
 }

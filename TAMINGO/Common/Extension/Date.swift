@@ -66,4 +66,28 @@ extension String {
         }
         return date
     }
+    
+    func toDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.date(from: self)
+    }
+    
+    func toTimeStr(format: String) -> String {
+        let inputFormatter = DateFormatter()
+        // 들어오는 데이터 형식
+        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        inputFormatter.locale = Locale(identifier: "ko_KR") // 포맷 고정 필수
+        
+        guard let date = inputFormatter.date(from: self) else {
+            return "" // 변환 실패 시 빈 문자열 반환
+        }
+        
+        // 원하는 데이터 형식
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = format
+        
+        return outputFormatter.string(from: date)
+    }
 }

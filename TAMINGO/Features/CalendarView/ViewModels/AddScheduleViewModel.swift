@@ -2,113 +2,116 @@
 //  AddScheduleViewModel.swift
 //  TAMINGO
 //
-//  Created by 김도연 on 1/23/26.
+//  Created by 김도연 on 1/31/26.
 //
 
 import SwiftUI
+import Observation
 import Combine
+import Moya
 
 @Observable
 class AddScheduleViewModel {
-    // UI 바인딩 변수들
-    var titleInput: String = "" {
+    // MARK: - Dependencies
+    let provider = MoyaProvider<ScheduleTarget>(
+        stubClosure: MoyaProvider.delayedStub(1.0),
+        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
+    )
+    var cancellables = Set<AnyCancellable>()
+    let inputSubject = PassthroughSubject<String, Never>()
+    
+    // MARK: - State Properties
+    var isLoading: Bool = false
+    var isEditing: Bool = false
+    var isTodoExpanded: Bool = false
+    
+    var categories: [ScheduleCategoryDTO] = []
+    var myPlaces: [MyPlaceDTO] = []
+    
+    // MARK: - Input Properties
+    var title: String = "" {
         didSet {
-            // Observable 매크로에서는 didSet으로 Combine 연결이 까다로울 수 있어,
-            // View의 .onChange 혹은 별도 Subject로 이벤트를 전달합니다.
-            inputSubject.send(titleInput)
+            // 이전 값과 다를 때만 이벤트를 방출하여 불필요한 로딩 방지
+            if title != oldValue {
+                inputSubject.send(title)
+            }
         }
     }
     
-    var place: String = ""
-    var startTime: Date = Date()
+    var scheduleDate: Date = Date()
+    var startTime: Date = Date() {
+        didSet {
+            if endTime <= startTime {
+                endTime = startTime.addingTimeInterval(3600)
+            }
+        }
+    }
     var endTime: Date = Date().addingTimeInterval(3600)
-    var placeName: String = ""
-    var latitude: String = ""
-    var longitude: String = ""
-    var category: ScheduleCategory = .none
-    var repeatType: RepeatType = .none
-    var repeatEndDate: Date? = nil
-    var memo: String = ""
-    var relatedTodoIds: [Int] = []
     
-    var isAnalyzing: Bool = false // AI 분석중 로딩
-    var isSaving: Bool = false    // 저장중 로딩
-    
-    // Combine
-    private var cancellables = Set<AnyCancellable>()
-    private let inputSubject = PassthroughSubject<String, Never>() // 입력을 받을 통로
-    
-    // 서비스 주입
-    private let service: ScheduleServiceProtocol
-    
-    init(service: ScheduleServiceProtocol = MockScheduleService()) {
-        self.service = service
-        setupCombine()
+    var isTimeValid: Bool {
+        let calendar = Calendar.current
+        
+        let startComp = calendar.dateComponents([.hour, .minute], from: startTime)
+        let endComp = calendar.dateComponents([.hour, .minute], from: endTime)
+        
+        let startTotalMinutes = (startComp.hour ?? 0) * 60 + (startComp.minute ?? 0)
+        let endTotalMinutes = (endComp.hour ?? 0) * 60 + (endComp.minute ?? 0)
+        
+        return endTotalMinutes > startTotalMinutes
     }
     
-    private func setupCombine() {
+    var memo: String = ""
+    var repeatType: RepeatType = .none
+    var repeatEndDate: Date = Date()
+    
+    // MARK: - AI Inference Properties
+    var placeName: String = ""
+    var address: String = ""
+    var latitude: Double?
+    var longitude: Double?
+    
+    var scheduleCategoryId: Int = 0
+    var categoryName: String = ""
+    
+    var nearbyTodos: [TodoSummaryDTO] = []
+    var candidateTodos: [TodoSummaryDTO] = []
+    var linkedTodoIds: [Int] = []
+    
+    var isFavoriteRecommendation: Bool = false
+    var aiInferenceSource = AIInferenceSource(aiSuggestedPlaceName: "", aiSuggestedCategoryName: "")
+    
+    // MARK: - Initializer
+    init() {
+        bindInputs()
+        loadCategories()
+        loadFavoritePlaces()
+    }
+    
+    // MARK: - Binding Logic
+    func bindInputs() {
+        // 1. [즉시 실행] 사용자가 타이핑을 시작하자마자 로딩 상태를 true로 변경
         inputSubject
-            .debounce(for: .seconds(1.0), scheduler: RunLoop.main) // 1초 동안 입력 없으면
-            .removeDuplicates()                                    // 같은 내용이면 무시
-            .filter { !$0.isEmpty }                                // 빈 문자열 제외
             .sink { [weak self] text in
-                self?.triggerAIAnalysis(text: text)                // AI 호출
+                if !text.isEmpty {
+                    self?.isLoading = true
+                } else {
+                    // 만약 글자를 다 지우면 로딩도 끄고 데이터도 초기화
+                    self?.isLoading = false
+                    self?.resetInferredData()
+                }
             }
             .store(in: &cancellables)
-    }
-    
-    // AI 분석 요청
-    @MainActor
-    private func triggerAIAnalysis(text: String) {
-        self.isAnalyzing = true
-        
-        Task {
-            do {
-                let result = try await service.analyzeText(text)
-                
-                // 결과 UI 반영
-                withAnimation {
-                    self.place = result.place
-                    self.category = ScheduleCategory(rawValue: result.category) ?? .none
-                    self.startTime = result.startDateTime
-                    self.endTime = result.endDateTime
-                }
-            } catch {
-                print("AI 분석 실패: \(error)")
+
+        // 2. [지연 실행] 1초간 입력이 없을 때만 실제 AI API 호출
+        inputSubject
+            .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .filter { !$0.isEmpty }
+            .sink { [weak self] text in
+                // 여기서 performAIInference가 실행되며,
+                // 내부의 Moya closure에서 마지막에 isLoading = false가 호출됩니다.
+                self?.performAIInference(query: text)
             }
-            self.isAnalyzing = false
-        }
-    }
-    
-    // 최종 저장 요청
-    @MainActor
-    func saveSchedule(completion: @escaping () -> Void) {
-        self.isSaving = true
-        
-        Task {
-            let request = ScheduleSaveRequest(
-                title: titleInput,
-                startTime: startTime.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
-                endTime: endTime.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
-                placeName: place,
-                latitude: latitude,
-                longitude: longitude,
-                category: category.rawValue, // "SCHOOL"
-                repeatType: repeatType.rawValue,
-                repeatEndDate: repeatEndDate?.toString(format: "yyyy-MM-dd'T'HH:mm:ss"),
-                memo: memo,
-                relatedTodoIds: relatedTodoIds
-            )
-            
-            do {
-                let success = try await service.saveSchedule(request)
-                if success {
-                    completion() // 화면 닫기 등 후처리
-                }
-            } catch {
-                print("저장 실패")
-            }
-            self.isSaving = false
-        }
+            .store(in: &cancellables)
     }
 }

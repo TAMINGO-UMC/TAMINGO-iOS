@@ -8,31 +8,32 @@
 import SwiftUI
 
 struct ScheduleCard: View {
-    let schedule: ScheduleItem
+    let schedule: ScheduleListDTO
+    let color: Color
     
     var body: some View {
         HStack(spacing: 10) {
             Capsule()
-                .fill(schedule.color)
+                .fill(color)
                 .frame(width: 4)
             
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text("\(schedule.startTimeString)  \(schedule.title)")
+                    Text("\(schedule.startTime.toTimeStr(format: "HH:mm"))  \(schedule.title)")
                         .font(.medium14)
                         .foregroundStyle(.black00)
                     
-                    Text(schedule.category.title)
+                    Text(schedule.category)
                         .font(.medium12)
-                        .foregroundStyle(schedule.color)
+                        .foregroundStyle(color)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(schedule.color.opacity(0.15))
+                                .fill(color.opacity(0.15))
                         )
                 }
-                Text("\(schedule.endTimeString)  \(schedule.place)")
+                Text("\(schedule.endTime.toTimeStr(format: "HH:mm"))  \(schedule.placeName)")
                     .font(.medium12)
                     .foregroundStyle(.gray2)
             }
