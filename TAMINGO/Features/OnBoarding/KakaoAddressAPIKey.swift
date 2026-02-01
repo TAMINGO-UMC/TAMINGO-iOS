@@ -9,9 +9,13 @@ import Foundation
 
 enum KakaoAddressAPIKey {
     static let kakao: String = {
-        guard let key = Bundle.main.infoDictionary?["KAKAO_API_KEY"] as? String else {
+        guard let key = Bundle.main.object(
+            forInfoDictionaryKey: "KAKAO_API_KEY"
+        ) as? String else {
             fatalError("KAKAO_API_KEY not found")
         }
         return key
     }()
+    
+    
 }
