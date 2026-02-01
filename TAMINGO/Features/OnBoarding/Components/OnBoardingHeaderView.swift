@@ -14,7 +14,7 @@ struct OnboardingHeaderView: View {
     var body: some View {
         VStack(spacing: 9) {
             Text(title)
-                .font(.system(size: 22, weight: .bold)) // TODO: 폰트 변경 필요
+                .font(.onboarding1)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 

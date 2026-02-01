@@ -20,7 +20,7 @@ struct StepIndicatorView: View {
                 .frame(width: 16, height: 16)
                 .overlay(
                     Text("\(currentStep)")
-                        .font(.regular09) // TODO: regular10 변경 필요
+                        .font(.regular10) 
                         .foregroundColor(.white)
                 )
             DottedGradientLineView()

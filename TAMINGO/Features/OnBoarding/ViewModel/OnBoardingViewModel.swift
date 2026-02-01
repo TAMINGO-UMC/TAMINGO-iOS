@@ -18,7 +18,6 @@ final class OnboardingViewModel {
     let totalPages: Int = IntroPage.allCases.count + 1
     
     // MARK: - Intro 완료 조건들
-    var didConnectCalendar: Bool = false
     var didGrantPermission: Bool = false
 
     // MARK: - Setup 완료 여부
@@ -41,7 +40,7 @@ final class OnboardingViewModel {
         case .overview:
             return true
         case .calendar:
-            return didConnectCalendar
+            return true
         case .flow:
             return true
         case .permission:
@@ -123,7 +122,7 @@ final class OnboardingViewModel {
             step = .intro
             introPage = IntroPage.allCases.last ?? .overview
         case .done:
-            break
+            step = .setup
         }
     }
     
