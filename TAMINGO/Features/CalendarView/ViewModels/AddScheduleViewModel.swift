@@ -101,7 +101,7 @@ class AddScheduleViewModel {
                 }
             }
             .store(in: &cancellables)
-
+        
         // 2. [지연 실행] 1초간 입력이 없을 때만 실제 AI API 호출
         inputSubject
             .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
@@ -113,5 +113,18 @@ class AddScheduleViewModel {
                 self?.performAIInference(query: text)
             }
             .store(in: &cancellables)
+    }
+    
+    func updateRepeatEndDate(isEnabled: Bool) {
+        if isEnabled {
+            // 활성화 시: 오늘 날짜로 초기화
+            self.repeatEndDate = Date()
+        } else {
+            // 비활성화 시: 먼 미래로 설정
+            let components = DateComponents(year: 2999, month: 12, day: 31)
+            if let farFuture = Calendar.current.date(from: components) {
+                self.repeatEndDate = farFuture
+            }
+        }
     }
 }
