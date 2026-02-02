@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Observation
+import Moya
 
 /// 캘린더 마커를 위한 구조체. 마커의 색상을 정의
 struct Marker: Hashable {
@@ -16,13 +17,17 @@ struct Marker: Hashable {
 
 @Observable
 class CalendarViewModel {
+    private let provider = MoyaProvider<ScheduleTarget>(stubClosure: MoyaProvider.immediatelyStub)
     // Observation에서는 프로퍼티가 ObservationIgnored가 아닌 이상 자동으로 추적됩니다.
     private let calendar = Calendar.current
     
     var selectDate: Date = Date()
     var previousMonth: Int = 0
     
+    var categoryMap: [String: Color] = [:]
     var dateMarkers: [Date: [Marker]] = [:]
+    var allSchedules: [ScheduleListDTO] = []
+    var categories: [(key: String, value: Color)] = []
     
     var displayedMonthDate: Date = Date()
     
@@ -34,14 +39,45 @@ class CalendarViewModel {
         self.displayedMonthDate = calendar.date(from: components) ?? now
     }
     
+    //TODO: 월별 일정 조회 API나오면 2번 수정
+    func fetchData() async {
+        do {
+            // 1. 카테고리 정보 먼저 가져오기 (색상 매핑용)
+            let categoryResponse: BaseResponse<[ScheduleCategoryDTO]> = try await provider.request(.getCategories)
+            updateCategoryMap(with: categoryResponse.result ?? [])
+            
+            // 2. 전체 일정 목록 가져오기
+            let scheduleResponse: BaseResponse<[ScheduleListDTO]> = try await provider.request(.getScheduleList(date: "2026-01-28"))
+            self.allSchedules = scheduleResponse.result ?? []
+            
+            // 3. 마커 생성 (이미 완성된 categoryMap 활용)
+            self.setMarkers(from: self.allSchedules)
+            
+        } catch {
+            print("데이터 로딩 중 에러 발생: \(error)")
+        }
+    }
+    
+    private func updateCategoryMap(with categories: [ScheduleCategoryDTO]) {
+        var newMap: [String: Color] = [:]
+        for cat in categories {
+            newMap[cat.name] = Color(hex: cat.colorCode)
+        }
+        self.categoryMap = newMap
+        self.categories = newMap.sorted { $0.key < $1.key }
+    }
+    
     // MARK: - 마커 관리
-    func setMarkers(from schedules: [ScheduleItem]) {
-        // 기존 마커 초기화 (중복 방지)
+    func setMarkers(from schedules: [ScheduleListDTO]) {
         clearAllMarkers()
         
-        // 일정 리스트를 순회하며 마커 생성
         for schedule in schedules {
-            addMarker(for: schedule.startDateTime, color: schedule.category.color)
+            // 매핑된 색상이 없으면 기본색(gray) 사용
+            let color = categoryMap[schedule.category] ?? .gray
+            
+            if let date = schedule.startTime.toDate() {
+                addMarker(for: date, color: color)
+            }
         }
     }
 
@@ -51,9 +87,6 @@ class CalendarViewModel {
         var markers = dateMarkers[dayKey] ?? []
         let newMarker = Marker(color: color)
         
-        if markers.count >= 3 {
-            markers.removeFirst()
-        }
         markers.append(newMarker)
         dateMarkers[dayKey] = markers
     }

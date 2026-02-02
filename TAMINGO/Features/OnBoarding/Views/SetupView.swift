@@ -8,7 +8,10 @@
 import SwiftUI
 import UIKit
 
-
+enum ActivePicker : Equatable {
+    case transport(rank: Int)
+    case arrivalTime
+}
 
 struct SetupView: View {
     
@@ -17,6 +20,9 @@ struct SetupView: View {
     
     @State private var isStartActive: Bool = false
     @State private var isEndActive: Bool = false
+    @State private var isPlaceSearchPresented = false
+    @State private var activePicker: ActivePicker? = nil
+
 
 
     var body: some View {
@@ -25,17 +31,20 @@ struct SetupView: View {
                 TimeSectionView(
                     startTime: $vm.startTime,
                     endTime: $vm.endTime,
-                    isStartActive: $isStartActive,
-                    isEndActive: $isEndActive
+                    didSelectStartTime: $vm.didSelectStartTime,
+                    didSelectEndTime: $vm.didSelectEndTime
                 )
 
                 PlacesSectionView(
-                    searchPlace: $vm.searchAddress,
-                    placeName: $vm.placeName
+                    isPlaceSearchPresented: $isPlaceSearchPresented,
+                    places: vm.places,
+                    onDelete: { place in
+                        vm.removePlace(place)
+                    }
                 )
 
-                TrafficSectionView(vm: $vm)
-                TrafficTimeSectionView(buffer: $vm.arrivalBuffer)
+                TrafficSectionView(vm: $vm, activePicker: $activePicker)
+                TrafficTimeSectionView(buffer: $vm.arrivalBuffer, activePicker: $activePicker)
             }
             .padding(.vertical,10)
         }
@@ -44,79 +53,129 @@ struct SetupView: View {
         .onChange(of: vm.isValid) { _, newValue in
             isCompleted = newValue
         }
+        .sheet(isPresented: $isPlaceSearchPresented) {
+            PlaceSearchSheet { place in
+                vm.addPlace(place)
+                isPlaceSearchPresented = false
+            }
+            .presentationDetents([.height(701)])
+            .presentationBackground(.white)
+        }
     }
+    
+
+
 }
 
 struct TimeSectionView: View {
     @Binding var startTime: Date
     @Binding var endTime: Date
-
-    @Binding var isStartActive: Bool
-    @Binding var isEndActive: Bool
     
+    @Binding var didSelectStartTime: Bool
+    @Binding var didSelectEndTime: Bool
+
+    @State private var activeTimePicker: TimePickerType? = nil
+
+
+    enum TimePickerType {
+        case start
+        case end
+    }
+
     var body: some View {
         VStack(spacing: 12) {
+
             TimeRow(
                 title: "주요 활동 시작 시각",
-                isSelected: isStartActive,
+                isHighlighted: activeTimePicker == .start,   // 카드 보더
+                isFilled: didSelectStartTime,                // 캡슐 색상
                 backgroundColor: .subMint,
                 highlightColor: .mainMint,
                 date: $startTime,
+                onActivate: {
+                    activeTimePicker = .start
+                },
+                onDismiss: {
+                    if activeTimePicker == .start {
+                        activeTimePicker = nil
+                    }
+                },
                 onTimeChanged: {
-                    isStartActive = true
+                    didSelectStartTime = true
                 }
             )
 
             TimeRow(
                 title: "주요 활동 종료 시각",
-                isSelected: isEndActive,
+                isHighlighted: activeTimePicker == .end,
+                isFilled: didSelectEndTime,
                 backgroundColor: .subPink,
                 highlightColor: .mainPink,
                 date: $endTime,
+                onActivate: {
+                    activeTimePicker = .end
+                },
+                onDismiss: {
+                    if activeTimePicker == .end {
+                        activeTimePicker = nil
+                    }
+                },
                 onTimeChanged: {
-                    isEndActive = true
+                    didSelectEndTime = true
                 }
             )
         }
     }
 }
 
+
 struct TimeRow: View {
     let title: String
-    let isSelected: Bool
+    let isHighlighted: Bool   // 카드 보더
+    let isFilled: Bool        // 캡슐 색상
+
     let backgroundColor: Color
     let highlightColor: Color
-    
+
     @Binding var date: Date
-    
+
+    let onActivate: () -> Void
+    let onDismiss: () -> Void
     let onTimeChanged: () -> Void
-    
 
     var body: some View {
         HStack {
             Text(title)
                 .font(.semiBold16)
+
             Spacer()
+
             CapsuleTimePicker(
                 date: $date,
-                isSelected: isSelected,
+                isSelected: isFilled,
                 backgroundColor: backgroundColor,
                 highlightColor: highlightColor,
+                onActivate: onActivate,
+                onDismiss: onDismiss,
                 onTimeChanged: onTimeChanged
             )
         }
-        .modifier(FormCard())
+        .modifier(FormCard(isHighlighted: isHighlighted))
     }
 }
+ 
+
 
 struct PlacesSectionView: View {
-    @Binding var searchPlace: String
-    @Binding var placeName: String
-
+    @Binding var isPlaceSearchPresented: Bool
+    let places: [Place]
+    let onDelete: (Place) -> Void
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
             header
             inputRow
+            placeList
         }
         .modifier(FormCard())
     }
@@ -135,168 +194,226 @@ struct PlacesSectionView: View {
 
     private var inputRow: some View {
         HStack {
-            addressInput
+            Button (action:{
+                isPlaceSearchPresented = true
+            }, label: {
+                VStack(spacing: 5){
+                    Group{
+                        HStack(){
+                            Text("도로명, 지번, 건물명 검색")
+                                .font(.regular12)
+                                .foregroundStyle(.gray2)
+                            Spacer()
+                            Image("icon_search")
+                                .frame(width: 21.466, height: 21.466)
+                            
+                        }
+                        Divider()
+                    }
+                    .frame(width: 196)
+                }
+            })
             Spacer()
-            nameInput
+            
+            Button (action : {
+                isPlaceSearchPresented = true
+            }, label: {
+                VStack {
+                    Text("장소 이름")
+                        .font(.regular12)
+                        .foregroundStyle(.gray2)
+                        .multilineTextAlignment(.center)
+                    Divider()
+                }
+                .frame(width: 66)
+            } )
+            
         }
     }
-
-    private var addressInput: some View {
-        VStack(spacing: 5) {
-            HStack {
-                TextField("도로명, 지번, 건물명 검색", text: $searchPlace)
-                    .font(.regular12)
-                Button (action:{
-                    // TODO: 장소 검색 및 등록 기능 구현
-                }, label: {
-                    Image("icon_search")
-                })
-                .frame(width: 21.466, height: 21.466)
+    
+    private var placeList: some View {
+        VStack(spacing: 4) {
+            ForEach(places) { place in
+                PlaceListRow(
+                    address: place.address,
+                    name: place.name,
+                    onDelete: {
+                        onDelete(place)
+                    }
+                )
             }
-            Divider()
         }
-        .frame(width: 196)
-    }
 
-    private var nameInput: some View {
-        VStack {
-            TextField("장소 이름", text: $placeName)
-                .font(.regular12)
-                .multilineTextAlignment(.center)
-            Divider()
-        }
-        .frame(width: 66)
     }
 }
 
 
 struct TrafficSectionView: View {
     @Binding var vm: SetupViewModel
-    
-    @State private var showPicker = false
-    @State private var selectedRank: Int = 1
+    @Binding var activePicker: ActivePicker?
+    @State private var labelFrames: [Int: CGRect] = [:]
     
     var body: some View {
-        VStack{
-            HStack {
-                Text("선호하는 이동 수단")
-                    .font(.semiBold16)
-                Spacer()
-            }
-            .padding(.bottom, 15)
-            HStack(spacing: 18) {
-                ForEach(1...3, id: \.self) { rank in
-                    RankLabel(
-                        rank: rank,
-                        title: vm.transport(for: rank)?.title ?? "Label"
-                    ) {
-                        selectedRank = rank
-                        showPicker = true
-                    }
-                    .frame(maxWidth: .infinity)
-                    .popover(
-                        isPresented: Binding(
-                                    get: {
-                                        showPicker && selectedRank == rank
-                                    },
-                                    set: { newValue in
-                                        showPicker = newValue
+        ZStack {
+            VStack {
+                HStack {
+                    Text("선호하는 이동 수단")
+                        .font(.semiBold16)
+                    Spacer()
+                }
+                .padding(.bottom, 15)
+
+                HStack(spacing: 18) {
+                    ForEach(1...3, id: \.self) { rank in
+                        let transport = vm.transport(for: rank)
+                        RankLabel(
+                            rank: rank,
+                            title: (transport == nil || transport == TransportType.none)
+                                ? "Label"
+                                : transport!.title
+                        ) {
+                            activePicker = .transport(rank: rank)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear
+                                    .onAppear {
+                                        labelFrames[rank] = geo.frame(in: .named("TrafficSpace"))
                                     }
-                                ),
-                        attachmentAnchor: .rect(.bounds),
-                        arrowEdge: .bottom
-                    ) {
-                        RankWheelPicker(
-                            selection: Binding(
-                                get: {
-                                    vm.transport(for: rank) ?? .none
-                                },
-                                set: { newValue in
-                                    vm.updateTransport(newValue, for: rank)
-                                }
-                            ),
-                            isDisabled: { type in
-                                vm.isTransportSelected(type, excluding: selectedRank)
                             }
                         )
-                        .presentationCompactAdaptation(.popover)
                     }
                 }
             }
+            .modifier(FormCard())
+            .coordinateSpace(name: "TrafficSpace")
 
+            if case let .transport(rank) = activePicker,
+               let frame = labelFrames[rank] {
+
+                Color.black.opacity(0.001)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        activePicker = nil
+                    }
+
+                RankWheelPicker(
+                    selection: Binding(
+                        get: { vm.transport(for: rank) ?? .none },
+                        set: { newValue in
+                            vm.updateTransport(newValue, for: rank)
+                            activePicker = nil
+                        }
+                    ),
+                    isDisabled: { type in
+                        vm.isTransportSelected(type, excluding: rank)
+                    }
+                )
+                .position(x: frame.midX + 10, y: frame.minY - 45)
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(10)
+            }
         }
-        .modifier(FormCard())
     }
 }
 
-// 임시 픽커
+
 struct RankWheelPicker: View {
     @Binding var selection: TransportType
     let isDisabled: (TransportType) -> Bool
 
     var body: some View {
-        Picker("", selection: $selection) {
-            ForEach(TransportType.allCases) { type in
-                Text(type.title)
-                    .tag(type)
-                    .disabled(isDisabled(type))
-            }
+        SelectList(
+            items: TransportType.allCases,
+            selected: selection,
+            rowHeight: 20,
+            isDisabled: isDisabled
+        ) { selected in
+            selection = selected             
+        } titleProvider: { item in
+            item.title
         }
-        .pickerStyle(.wheel)
-        .frame(width: 220, height: 200)
     }
 }
+
 
 
 
 struct TrafficTimeSectionView: View {
     @Binding var buffer: ArrivalBufferType
+    @Binding var activePicker: ActivePicker?
+    @State private var buttonFrame: CGRect = .zero
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        ZStack {
+            VStack(alignment: .leading, spacing: 8) {
 
-            HStack {
-                Text("목표 도착 시간") // TODO: 디자인 확정 후 섹션 제목 변경 예정
-                    .font(.semiBold16)
+                HStack {
+                    Text("목표 도착 시간")
+                        .font(.semiBold16)
 
-                Spacer()
+                    Spacer()
 
-                Button {
-                    // TODO: picker / popover 연결
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(buffer.title)
-                            .font(.medium13)
-                            .foregroundStyle(.mainPink)
-                        Image("icon_pinkChevron")
-
-//                        VStack(spacing:2.5){
-//                            Image(systemName: "chevron.up")
-//                                .resizable()
-//                                .scaledToFit()
-//                                .frame(width: 10)
-//                                .foregroundStyle(.mainPink)
-//                            Image(systemName: "chevron.down")
-//                                .resizable()
-//                                .scaledToFit()
-//                                .frame(width: 10)
-//                                .foregroundStyle(.mainPink)
-//                        }
+                    Button {
+                        activePicker = .arrivalTime
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text("\(buffer.rawValue)분 전")
+                                .font(.medium13)
+                                .foregroundStyle(.mainPink)
+                            Image("icon_pinkChevron")
+                        }
                     }
+                    .buttonStyle(.plain)
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear
+                                .onAppear {
+                                    buttonFrame = geo.frame(in: .named("ArrivalTimeSpace"))
+                                }
+                        }
+                    )
                 }
-                .buttonStyle(.plain)
-            }
 
-            Text(buffer.description)
-                .font(.regular10)
-                .foregroundStyle(.gray2)
+                Text("T-\(buffer.rawValue)분 기준으로 역산 알림이 전송됩니다.")
+                    .font(.regular10)
+                    .foregroundStyle(.gray2)
+            }
+            .modifier(FormCard())
+            .coordinateSpace(name: "ArrivalTimeSpace")
+
+            if activePicker == .arrivalTime {
+
+                Color.black.opacity(0.001)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        activePicker = nil
+                    }
+
+                SelectList(
+                    items: ArrivalBufferType.allCases,
+                    selected: buffer,
+                    rowHeight: 20,
+                    isDisabled: { _ in false }
+                ) { selected in
+                    buffer = selected
+                    activePicker = nil
+                } titleProvider: { item in
+                    "\(item.rawValue)분 전"
+                }
+                .position(x: buttonFrame.midX , y: buttonFrame.minY - 35)
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(10)
+            }
         }
-        .modifier(FormCard())
     }
 }
 
 
 struct FormCard: ViewModifier {
+    var isHighlighted: Bool = false
+
     func body(content: Content) -> some View {
         content
             .frame(maxWidth: .infinity)
@@ -307,7 +424,10 @@ struct FormCard: ViewModifier {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(.gray1, lineWidth: 1)
+                    .strokeBorder(
+                        isHighlighted ? .gray2 :.gray1,
+                        lineWidth: 1
+                    )
             )
             .shadow(
                 color: .black.opacity(0.05),
@@ -319,8 +439,17 @@ struct FormCard: ViewModifier {
 }
 
 
+// 프리뷰용
+struct SetupView_PreviewWrapper: View {
+    @State private var isCompleted: Bool = false
 
+    var body: some View {
+        SetupView(isCompleted: $isCompleted)
+            .padding()
+            .background(Color.gray.opacity(0.1))
+    }
+}
 
-//#Preview {
-//    SetupView()
-//}
+#Preview {
+    SetupView_PreviewWrapper()
+}

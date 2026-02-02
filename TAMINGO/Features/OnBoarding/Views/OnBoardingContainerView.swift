@@ -65,7 +65,7 @@ struct OnBoardingContainerView: View {
         case .setup:
             SetupView(isCompleted: $vm.isSetupCompleted)
         case .done:
-            EmptyView()
+            Spacer()
         }
         
     }

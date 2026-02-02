@@ -37,7 +37,28 @@ extension Font {
         }
     }
     
+    public enum Paperlogy {
+        case onboarding1
+        case onboarding2
+        case onboarding3
+        
+        var value: String {
+            switch self {
+            case .onboarding1:
+                return "Paperlogy-6SemiBold"
+            case .onboarding2:
+                return "Paperlogy-7Bold"
+            case .onboarding3:
+                return "Paperlogy-5Medium"
+            }
+        }
+    }
+    
     static func pretendard(_ type: Pretendard, size: CGFloat = 17) -> Font {
+        return .custom(type.value, size: size)
+    }
+    
+    static func paperlogy(_ type: Paperlogy, size: CGFloat = 17) -> Font {
         return .custom(type.value, size: size)
     }
     
@@ -80,4 +101,9 @@ extension Font {
     
     // MARK: - Light
     static var light14: Font { .pretendard(.light, size: 14) }
+    
+    // MARK: - Onboaring
+    static var onboarding1: Font { .paperlogy(.onboarding1, size: 22)}
+    static var onboarding2: Font { .paperlogy(.onboarding2, size: 12)}
+    static var onboarding3: Font { .paperlogy(.onboarding3, size: 10)}
 }
