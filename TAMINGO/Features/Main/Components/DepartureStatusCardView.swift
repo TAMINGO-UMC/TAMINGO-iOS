@@ -10,6 +10,9 @@ import SwiftUI
 struct DepartureStatusCardView: View {
 
     let status: DepartureStatus
+    
+    @State private var routeLinkState: RouteLinkState = .normal
+    @State private var showRouteLink: Bool = true   // 삭제용
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -89,16 +92,23 @@ struct DepartureStatusCardView: View {
                 .fill(status.backgroundColor)
         )
         
-        RouteLinkCardView(
-            routeLink: RouteLink(
-                title: "약 수령",
-                location: "명동역 약국",
-                detourText: "+2분 우회",
-                suggestionText: "팀플 미팅 가는 길에 들를 수 있어요"
-            ),
-            onVisitTap: {},
-            onDeleteTap: {}
-        )
+        if showRouteLink {
+            RouteLinkCardView(
+                routeLink: RouteLink(
+                    title: "약 수령",
+                    location: "명동역 약국",
+                    detourText: "+2분 우회",
+                    suggestionText: "팀플 미팅 가는 길에 들를 수 있어요"
+                ),
+                state: routeLinkState,
+                onVisitTap: {
+                    routeLinkState = .accepted
+                },
+                onDeleteTap: {
+                    showRouteLink = false
+                }
+            )
+        }
         
         // MARK: - 길 찾기 버튼
         Button {
@@ -113,10 +123,10 @@ struct DepartureStatusCardView: View {
             }
             .foregroundStyle(.white)
             .padding(.vertical, 10)
-            .padding(.horizontal, 84)
+            .padding(.horizontal, 88)
             .background{
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.black)
+                    .fill(Color.mainMint)
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)

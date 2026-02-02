@@ -10,6 +10,7 @@ import SwiftUI
 struct RouteLinkCardView: View {
     
     let routeLink: RouteLink
+    let state: RouteLinkState
     let onVisitTap: () -> Void
     let onDeleteTap: () -> Void
     
@@ -58,12 +59,15 @@ struct RouteLinkCardView: View {
             HStack {
                 Spacer()
                 
-                HStack(spacing: 12) {
-                    Button("들르기", action: onVisitTap)
-                        .buttonStyle(RouteVisitButtonStyle())
-                    
-                    Button("삭제", action: onDeleteTap)
-                        .buttonStyle(RouteDeleteButtonStyle())
+                if state == .normal {
+                    HStack(spacing: 8) {
+                        Button("들르기", action: onVisitTap)
+                            .buttonStyle(RouteVisitButtonStyle())
+                        Button("삭제", action: onDeleteTap)
+                            .buttonStyle(RouteDeleteButtonStyle())
+                    }
+                } else if state == .accepted {
+                    EmptyView()
                 }
             }
         }
@@ -123,7 +127,7 @@ private struct RouteDeleteButtonStyle: ButtonStyle {
             location: "명동역 약국",
             detourText: "+2분 우회",
             suggestionText: "팀플 미팅 가는 길에 들를 수 있어요"
-        ),
+        ), state: .normal,
         onVisitTap: {},
         onDeleteTap: {}
     )

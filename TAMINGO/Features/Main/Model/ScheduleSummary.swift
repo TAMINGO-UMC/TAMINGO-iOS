@@ -14,6 +14,10 @@ struct ScheduleSummary: Identifiable {
     let placeName: String
     let leftMinute: Int
     let isNextSchedule: Bool
+    
+    var leftMinuteText: String {
+        "\(leftMinute)분 후"
+    }
 }
 
 enum ScheduleCardState {

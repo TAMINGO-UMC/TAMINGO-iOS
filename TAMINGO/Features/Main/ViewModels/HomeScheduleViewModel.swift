@@ -24,10 +24,25 @@ final class HomeScheduleViewModel {
     }
 
     func acceptGap(_ gap: GapTime) {
-        timelineItems.removeAll {
-            if case .gap(let g) = $0 { return g.id == gap.id }
+        guard let index = timelineItems.firstIndex(where: {
+            if case .gap(let g) = $0 {
+                return g.id == gap.id
+            }
             return false
-        }
+        }) else { return }
+
+        // gap → schedule 변환
+        let newSchedule = ScheduleSummary(
+            id: Int.random(in: 1000...9999), // 임시 ID
+            title: gap.title,
+            startTime: gap.gapStartTime,
+            placeName: gap.location,
+            leftMinute: 0,
+            isNextSchedule: false
+        )
+
+        // 같은 위치에 schedule로 교체
+        timelineItems[index] = .schedule(newSchedule)
     }
 
     func rejectGap(_ gap: GapTime) {
@@ -55,7 +70,7 @@ final class HomeScheduleViewModel {
                     id: 5,
                     minutes: "5–7분",
                     title: "도서 반납",
-                    location: "도서관 · 도보 5분",
+                    location: "도서관",
                     availableText: "12:10–12:30 공강에 처리 가능",
                     gapStartTime: "12:10",
                     gapEndTime: "12:30"
@@ -86,48 +101,3 @@ final class HomeScheduleViewModel {
         ]
     }
 }
-
-
-//@Observable
-//final class HomeScheduleViewModel {
-//
-//    // MARK: - Data
-//    let schedules: [Schedule]
-//    let nextScheduleId: UUID?
-//
-//    // MARK: - UI State
-//    var showDepartureCard: Bool = false
-//    var expandedScheduleId: UUID? = nil
-//    var departureStatus: DepartureStatus = .preparing(remainingMinutes: 5)
-//
-//    // MARK: - Init
-//    init(schedules: [Schedule]) {
-//        self.schedules = schedules
-//
-//        // 다음 일정 = 아직 지나지 않은 일정 중 가장 빠른 것
-//        self.nextScheduleId = schedules
-//            .filter { $0.remainingMinutes >= 0 }
-//            .min(by: { $0.remainingMinutes < $1.remainingMinutes })?
-//            .id
-//    }
-//
-//    // MARK: - Schedule Card State
-//    func state(for schedule: Schedule) -> ScheduleCardState {
-//        if schedule.remainingMinutes < 0 {
-//            return .past
-//        }
-//        if schedule.id == nextScheduleId {
-//            return .next
-//        }
-//        return .upcoming
-//    }
-//
-//    // MARK: - Departure Card Control
-//    func toggleDepartureCard(for schedule: Schedule) {
-//        if expandedScheduleId == schedule.id {
-//            expandedScheduleId = nil
-//        } else {
-//            expandedScheduleId = schedule.id
-//        }
-//    }
-//}

@@ -13,3 +13,8 @@ struct RouteLink {
     let detourText: String
     let suggestionText: String
 }
+
+enum RouteLinkState {
+    case normal      // 기본 (들르기/삭제 버튼 있음)
+    case accepted    // 들르기 적용됨 (버튼 없음)
+}

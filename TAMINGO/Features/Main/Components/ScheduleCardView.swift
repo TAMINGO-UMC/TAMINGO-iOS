@@ -18,7 +18,7 @@ struct ScheduleCardView: View {
         HStack(alignment: .top, spacing: 17) {
 
             // 시간
-            Text("\(schedule.leftMinute)")
+            Text("\(schedule.startTime)")
                 .font(.medium14)
                 .foregroundStyle(timeColor)
                 .frame(alignment: .leading)
@@ -37,39 +37,49 @@ struct ScheduleCardView: View {
                                 .font(.medium14)
                                 .foregroundStyle(titleColor)
                                 .lineLimit(1)
-                            
-                            if state == .next {
-                                Text("다음 일정")
-                                    .font(.regular12)
-                                    .foregroundStyle(Color("Gray2"))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 2)
-                                    .background{
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .fill(Color("Gray0"))
-                                    }
-                            }
                         }
                         
                         Spacer()
                         
+                        if state == .next {
+                            Text("다음 일정")
+                                .font(.regular12)
+                                .foregroundStyle(Color.mainMint)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background{
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color("SubMint"))
+                                }
+                        }
+                        
                         rightArea
                     }
                     
-                    // 위치
-                    Text(schedule.placeName)
-                        .font(.regular12)
-                        .foregroundStyle(Color("Gray2"))
-                        .lineLimit(1)
+                    HStack(spacing:2) {
+                        Text(schedule.placeName)
+                            .font(.regular12)
+                            .foregroundStyle(Color("Gray2"))
+                            .lineLimit(1)
+                        
+                        Text("·")
+                            .font(.regular12)
+                            .foregroundStyle(Color("Gray2"))
+                        
+                        Text(schedule.placeName)
+                            .font(.regular12)
+                            .foregroundStyle(Color("Gray2"))
+                            .lineLimit(1)
+                    }
                 }
                 
-//                // 출발 카드
-//                if isExpanded {
-//                    DepartureStatusCardView(
-//                        status: .preparing(remainingMinutes: 5)
-//                    )
-//                    .transition(.opacity.combined(with: .move(edge: .top)))
-//                }
+                // 출발 카드
+                if isExpanded {
+                    DepartureStatusCardView(
+                        status: .preparing(remainingMinutes: 5)
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
             .padding(16)
             .background(
@@ -101,19 +111,17 @@ private extension ScheduleCardView {
                 onChevronTap?()
             } label: {
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color("Gray2"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color("MainMint"))
             }
 
         case .upcoming:
-            Text("\(schedule.leftMinute)")
+            Text("\(schedule.leftMinuteText)")
                 .font(.regular12)
                 .foregroundStyle(Color("Gray2"))
 
         case .past:
-            Image(systemName: "checkmark.square")
-                .font(.system(size: 18))
-                .foregroundStyle(Color("Gray2"))
+            EmptyView()
         }
     }
 }
@@ -121,16 +129,14 @@ private extension ScheduleCardView {
 private extension ScheduleCardView {
 
     var cardBackgroundColor: Color {
-        state == .past ? Color("Gray1") : Color.white
+        state == .past ? Color("SubMint") : Color.white
     }
 
     var borderColor: Color {
         switch state {
         case .next:
-            return Color("Black00")
-        case .upcoming:
-            return Color("Gray2")
-        case .past:
+            return Color("MainMint")
+        case .upcoming, .past:
             return Color.clear
         }
     }
@@ -174,7 +180,7 @@ private extension ScheduleCardView {
                 leftMinute: 55,
                 isNextSchedule: false
             ),
-            state: .upcoming,
+            state: .past,
             isExpanded: false,
             onChevronTap: nil
         )
