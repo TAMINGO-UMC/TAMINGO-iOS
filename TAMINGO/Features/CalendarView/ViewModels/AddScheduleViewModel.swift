@@ -38,7 +38,6 @@ class AddScheduleViewModel {
         }
     }
     
-    var scheduleDate: Date = Date()
     var startTime: Date = Date() {
         didSet {
             if endTime <= startTime {
