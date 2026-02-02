@@ -101,8 +101,10 @@ struct AddScheduleView: View {
                         let success = await viewModel.createSchedule()
                         if success {
                             onSave?()
+                            dismiss()
+                        } else {
+                            //TODO: 저장 실패 시 알림
                         }
-                        dismiss()
                     }
                 }
             )
