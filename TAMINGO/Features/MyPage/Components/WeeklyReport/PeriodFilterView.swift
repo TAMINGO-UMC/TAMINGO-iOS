@@ -8,31 +8,40 @@
 import SwiftUI
 
 struct PeriodFilterView: View {
+    
+    @Bindable var vm: WeeklyReportViewModel
+    
     var body: some View {
         HStack(spacing:3) {
             // 조회 기간 드롭다운
-            Text("조회 기간")
-                .font(.regular12)
-                .foregroundStyle(.gray2)
-                .lineLimit(1)
+            Button(action: {
+                vm.isPeriodListVisible.toggle()
+            }, label: {
+                Text("조회 기간")
+                    .font(.regular12)
+                    .foregroundStyle(.gray2)
+                    .lineLimit(1)
 
-            Image("MyPage_icon_chevronDown")
-                .resizable()
-                .frame(width: 20, height: 20)
-            
+                Image("MyPage_icon_chevronDown")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                
+            })
             Spacer()
 
             // 시작일
-            DateBoxView(dateText: "2025.01.03")
+            DateBoxView(dateText: vm.startDateText)
 
             Text("~")
                 .font(.regular12)
                 .foregroundStyle(.gray2)
 
             // 종료일
-            DateBoxView(dateText: "2025.01.09")
+            DateBoxView(dateText: vm.endDateText)
         }
+
     }
+
 }
 
 struct DateBoxView: View {
@@ -59,6 +68,11 @@ struct DateBoxView: View {
 
 
 #Preview {
-    PeriodFilterView()
-        .padding()
+    PeriodFilterView(
+        vm: WeeklyReportViewModel(
+            baseDate: Date() // 오늘 기준
+        )
+    )
+    .padding()
 }
+

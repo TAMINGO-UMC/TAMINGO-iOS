@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct WeeklyReportView: View {
+    @State private var vm = WeeklyReportViewModel()
+    
     let weeklyMetrics: [WeeklyMetric]
     let comparisonMetrics: [WeeklyComparisonMetric]
     
@@ -15,7 +17,7 @@ struct WeeklyReportView: View {
         ScrollView{
             VStack(alignment:.leading, spacing:16){
                 header
-                WeeklyMetricSection(metrics: weeklyMetrics)
+                WeeklyMetricSection(vm:$vm, metrics: weeklyMetrics)
                 WeeklyActivitySection()
                 WeeklyInsightSection()
                 WeeklyComparisonSection(metrics: comparisonMetrics)
@@ -40,23 +42,43 @@ struct WeeklyReportView: View {
         }
         .padding(.horizontal, 7)
     }
+    
 }
 struct WeeklyMetricSection: View {
+    @Binding var vm: WeeklyReportViewModel
     let metrics: [WeeklyMetric]
 
     var body: some View {
-        VStack(spacing: 12) {
-            PeriodFilterView()
-                .frame(height: 30)
-            HStack(spacing: 12) {
-                DetailWeeklyMetricItemView(metric: metrics[0])
-                DetailWeeklyMetricItemView(metric: metrics[1])
-            }
+        ZStack(alignment: .topLeading) {
+            VStack(spacing: 12) {
+                PeriodFilterView(vm: vm)
+                    .frame(height: 30)
+                HStack(spacing: 12) {
+                    DetailWeeklyMetricItemView(metric: metrics[0])
+                    DetailWeeklyMetricItemView(metric: metrics[1])
+                }
 
-            DetailWeeklyMetricItemView(metric: metrics[2])
+                DetailWeeklyMetricItemView(metric: metrics[2])
+            }
+            .padding(16)
+            .cardStyle()
+            
+            if vm.isPeriodListVisible {
+                SelectList(
+                    items: vm.periodOptions,
+                    selected: vm.selectedPeriod,
+                    width: 134,
+                    isDisabled: { _ in false },
+                    onSelect: {
+                        vm.selectedPeriod = $0
+                        vm.isPeriodListVisible = false
+                    },
+                    titleProvider: vm.title(for:)
+                )
+                .offset(x: 10, y: 45) // 버튼 아래로
+                .zIndex(100)
+            }
         }
-        .padding(16)
-        .cardStyle()
     }
 }
 
