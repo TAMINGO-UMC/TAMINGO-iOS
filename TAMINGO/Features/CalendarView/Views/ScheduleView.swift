@@ -9,15 +9,17 @@ import SwiftUI
 
 struct ScheduleView: View {
     @State private var calendarVM = CalendarViewModel()
-    @State private var scheduleVM = ScheduleViewModel()
+    
     @State private var showAddSheet = false
+    @State private var showEditSheet: Bool = false
+    @State private var selectedId: Int? = nil
     
     var body: some View {
         VStack {
             CalendarView(
                 calendarViewModel: calendarVM,
                 onDateSelected: { date in
-                    print("선택된 날짜: \(date.toString(format: "yyyy-MM-dd HH:mm:ss"))")
+                    print("선택된 날짜: \(date.toString(format: "yyyy-MM-dd"))")
                 },
                 onAddPress: {
                     showAddSheet.toggle()
@@ -32,7 +34,7 @@ struct ScheduleView: View {
                 Text("\(calendarVM.selectedMonth)/\(calendarVM.selectedDay) (\(calendarVM.selectedWeekday))")
                     .foregroundStyle(.gray2)
                 Spacer()
-                Text("\(scheduleVM.todaySchedules.count)개")
+                Text("\(calendarVM.selectedDateSchedules.count)개")
                     .foregroundStyle(.mainMint)
             }
             .padding(.horizontal)
@@ -40,16 +42,21 @@ struct ScheduleView: View {
             
             ScrollView {
                 // 필터링된 일정만 표시
-                if scheduleVM.todaySchedules.isEmpty {
+                if calendarVM.selectedDateSchedules.isEmpty {
                     Text("일정이 없습니다.")
                         .font(.regular13)
                         .foregroundStyle(.gray2)
                         .padding(.top, 20)
                 } else {
-                    ForEach(scheduleVM.todaySchedules, id: \.scheduleId) { schedule in
-                        let color = scheduleVM.categoryMap[schedule.category] ?? .gray
+                    ForEach(calendarVM.selectedDateSchedules, id: \.scheduleId) { schedule in
+                        let color = calendarVM.categoryMap[schedule.category] ?? .gray
                         
-                        ScheduleCard(schedule: schedule, color: color)
+                        Button {
+                            self.showEditSheet.toggle()
+                            self.selectedId = schedule.scheduleId
+                        } label: {
+                            ScheduleCard(schedule: schedule, color: color)
+                        }
                     }
                     .padding(.horizontal)
                 }
@@ -57,17 +64,13 @@ struct ScheduleView: View {
             
             Spacer()
         }
-        .task(id: scheduleVM.todaySchedules.map { $0.scheduleId }) {
-            calendarVM.setMarkers(from: scheduleVM.todaySchedules)
-        }
-        .task(id: calendarVM.selectDate) {
-            await scheduleVM.getSchedules(date: calendarVM.selectDate.toString(format: "yyyy-MM-dd"))
-
+        .task(id: calendarVM.displayedMonthDate) {
+            await calendarVM.fetchData()
         }
         .sheet(isPresented: $showAddSheet) {
             AddScheduleView() {
                 Task {
-                    await scheduleVM.getSchedules(date: calendarVM.selectDate.toString(format: "yyyy-MM-dd"))
+                    await calendarVM.fetchData()
                 }
             }
         }

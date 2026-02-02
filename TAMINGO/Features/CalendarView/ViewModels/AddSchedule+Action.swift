@@ -16,7 +16,7 @@ extension AddScheduleViewModel {
         
         let requestDTO = ScheduleRequestDTO(
             title: title,
-            scheduleDate: scheduleDate.toString(format: "yyyy-MM-dd"),
+            scheduleDate: startTime.toString(format: "yyyy-MM-dd"),
             startTime: startTime.toString(format: "HH:mm"),
             endTime: endTime.toString(format: "HH:mm"),
             placeName: placeName,

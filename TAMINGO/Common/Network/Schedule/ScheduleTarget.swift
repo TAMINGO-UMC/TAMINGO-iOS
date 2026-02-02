@@ -18,6 +18,7 @@ enum ScheduleTarget {
     case getScheduleList(date: String)
     case getScheduleDetail(id: Int)
     case getCategories
+    case getMonthly(date: String)
 }
 
 extension ScheduleTarget: APITargetType {
@@ -40,6 +41,8 @@ extension ScheduleTarget: APITargetType {
             return "/api/schedules/\(id)"
         case .getCategories:
             return "/api/schedules-categories"
+        case .getMonthly:
+            return "/api/schedules/calendar"
         }
     }
     
@@ -50,7 +53,7 @@ extension ScheduleTarget: APITargetType {
             return .post
         case .updateSchedule:
             return .put
-        case .getFavoritePlaces, .getScheduleList, .getScheduleDetail, .getCategories:
+        case .getFavoritePlaces, .getScheduleList, .getScheduleDetail, .getCategories, .getMonthly:
             return .get
         }
     }
@@ -75,6 +78,11 @@ extension ScheduleTarget: APITargetType {
         case .getScheduleList(let date):
             return .requestParameters(
                 parameters: ["date": date],
+                encoding: URLEncoding.default
+            )
+        case .getMonthly(let date):
+            return .requestParameters(
+                parameters: ["yearMonth": date],
                 encoding: URLEncoding.default
             )
             
@@ -259,7 +267,7 @@ extension ScheduleTarget: APITargetType {
                 return Data(json.utf8)
             }
             
-        // 일정 상세 조회
+            // 일정 상세 조회
         case .getScheduleDetail:
             let json = """
             {
@@ -318,8 +326,8 @@ extension ScheduleTarget: APITargetType {
             }
             """
             return Data(json.utf8)
-        
-        // 카테고리 조회
+            
+            // 카테고리 조회
         case .getCategories:
             let json = """
                 {
@@ -349,6 +357,101 @@ extension ScheduleTarget: APITargetType {
                 }
                 """
             return Data(json.utf8)
+            
+            // 월별 일정 조회
+        case .getMonthly(let date):
+            switch date {
+            case "2026-01":
+                return stub_2026_01
+            case "2026-02":
+                return stub_2026_02
+            case "2026-03":
+                return stub_2026_03
+            default:
+                return Data("{}".utf8)
+            }
         }
     }
+}
+
+// 1월 데이터
+private var stub_2026_01: Data {
+    let json = """
+    {
+        "isSuccess": true,
+        "code": "SUCCESS-200",
+        "message": "요청에 성공했습니다.",
+        "result": {
+            "schedules": [
+                { "scheduleId": 1, "title": "광운대 도서관 방문", "startTime": "2026-01-28T09:00:00", "endTime": "2026-01-28T10:00:00", "placeName": "광운대학교", "category": "공부" },
+                { "scheduleId": 2, "title": "중랑구청 5시", "startTime": "2026-01-28T17:00:00", "endTime": "2026-01-28T18:00:00", "placeName": "중랑구청", "category": "약속" },
+                { "scheduleId": 14, "title": "타밍고", "startTime": "2026-01-28T20:00:00", "endTime": "2026-01-28T21:00:00", "placeName": "광운대", "category": "업무" },
+                { "scheduleId": 7, "title": "타밍고 미팅", "startTime": "2026-01-30T09:00:00", "endTime": "2026-01-30T10:00:00", "placeName": "광운대학교", "category": "업무" },
+                { "scheduleId": 23, "title": "공릉역 2번 출구", "startTime": "2026-01-30T18:00:00", "endTime": "2026-01-30T19:00:00", "placeName": "공릉역", "category": "약속" }
+            ],
+            "categories": [
+                { "categoryId": 1, "name": "공부", "colorCode": "#4A90E2" },
+                { "categoryId": 2, "name": "운동", "colorCode": "#E74C3C" },
+                { "categoryId": 3, "name": "업무", "colorCode": "#F1C40F" },
+                { "categoryId": 4, "name": "약속", "colorCode": "#2ECC71" },
+                { "categoryId": 5, "name": "취미", "colorCode": "#9B59B6" }
+            ]
+        }
+    }
+    """
+    return Data(json.utf8)
+}
+
+// 2월 데이터
+private var stub_2026_02: Data {
+    let json = """
+    {
+        "isSuccess": true,
+        "code": "SUCCESS-200",
+        "message": "요청에 성공했습니다.",
+        "result": {
+            "schedules": [
+                { "scheduleId": 101, "title": "발렌타인데이 준비", "startTime": "2026-02-13T18:00:00", "endTime": "2026-02-13T20:00:00", "placeName": "백화점", "category": "약속" },
+                { "scheduleId": 102, "title": "팀 프로젝트 회의", "startTime": "2026-02-14T14:00:00", "endTime": "2026-02-14T16:00:00", "placeName": "스타벅스", "category": "업무" },
+                { "scheduleId": 103, "title": "헬스장", "startTime": "2026-02-15T19:00:00", "endTime": "2026-02-15T21:00:00", "placeName": "짐박스", "category": "운동" },
+                { "scheduleId": 104, "title": "졸업식 참석", "startTime": "2026-02-20T10:00:00", "endTime": "2026-02-20T13:00:00", "placeName": "학교 대강당", "category": "약속" }
+            ],
+            "categories": [
+                { "categoryId": 1, "name": "공부", "colorCode": "#4A90E2" },
+                { "categoryId": 2, "name": "운동", "colorCode": "#E74C3C" },
+                { "categoryId": 3, "name": "업무", "colorCode": "#F1C40F" },
+                { "categoryId": 4, "name": "약속", "colorCode": "#2ECC71" },
+                { "categoryId": 5, "name": "취미", "colorCode": "#9B59B6" }
+            ]
+        }
+    }
+    """
+    return Data(json.utf8)
+}
+
+// 3월 데이터
+private var stub_2026_03: Data {
+    let json = """
+    {
+        "isSuccess": true,
+        "code": "SUCCESS-200",
+        "message": "요청에 성공했습니다.",
+        "result": {
+            "schedules": [
+                { "scheduleId": 201, "title": "개강 총회", "startTime": "2026-03-02T18:00:00", "endTime": "2026-03-02T22:00:00", "placeName": "학교 앞 술집", "category": "약속" },
+                { "scheduleId": 202, "title": "전공 수업(자료구조)", "startTime": "2026-03-03T09:00:00", "endTime": "2026-03-03T12:00:00", "placeName": "공학관 101호", "category": "공부" },
+                { "scheduleId": 203, "title": "도서관 자리 잡기", "startTime": "2026-03-04T08:00:00", "endTime": "2026-03-04T09:00:00", "placeName": "중앙도서관", "category": "공부" },
+                { "scheduleId": 204, "title": "동아리 신입생 환영회", "startTime": "2026-03-10T19:00:00", "endTime": "2026-03-10T23:00:00", "placeName": "동아리방", "category": "취미" }
+            ],
+            "categories": [
+                { "categoryId": 1, "name": "공부", "colorCode": "#4A90E2" },
+                { "categoryId": 2, "name": "운동", "colorCode": "#E74C3C" },
+                { "categoryId": 3, "name": "업무", "colorCode": "#F1C40F" },
+                { "categoryId": 4, "name": "약속", "colorCode": "#2ECC71" },
+                { "categoryId": 5, "name": "취미", "colorCode": "#9B59B6" }
+            ]
+        }
+    }
+    """
+    return Data(json.utf8)
 }
