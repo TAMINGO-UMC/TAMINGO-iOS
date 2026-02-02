@@ -1,5 +1,5 @@
 //
-//  WeeklyActivitySection.swift
+//  WeeklyActivityRowView.swift
 //  TAMINGO
 //
 //  Created by 권예원 on 2/2/26.

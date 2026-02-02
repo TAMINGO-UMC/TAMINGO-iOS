@@ -55,12 +55,15 @@ struct WeeklyMetricSection: View {
             VStack(spacing: 12) {
                 PeriodFilterView(vm: vm)
                     .frame(height: 30)
-                HStack(spacing: 12) {
-                    DetailWeeklyMetricItemView(metric: metrics[0])
-                    DetailWeeklyMetricItemView(metric: metrics[1])
+                if metrics.count >= 2 {
+                    HStack(spacing: 12) {
+                        DetailWeeklyMetricItemView(metric: metrics[0])
+                        DetailWeeklyMetricItemView(metric: metrics[1])
+                    }
                 }
-
-                DetailWeeklyMetricItemView(metric: metrics[2])
+                if metrics.count >= 3 {
+                    DetailWeeklyMetricItemView(metric: metrics[2])
+                }
             }
             .padding(16)
             .cardStyle()

@@ -59,7 +59,7 @@ struct WeeklyReportSection: View {
 
     var body: some View {
         Button(action:{
-            print("주간 리포트 이동")
+            print("주간 리포트 이동") // TODO: 주간리포트 페이지 연결
         }, label:{
             VStack(alignment: .leading, spacing: 12) {
                 header
