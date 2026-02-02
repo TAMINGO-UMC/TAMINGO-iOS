@@ -18,7 +18,7 @@ struct Marker: Hashable {
 @Observable
 class CalendarViewModel {
     private let provider = MoyaProvider<ScheduleTarget>(stubClosure: MoyaProvider.immediatelyStub)
-    // Observation에서는 프로퍼티가 ObservationIgnored가 아닌 이상 자동으로 추적됩니다.
+    
     private let calendar = Calendar.current
     
     var selectDate: Date = Date()
@@ -27,6 +27,7 @@ class CalendarViewModel {
     var categoryMap: [String: Color] = [:]
     var dateMarkers: [Date: [Marker]] = [:]
     var allSchedules: [ScheduleListDTO] = []
+    var selectedDateSchedules: [ScheduleListDTO] = []
     var categories: [(key: String, value: Color)] = []
     
     var displayedMonthDate: Date = Date()
@@ -39,26 +40,32 @@ class CalendarViewModel {
         self.displayedMonthDate = calendar.date(from: components) ?? now
     }
     
-    //TODO: 월별 일정 조회 API나오면 2번 수정
     func fetchData() async {
+        // 선택된 달을 "yyyy-MM"로 변환
+        let dateString = displayedMonthDate.toString(format: "yyyy-MM")
+        
         do {
-            // 1. 카테고리 정보 먼저 가져오기 (색상 매핑용)
-            let categoryResponse: BaseResponse<[ScheduleCategoryDTO]> = try await provider.request(.getCategories)
-            updateCategoryMap(with: categoryResponse.result ?? [])
+            // 월별 데이터 요청
+            let response: BaseResponse<MonthlyCalendarResultDTO> = try await provider.request(.getMonthly(date: dateString))
             
-            // 2. 전체 일정 목록 가져오기
-            let scheduleResponse: BaseResponse<[ScheduleListDTO]> = try await provider.request(.getScheduleList(date: "2026-01-28"))
-            self.allSchedules = scheduleResponse.result ?? []
-            
-            // 3. 마커 생성 (이미 완성된 categoryMap 활용)
-            self.setMarkers(from: self.allSchedules)
+            if let result = response.result {
+                // 카테고리 정보 업데이트
+                self.updateCategoryMap(with: result.categories)
+                
+                // 일정 데이터 저장 및 마커 생성
+                self.allSchedules = result.schedules
+                self.setMarkers(from: result.schedules)
+                
+                // 현재 날짜의 일정 필터링
+                self.filterSchedules(for: selectDate)
+            }
             
         } catch {
             print("데이터 로딩 중 에러 발생: \(error)")
         }
     }
     
-    private func updateCategoryMap(with categories: [ScheduleCategoryDTO]) {
+    private func updateCategoryMap(with categories: [CategoryDTO]) {
         var newMap: [String: Color] = [:]
         for cat in categories {
             newMap[cat.name] = Color(hex: cat.colorCode)
@@ -80,7 +87,7 @@ class CalendarViewModel {
             }
         }
     }
-
+    
     func addMarker(for date: Date, color: Color) {
         let dayKey = date.startOfDay
         
@@ -135,6 +142,7 @@ class CalendarViewModel {
         if newMonth != previousMonth {
             previousMonth = newMonth
         }
+        filterSchedules(for: startOfDay)
         
         onDateSelected?(startOfDay)
         
@@ -145,6 +153,15 @@ class CalendarViewModel {
             if let newDisplayedDate = calendar.date(from: selectedComponents) {
                 displayedMonthDate = newDisplayedDate
             }
+        }
+    }
+    
+    // MARK: - 선택된 날짜의 일정 리스트 필터링
+    func filterSchedules(for date: Date) {
+        // allSchedules(한달치)에서 해당 날짜와 같은 것만 골라냄
+        self.selectedDateSchedules = self.allSchedules.filter { schedule in
+            guard let scheduleDate = schedule.startTime.toDate() else { return false }
+            return calendar.isDate(scheduleDate, inSameDayAs: date)
         }
     }
     

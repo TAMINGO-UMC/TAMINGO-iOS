@@ -72,6 +72,12 @@ struct ScheduleCategoryDTO: Decodable, Identifiable{
     let colorCode: String
 }
 
+struct CategoryDTO: Decodable{
+    let categoryId: Int
+    let name: String
+    let colorCode: String
+}
+
 // MARK: - 내 장소 가져오기
 struct MyPlaceDTO: Decodable, Identifiable {
     let id: Int
@@ -79,4 +85,10 @@ struct MyPlaceDTO: Decodable, Identifiable {
     let address: String
     let latitude: Double
     let longitude: Double
+}
+
+// MARK: - 월별 캘린더 조회 결과 (일정 목록 + 카테고리 정보)
+struct MonthlyCalendarResultDTO: Decodable {
+    let schedules: [ScheduleListDTO]
+    let categories: [CategoryDTO]
 }

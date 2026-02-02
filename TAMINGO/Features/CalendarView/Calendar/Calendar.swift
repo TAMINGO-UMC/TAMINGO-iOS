@@ -73,9 +73,6 @@ struct CalendarView: View {
                 : nil
             )
         }
-        .task {
-            await calendarViewModel.fetchData()
-        }
     }
     
     var categories: some View {
