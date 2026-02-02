@@ -119,7 +119,6 @@ private struct RouteDeleteButtonStyle: ButtonStyle {
 #Preview {
     RouteLinkCardView(
         routeLink: RouteLink(
-            time: "12:30",
             title: "약 수령",
             location: "명동역 약국",
             detourText: "+2분 우회",

@@ -10,7 +10,9 @@ import SwiftUI
 struct MainView: View {
 
     var body: some View {
-        MainScheduleView()
+        ScrollView {
+            MainScheduleView()
+        }
     }
 }
 

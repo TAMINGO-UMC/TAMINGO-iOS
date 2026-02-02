@@ -1,15 +1,13 @@
 //
-//  RoundLink.swift
+//  RouteLink.swift
 //  TAMINGO
 //
-//  Created by Jung Hyun Han on 1/28/26.
+//  Created by Jung Hyun Han on 2/2/26.
 //
 
 import Foundation
 
-struct RouteLink: Identifiable {
-    let id = UUID()
-    let time: String
+struct RouteLink {
     let title: String
     let location: String
     let detourText: String

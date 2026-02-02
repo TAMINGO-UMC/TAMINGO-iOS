@@ -9,8 +9,7 @@ import SwiftUI
 
 struct MainScheduleView: View {
 
-    @State private var viewModel =
-        HomeScheduleViewModel(schedules: Schedule.mockToday)
+    @State private var viewModel = HomeScheduleViewModel()
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -18,28 +17,31 @@ struct MainScheduleView: View {
             TodayHeaderView()
 
             VStack(spacing: 17) {
-                ForEach(viewModel.schedules) { schedule in
+                ForEach(viewModel.timelineItems) { item in
+                    switch item {
 
-                    ScheduleCardView(
-                        schedule: schedule,
-                        state: schedule.isHighlighted ? .next : .upcoming,
-                        isExpanded: viewModel.expandedScheduleId == schedule.id,
-                        onChevronTap: {
-                            viewModel.toggleDepartureCard(for: schedule)
-                        }
-                    )
+                    case .schedule(let schedule):
+                        ScheduleCardView(
+                            schedule: schedule,
+                            state: schedule.isNextSchedule ? .next : .upcoming,
+                            isExpanded: viewModel.expandedScheduleId == schedule.id,
+                            onChevronTap: {
+                                viewModel.toggleDepartureCard(for: schedule)
+                            }
+                        )
+
+                    case .gap(let gap):
+                        GapTimeCardView(
+                            gapTime: gap,
+                            onAssignTap: {
+                                viewModel.acceptGap(gap)
+                            },
+                            onLaterTap: {
+                                viewModel.rejectGap(gap)
+                            }
+                        )
+                    }
                 }
-                
-                GapTimeCardView(
-                    gapTime: GapTime(
-                        time: "18:30",
-                        title: "도서 반납",
-                        location: "도서관 · 5–7분",
-                        availableText: "12:10–12:30 공강에 처리 가능"
-                    ),
-                    onAssignTap: {},
-                    onLaterTap: {}
-                )
             }
             .padding(.vertical, 22)
 
@@ -47,7 +49,6 @@ struct MainScheduleView: View {
         }
         .padding(.horizontal, 18)
         .padding(.top, 32)
-        .animation(.easeOut, value: viewModel.expandedScheduleId)
     }
 }
 

@@ -25,7 +25,7 @@ struct DepartureStatusCardView: View {
                     .font(.regular10)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
-                    .background(Color.black)
+                    .background(status.timeColor)
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
             }
@@ -91,7 +91,6 @@ struct DepartureStatusCardView: View {
         
         RouteLinkCardView(
             routeLink: RouteLink(
-                time: "12:30",
                 title: "약 수령",
                 location: "명동역 약국",
                 detourText: "+2분 우회",
@@ -127,9 +126,9 @@ struct DepartureStatusCardView: View {
 #Preview {
     VStack(spacing: 5) {
         DepartureStatusCardView(status: .preparing(remainingMinutes: 5))
-        DepartureStatusCardView(status: .now(remainingMinutes: 5))
-        DepartureStatusCardView(status: .delayed(delayMinutes: 5))
-        DepartureStatusCardView(status: .late(delayMinutes: 35))
+//        DepartureStatusCardView(status: .now(remainingMinutes: 5))
+//        DepartureStatusCardView(status: .delayed(remainingMinutes: 5))
+//        DepartureStatusCardView(status: .late(remainingMinutes: 6, delayMinutes: 35))
     }
     .padding()
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ScheduleCardView: View {
 
-    let schedule: Schedule
+    let schedule: ScheduleSummary
     let state: ScheduleCardState
     let isExpanded: Bool
     let onChevronTap: (() -> Void)?
@@ -18,7 +18,7 @@ struct ScheduleCardView: View {
         HStack(alignment: .top, spacing: 17) {
 
             // 시간
-            Text(schedule.time)
+            Text("\(schedule.leftMinute)")
                 .font(.medium14)
                 .foregroundStyle(timeColor)
                 .frame(alignment: .leading)
@@ -57,19 +57,19 @@ struct ScheduleCardView: View {
                     }
                     
                     // 위치
-                    Text(schedule.location)
+                    Text(schedule.placeName)
                         .font(.regular12)
                         .foregroundStyle(Color("Gray2"))
                         .lineLimit(1)
                 }
                 
-                // 출발 카드
-                if isExpanded {
-                    DepartureStatusCardView(
-                        status: .preparing(remainingMinutes: 5)
-                    )
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
+//                // 출발 카드
+//                if isExpanded {
+//                    DepartureStatusCardView(
+//                        status: .preparing(remainingMinutes: 5)
+//                    )
+//                    .transition(.opacity.combined(with: .move(edge: .top)))
+//                }
             }
             .padding(16)
             .background(
@@ -106,7 +106,7 @@ private extension ScheduleCardView {
             }
 
         case .upcoming:
-            Text(schedule.remainingText)
+            Text("\(schedule.leftMinute)")
                 .font(.regular12)
                 .foregroundStyle(Color("Gray2"))
 
@@ -150,15 +150,15 @@ private extension ScheduleCardView {
 
 
 #Preview {
-    VStack(spacing: 20) {
-
+    VStack(spacing: 16) {
         ScheduleCardView(
-            schedule: Schedule(
+            schedule: ScheduleSummary(
+                id: 1,
                 title: "팀플 미팅",
-                time: "09:40",
-                location: "S관 301 · 23분",
-                remainingMinutes: 0,
-                isHighlighted: true
+                startTime: "09:40",
+                placeName: "S관 301",
+                leftMinute: 23,
+                isNextSchedule: true
             ),
             state: .next,
             isExpanded: true,
@@ -166,27 +166,15 @@ private extension ScheduleCardView {
         )
 
         ScheduleCardView(
-            schedule: Schedule(
+            schedule: ScheduleSummary(
+                id: 2,
                 title: "강의",
-                time: "14:00",
-                location: "공학관",
-                remainingMinutes: 55,
-                isHighlighted: false
+                startTime: "14:00",
+                placeName: "공학관",
+                leftMinute: 55,
+                isNextSchedule: false
             ),
             state: .upcoming,
-            isExpanded: false,
-            onChevronTap: nil
-        )
-
-        ScheduleCardView(
-            schedule: Schedule(
-                title: "팀플 미팅",
-                time: "09:40",
-                location: "S관 301 · 23분",
-                remainingMinutes: 0,
-                isHighlighted: false
-            ),
-            state: .past,
             isExpanded: false,
             onChevronTap: nil
         )
