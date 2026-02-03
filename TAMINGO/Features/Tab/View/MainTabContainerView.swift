@@ -20,9 +20,12 @@ struct MainTabContainerView: View {
                 case .calendar:
                     ScheduleView()
                 case .todo:
-                    MainView()
+                    ToDoView()
+                    // "할 일 목록 조회" API 요청
+                    
                 case .my:
                     MainView()
+                    
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
