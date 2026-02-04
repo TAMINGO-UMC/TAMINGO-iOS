@@ -18,6 +18,7 @@ where
         VStack(alignment: .leading, spacing: 16) {
 
             header
+                .padding(.horizontal, 16)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -41,9 +42,9 @@ where
                         }
                     }
 
-                    if type == .todo {
-                        AIInfoView()
-                    }
+
+                    AIInfoView()
+
                 }
                 .padding(.horizontal, 16)
             }
@@ -87,37 +88,8 @@ private extension CategoryView {
 }
 
 
-// 프리뷰 용
-struct CategoryEditPreviewView: View {
-
-    let category: TodoCategory?
-
-    var body: some View {
-        VStack(spacing: 24) {
-            Text(category == nil ? "카테고리 추가" : "카테고리 수정")
-                .font(.title2)
-                .bold()
-
-            if let category {
-                CategoryRowView(
-                    category: category,
-                    onEdit: {},
-                    onDelete: {}
-                )
-            } else {
-                Text("새 카테고리")
-                    .foregroundColor(.gray)
-            }
-
-            Spacer()
-        }
-        .padding()
-    }
-}
-
-
 
 #Preview {
     let vm = TodoCategoryViewModel()
-    CategoryView(type: .schedule, vm:vm)
+    CategoryView(type: .todo, vm:vm)
 }

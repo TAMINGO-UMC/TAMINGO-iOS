@@ -30,7 +30,6 @@ where
 private extension CategoryEditView {
 
     var formSection: some View {
-        // 카테고리 이름
         VStack(alignment: .leading, spacing: 8) {
             Text("카테고리 이름")
                 .font(.regular12)
@@ -38,6 +37,7 @@ private extension CategoryEditView {
 
             TextField("카테고리 이름", text: $vm.name)
                 .font(.medium14)
+                .foregroundColor(Color(red: 0.04, green: 0.04, blue: 0.04).opacity(0.5))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity, minHeight: 38, maxHeight: 38, alignment: .leading)
