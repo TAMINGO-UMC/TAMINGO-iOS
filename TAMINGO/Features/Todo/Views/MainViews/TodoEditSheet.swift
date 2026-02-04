@@ -46,7 +46,7 @@ struct TodoEditSheet: View {
                     
                     DurationSection(viewModel: $viewModel)
                     
-                    CategorySection(isCategoryAIGenerated: viewModel.isCategoryAIGenerated)
+                    CategorySections(isCategoryAIGenerated: viewModel.isCategoryAIGenerated)
                     
                     RelateSchedule(viewModel: $viewModel)
                     

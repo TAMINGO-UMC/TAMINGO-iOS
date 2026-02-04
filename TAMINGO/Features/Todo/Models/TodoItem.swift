@@ -14,11 +14,11 @@ struct TodoItem: Identifiable {
     var isCompleted: Bool
     var date: Date?
     
-    /// AI 추론 또는 편집에서 저장된 장소 (첫 생성 시 nil → 편집 시트에서 AI 기본값 표시)
+    // AI 추론 또는 편집에서 저장된 장소 (첫 생성 시 nil → 편집 시트에서 AI 기본값 표시)
     var location: String? = nil
-    /// AI 추론 또는 편집에서 저장된 예상 소요시간 (단위: 분) (첫 생성 시 nil → 편집 시트에서 AI 기본값 표시)
+    //AI 추론 또는 편집에서 저장된 예상 소요시간 (단위: 분) (첫 생성 시 nil → 편집 시트에서 AI 기본값 표시)
     var estimatedMinutes: Int? = nil
-    /// Sheet "일정 연결"에서 체크한 관련 일정 (저장 시에만 업데이트)
+    // Sheet "일정 연결"에서 체크한 관련 일정 (저장 시에만 업데이트)
     var relatedSchedules: [RelatedScheduleItem] = []
     
     // MARK: - 루틴

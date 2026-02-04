@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CategorySection: View {
+struct CategorySections: View {
     let isCategoryAIGenerated: Bool
     
     var body: some View {

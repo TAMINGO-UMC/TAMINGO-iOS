@@ -21,8 +21,6 @@ struct MainTabContainerView: View {
                     ScheduleView()
                 case .todo:
                     ToDoView()
-                    // "할 일 목록 조회" API 요청
-                    
                 case .my:
                     MainView()
                     

@@ -9,8 +9,8 @@ import SwiftUI
 @Observable
 class TodoEditViewModel {
     var title: String
-    /// nil = 날짜 미지정. CalendarSheet 열기 시 nil이면 오늘 날짜로 표시되지만,
-    /// 확인하지 않고 닫으면 다시 nil로 복원됨
+    // nil = 날짜 미지정. CalendarSheet 열기 시 nil이면 오늘 날짜로 표시
+    // 확인하지 않고 닫으면 다시 nil로 복원됨
     var selectedDate: Date?
     var location: String
     var duration: String
@@ -46,9 +46,7 @@ class TodoEditViewModel {
         MyLocation(icon: "cup.and.saucer.fill", name: "카페", color: .brown)
     ]
     
-    /// 날짜 표시 문자열
-    /// - selectedDate가 nil이면 "- - - -, - -, - -" (미지정)
-    /// - 값이 있으면 "yyyy.MM.dd"
+    // 날짜 표시 문자열
     var formattedDate: String {
         guard let date = selectedDate else {
             return "- - - -, - -, - -"
@@ -60,10 +58,10 @@ class TodoEditViewModel {
     }
     
     // MARK: - init
-    /// TodoItem의 실제 저장된 값으로 초기화
-    /// - date가 nil이면 selectedDate도 nil 유지 → Sheet에서 "미지정" 표시
-    /// - location / duration 등은 item 저장값 우선, 없으면 AI 기본값
-    /// - 루틴 필드도 item에서 복원
+    // TodoItem의 실제 저장된 값으로 초기화
+    // - date가 nil이면 selectedDate도 nil 유지 → Sheet에서 "미지정" 표시
+    // - location / duration 등은 item 저장값 우선, 없으면 AI 기본값
+    // - 루틴 필드도 item에서 복원
     init(item: TodoItem) {
         self.title = item.title
         self.selectedDate = item.date

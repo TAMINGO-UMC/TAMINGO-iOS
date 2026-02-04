@@ -67,9 +67,9 @@ struct TodoInputBox: View {
                 }) {
                     Text("추가")
                         .font(.medium14)
-                        .foregroundColor(.white)
+                        .foregroundColor(.gray2)
                         .frame(width: 55, height: 36)
-                        .background(isAddButtonEnabled ? Color.mainMint : Color.gray2)
+                        .background(isAddButtonEnabled ? Color.mainMint : Color.gray1)
                         .cornerRadius(4)
                 }
                 .disabled(!isAddButtonEnabled)
