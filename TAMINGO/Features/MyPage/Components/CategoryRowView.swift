@@ -46,7 +46,7 @@ struct CategoryRowView<Category: CategoryItem>: View {
                     .frame(width: 16, height: 16)
             }
         }
-        .categotyStyle(height: 60, color:category.color)
+        .categoryStyle(height: 60, color:category.color)
     }
 }
 

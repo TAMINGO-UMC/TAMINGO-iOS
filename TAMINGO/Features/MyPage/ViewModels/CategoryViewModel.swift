@@ -14,6 +14,8 @@ protocol CategoryViewModel: AnyObject {
 
     var name: String { get set }
     var selectedColor: CategoryColor { get set }
+    
+    var canSaveCategory: Bool { get }
 
     func didTapAdd()
     func didTapEdit(_ category: CategoryType)

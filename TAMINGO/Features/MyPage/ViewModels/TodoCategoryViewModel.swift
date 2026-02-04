@@ -57,6 +57,10 @@ final class TodoCategoryViewModel:CategoryViewModel {
     var name: String = ""
     var selectedColor: CategoryColor = .mint
 
+    // MARK: - Validation
+    var canSaveCategory: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 
     // MARK: - Add
     func didTapAdd() {
@@ -77,6 +81,9 @@ final class TodoCategoryViewModel:CategoryViewModel {
 
     // MARK: - Save (Create / Update)
     func saveCategory() {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return }
+        
         if let id = editingCategoryId,
            let index = categories.firstIndex(where: { $0.id == id }) {
 

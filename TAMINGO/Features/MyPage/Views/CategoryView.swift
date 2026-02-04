@@ -9,10 +9,12 @@ import SwiftUI
 
 struct CategoryView<VM: CategoryViewModel>: View
 where
-    VM: CategoryViewModel & Observable & AnyObject,
-    VM.CategoryType: CategoryItem{
+VM: CategoryViewModel & Observable & AnyObject,
+VM.CategoryType: CategoryItem {
     let type: CategoryType
-    @State var vm: VM
+   
+    @State private var vm: VM
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -57,7 +59,9 @@ private extension CategoryView {
 
     var header: some View {
         HStack(spacing: 14) {
-            Button { } label: {
+            Button {
+                dismiss()
+            } label: {
                 Image("Previous_Chevron")
                     .resizable()
                     .frame(width: 5, height: 10)
@@ -69,7 +73,9 @@ private extension CategoryView {
 
             Spacer()
 
-            Button { } label: {
+            Button {
+                /* 기능 준비 후 구현 예정 */
+            } label: {
                 Image("MyPage_icon_plus")
                     .resizable()
                     .frame(width: 13, height: 13)
@@ -87,9 +93,17 @@ private extension CategoryView {
     }
 }
 
-
+// 프리뷰용
+extension CategoryView {
+    init(type: CategoryType, previewVM: VM) {
+        self.type = type
+        _vm = State(wrappedValue: previewVM)
+    }
+}
 
 #Preview {
-    let vm = TodoCategoryViewModel()
-    CategoryView(type: .todo, vm:vm)
+    CategoryView(
+        type: .todo,
+        previewVM: TodoCategoryViewModel()
+    )
 }

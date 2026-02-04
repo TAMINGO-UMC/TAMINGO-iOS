@@ -22,7 +22,7 @@ where
             )
             bottomButtons
         }
-        .categotyStyle(height: 321, color:vm.selectedColor.color)
+        .categoryStyle(height: 321, color:vm.selectedColor.color)
     }
 }
 
@@ -122,14 +122,14 @@ private extension CategoryEditView {
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .background(
-                        vm.name.trimmingCharacters(in: .whitespaces).isEmpty
-                        ? .gray1
-                        : .mainMint
+                        vm.canSaveCategory
+                        ? .mainMint
+                        : .gray1
                     )
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
             }
-            .disabled(vm.name.trimmingCharacters(in: .whitespaces).isEmpty)
+            .disabled(!vm.canSaveCategory)
         }
     }
 }

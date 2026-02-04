@@ -52,7 +52,7 @@ extension View {
 }
 
 extension View {
-    func categotyStyle(height: CGFloat, color: Color) -> some View {
+    func categoryStyle(height: CGFloat, color: Color) -> some View {
         self.modifier(CategoryStyleModifier(height:height, color:color))
     }
 }
