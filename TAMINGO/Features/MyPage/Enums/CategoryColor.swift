@@ -5,13 +5,13 @@
 //  Created by 권예원 on 2/2/26.
 //
 
-import Foundation
+import SwiftUI
 
 // 변경 필요
 enum CategoryColor: String, CaseIterable, Codable {
     case mint = "#22C7A9"
     case pink = "#FF8FAB"
-    case purple = "#FFD166"
+    case purple = "#903ACD"
     case peach = "#FFC576"
     case lightMint = "#A8E6CF"
     case lightPeach = "#FFD3B6"
@@ -29,7 +29,7 @@ enum CategoryColor: String, CaseIterable, Codable {
     var displayName: String {
         switch self {
         case .mint: return "민트"
-        case .pink: return "핑프"
+        case .pink: return "핑크"
         case .purple: return "퍼플"
         case .peach: return "피치"
         case .lightMint: return "연민트"
@@ -39,5 +39,9 @@ enum CategoryColor: String, CaseIterable, Codable {
         case .lightYellow: return "연노랑"
         case .coral: return "코랄"
         }
+    }
+    
+    var color: Color {
+        Color(hex: hexCode)
     }
 }
