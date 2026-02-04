@@ -7,6 +7,8 @@
 
 import Foundation
 
+// 마이페이지에서도 사용
+
 struct Place : Identifiable{
     let id: UUID = UUID()
 
