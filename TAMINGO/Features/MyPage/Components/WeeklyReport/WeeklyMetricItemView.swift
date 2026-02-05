@@ -36,65 +36,7 @@ let weeklyMetricMocks: [WeeklyMetric] = [
 ]
 
 
-struct WeeklyReportSection: View {
-    let metrics: [WeeklyMetric]
-
-    var body: some View {
-        Button(action:{
-            print("주간 리포트 이동")
-        }, label:{
-            VStack(alignment: .leading, spacing: 12) {
-                header
-
-                HStack {
-                    ForEach(Array(metrics.enumerated()), id: \.element.id) { index, metric in
-                        WeeklyMetricItemView(metric: metric)
-
-                        if index != metrics.count - 1 {
-                            Spacer(minLength: 0)
-                        }
-                    }
-                }
-
-            }
-            .padding(16)
-            .cardStyle()
-            .overlay(
-                RoundedRectangle(cornerRadius: 5)
-                    .stroke(.mainMint, lineWidth: 1)
-            )
-        })
-    }
-    
-    var header: some View {
-        HStack{
-            Image("MyPage_graph")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 16)
-                .padding(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(.gray1, lineWidth: 1)
-                )
-
-            
-            Text("주간 리포트")
-                .font(.medium14)
-                .foregroundStyle(.black00)
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .resizable()
-                .frame(width: 5, height: 10)
-                .foregroundStyle(.black00)
-        }
-
-    }
-}
-
-struct WeeklyMetricItemView : View {
+struct MainWeeklyMetricItemView : View {
     let metric: WeeklyMetric
     var body: some View {
         VStack(alignment:.leading, spacing:3){
@@ -122,9 +64,40 @@ struct WeeklyMetricItemView : View {
     }
 }
 
+struct DetailWeeklyMetricItemView : View {
+    let metric: WeeklyMetric
+    var body: some View {
+        VStack(alignment:.leading, spacing:7){
+            HStack(){
+                Image(metric.iconName)
+                    .resizable()
+                    .frame(width: 16.5, height: 16.5)
+                Text(metric.title)
+                    .font(.medium14)
+                    .foregroundStyle(metric.textColor)
+                Spacer()
+            }
+            Text(metric.value)
+                .font(.medium24)
+                .foregroundStyle(metric.textColor)
+            Text(metric.subValue)
+                .font(.medium14)
+                .foregroundStyle(metric.textColor)
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(metric.backgroundColor)
+        .cornerRadius(5)
+    }
+}
+
 
 
 #Preview {
-    WeeklyReportSection(metrics: weeklyMetricMocks)
-        .padding()
+    VStack{
+        MainWeeklyMetricItemView(metric: weeklyMetricMocks[1])
+            .padding()
+        DetailWeeklyMetricItemView(metric: weeklyMetricMocks[1])
+    }
 }

@@ -327,7 +327,7 @@ struct RankWheelPicker: View {
         SelectList(
             items: TransportType.allCases,
             selected: selection,
-            rowHeight: 20,
+            width: 86,
             isDisabled: isDisabled
         ) { selected in
             selection = selected             
@@ -394,7 +394,7 @@ struct TrafficTimeSectionView: View {
                 SelectList(
                     items: ArrivalBufferType.allCases,
                     selected: buffer,
-                    rowHeight: 20,
+                    width: 86,
                     isDisabled: { _ in false }
                 ) { selected in
                     buffer = selected
