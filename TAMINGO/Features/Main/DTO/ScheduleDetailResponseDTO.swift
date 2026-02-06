@@ -59,8 +59,7 @@ extension ScheduleDetailResponseDTO {
                 departureTime: travelInfo.recommendedDepartureTime,
                 arrivalTime: travelInfo.recommendedArrivalTime,
                 status: departureStatus
-            ),
-            recommendedTodo: recommendedTodo?.toModel()
+            ), recommendedTodo:recommendedTodo?.toModel()
         )
     }
 }

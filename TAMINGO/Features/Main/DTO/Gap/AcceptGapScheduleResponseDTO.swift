@@ -1,5 +1,5 @@
 //
-//  GapScheduleCreateResponseDTO.swift
+//  AcceptGapScheduleResponseDTO.swift
 //  TAMINGO
 //
 //  Created by Jung Hyun Han on 2/1/26.

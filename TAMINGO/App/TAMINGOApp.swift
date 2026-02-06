@@ -7,7 +7,7 @@ struct TamingoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabContainerView()
+            LoginRootView()
                 .environment(signupProgressStore)
                 .environment(signupSessionStore)
         }

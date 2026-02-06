@@ -16,6 +16,7 @@ struct HomeScheduleItemDTO: Decodable {
     let startTime: String?
     let placeName: String?
     let leftMinute: Int?
+    let duration: Int?
     let nextSchedule: Bool?
 
     // GAP_RECOMMEND
@@ -32,10 +33,10 @@ enum ScheduleItemType: String, Decodable {
 }
 
 extension HomeScheduleItemDTO {
-
+    
     func toModel() -> HomeTimelineItem? {
         switch type {
-
+            
         case .schedule:
             guard
                 let scheduleId,
@@ -43,9 +44,10 @@ extension HomeScheduleItemDTO {
                 let startTime,
                 let placeName,
                 let leftMinute,
+                let duration,
                 let nextSchedule
             else { return nil }
-
+            
             return .schedule(
                 ScheduleSummary(
                     id: scheduleId,
@@ -53,23 +55,26 @@ extension HomeScheduleItemDTO {
                     startTime: startTime,
                     placeName: placeName,
                     leftMinute: leftMinute,
+                    duration: duration,
                     isNextSchedule: nextSchedule
                 )
             )
-
+            
         case .gapRecommend:
             guard
                 let suggestionId,
                 let message,
-                let time
+                let time,
+                let location,
+                let requiredMinutes
             else { return nil }
-
+            
             return .gap(
                 GapTime(
                     id: suggestionId,
-                    minutes: "약 5–7분",
-                    title: "추천 일정",
-                    location: "근처 장소",
+                    minutes: "약 \(requiredMinutes)분",
+                    title: message,
+                    location: location,
                     availableText: message,
                     gapStartTime: time,
                     gapEndTime: time

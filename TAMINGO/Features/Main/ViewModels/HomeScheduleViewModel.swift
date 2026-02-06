@@ -14,14 +14,28 @@ final class HomeScheduleViewModel {
     var timelineItems: [HomeTimelineItem] = []
     var expandedScheduleId: Int?
 
+    var scheduleDetails: [Int: ScheduleDetail] = [:]
+    
     init() {
         loadMock()
     }
 
     func toggleDepartureCard(for schedule: ScheduleSummary) {
-        expandedScheduleId =
-        expandedScheduleId == schedule.id ? nil : schedule.id
+        if expandedScheduleId == schedule.id {
+            expandedScheduleId = nil
+        } else {
+            expandedScheduleId = schedule.id
+            loadScheduleDetailIfNeeded(id: schedule.id)
+        }
     }
+
+    func loadScheduleDetailIfNeeded(id: Int) {
+        guard scheduleDetails[id] == nil else { return }
+        
+        // 임시 mock
+        scheduleDetails[id] = ScheduleDetail.mock(id: id)
+    }
+
 
     func acceptGap(_ gap: GapTime) {
         guard let index = timelineItems.firstIndex(where: {
@@ -38,6 +52,7 @@ final class HomeScheduleViewModel {
             startTime: gap.gapStartTime,
             placeName: gap.location,
             leftMinute: 0,
+            duration: 0,
             isNextSchedule: false
         )
 
@@ -61,6 +76,7 @@ final class HomeScheduleViewModel {
                     startTime: "09:40",
                     placeName: "S관 301",
                     leftMinute: 23,
+                    duration: 13,
                     isNextSchedule: true
                 )
             ),
@@ -84,6 +100,7 @@ final class HomeScheduleViewModel {
                     startTime: "14:00",
                     placeName: "공학관",
                     leftMinute: 55,
+                    duration: 21,
                     isNextSchedule: false
                 )
             ),
@@ -95,6 +112,7 @@ final class HomeScheduleViewModel {
                     startTime: "18:30",
                     placeName: "중앙도서관",
                     leftMinute: 180,
+                    duration: 20,
                     isNextSchedule: false
                 )
             )

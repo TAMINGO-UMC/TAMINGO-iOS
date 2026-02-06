@@ -10,6 +10,9 @@ import SwiftUI
 struct DepartureStatusCardView: View {
 
     let status: DepartureStatus
+    let departureTime: String
+    let arrivalTime: String
+    let routeLink: RouteLink?
     
     @State private var routeLinkState: RouteLinkState = .normal
     @State private var showRouteLink: Bool = true   // 삭제용
@@ -60,28 +63,31 @@ struct DepartureStatusCardView: View {
 
                 Label {
                     HStack(spacing: 8) {
-                        Text("출발 예상 시간: 오전 08:40 ")
+                        Text("출발 예상 시간: \(departureTime)")
                             .foregroundStyle(Color.black00)
+
                         Text("(교통량 기준)")
                             .foregroundStyle(Color.gray2)
                     }
                 } icon: {
                     Image(systemName: "clock")
-                        .foregroundStyle(Color("Black00"))
+                        .foregroundStyle(Color.black00)
                 }
 
                 Label {
                     HStack(spacing: 8) {
-                        Text("도착 예상 시간: 오전 09:10 ")
+                        Text("도착 예상 시간: \(arrivalTime)")
                             .foregroundStyle(status.arrivalTimeColor)
 
                         Text("(교통량 기준)")
-                            .foregroundStyle(Color("Gray2"))
+                            .foregroundStyle(Color.gray2)
                     }
                 } icon: {
                     Image(systemName: "clock")
                         .foregroundStyle(status.arrivalTimeColor)
                 }
+
+               
             }
             .padding(.leading, 12)
             .font(.regular10)
@@ -135,7 +141,12 @@ struct DepartureStatusCardView: View {
 
 #Preview {
     VStack(spacing: 5) {
-        DepartureStatusCardView(status: .preparing(remainingMinutes: 5))
+        DepartureStatusCardView(
+            status: .preparing(remainingMinutes: 5),
+            departureTime: "오전 08:40",
+            arrivalTime: "오전 09:10",
+            routeLink: nil
+        )
 //        DepartureStatusCardView(status: .now(remainingMinutes: 5))
 //        DepartureStatusCardView(status: .delayed(remainingMinutes: 5))
 //        DepartureStatusCardView(status: .late(remainingMinutes: 6, delayMinutes: 35))

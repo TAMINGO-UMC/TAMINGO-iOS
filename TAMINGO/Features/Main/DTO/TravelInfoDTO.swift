@@ -29,29 +29,26 @@ enum ScheduleStatusDTO: String, Decodable {
 }
 
 extension DepartureStatusDTO {
-
+    
     func toDomain(
         remainingMinutes: Int,
         delayMinutes: Int?
     ) -> DepartureStatus {
-
+        
         switch self {
-
+            
         case .now:
             return .now(remainingMinutes: remainingMinutes)
-
+            
         case .ready, .waiting:
             return .preparing(remainingMinutes: remainingMinutes)
-
+            
         case .late:
-            if let delay = delayMinutes, delay > 0 {
-                return .late(
-                    remainingMinutes: remainingMinutes,
-                    delayMinutes: delay
-                )
-            } else {
-                return .delayed(remainingMinutes: remainingMinutes)
-            }
+            let delay = max(0, delayMinutes ?? 0)
+            return .late(
+                remainingMinutes: remainingMinutes,
+                delayMinutes: delay
+            )
         }
     }
 }

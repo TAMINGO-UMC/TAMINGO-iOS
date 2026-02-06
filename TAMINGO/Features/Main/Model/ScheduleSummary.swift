@@ -13,6 +13,7 @@ struct ScheduleSummary: Identifiable {
     let startTime: String
     let placeName: String
     let leftMinute: Int
+    let duration: Int
     let isNextSchedule: Bool
     
     var leftMinuteText: String {

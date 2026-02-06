@@ -12,6 +12,7 @@ struct ScheduleCardView: View {
     let schedule: ScheduleSummary
     let state: ScheduleCardState
     let isExpanded: Bool
+    let detail: ScheduleDetail?
     let onChevronTap: (() -> Void)?
 
     var body: some View {
@@ -25,7 +26,7 @@ struct ScheduleCardView: View {
 
             // 카드
             VStack(alignment: .leading, spacing: 16) {
-
+                
                 // 일정 텍스트
                 VStack(alignment: .leading, spacing: 6) {
                     // 상단 라인
@@ -66,7 +67,7 @@ struct ScheduleCardView: View {
                             .font(.regular12)
                             .foregroundStyle(Color("Gray2"))
                         
-                        Text(schedule.placeName)
+                        Text("\(schedule.duration)분")
                             .font(.regular12)
                             .foregroundStyle(Color("Gray2"))
                             .lineLimit(1)
@@ -74,9 +75,12 @@ struct ScheduleCardView: View {
                 }
                 
                 // 출발 카드
-                if isExpanded {
+                if let detail {
                     DepartureStatusCardView(
-                        status: .preparing(remainingMinutes: 5)
+                        status: detail.travel.status,
+                        departureTime: detail.travel.departureTime,
+                        arrivalTime: detail.travel.arrivalTime,
+                        routeLink: detail.recommendedTodo?.toRouteLink()
                     )
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
@@ -107,13 +111,15 @@ private extension ScheduleCardView {
         switch state {
 
         case .next:
-            Button {
-                onChevronTap?()
-            } label: {
-                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color("MainMint"))
-            }
+//            if let onChevronTap {
+                Button {
+                    onChevronTap?()
+                } label: {
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color("MainMint"))
+                }
+//            }
 
         case .upcoming:
             Text("\(schedule.leftMinuteText)")
@@ -164,10 +170,12 @@ private extension ScheduleCardView {
                 startTime: "09:40",
                 placeName: "S관 301",
                 leftMinute: 23,
+                duration: 32,
                 isNextSchedule: true
             ),
             state: .next,
             isExpanded: true,
+            detail: nil,
             onChevronTap: {}
         )
 
@@ -178,10 +186,12 @@ private extension ScheduleCardView {
                 startTime: "14:00",
                 placeName: "공학관",
                 leftMinute: 55,
+                duration: 12,
                 isNextSchedule: false
             ),
             state: .past,
             isExpanded: false,
+            detail: nil,
             onChevronTap: nil
         )
     }

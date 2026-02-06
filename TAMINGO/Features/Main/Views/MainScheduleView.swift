@@ -1,5 +1,5 @@
 //
-//  ScheduleView.swift
+//  MainScheduleView.swift
 //  TAMINGO
 //
 //  Created by Jung Hyun Han on 1/27/26.
@@ -26,10 +26,12 @@ struct MainScheduleView: View {
                                 schedule: schedule,
                                 state: schedule.isNextSchedule ? .next : .upcoming,
                                 isExpanded: viewModel.expandedScheduleId == schedule.id,
+                                detail: viewModel.scheduleDetails[schedule.id],
                                 onChevronTap: {
                                     viewModel.toggleDepartureCard(for: schedule)
                                 }
                             )
+
                             
                         case .gap(let gap):
                             GapTimeCardView(
@@ -44,9 +46,8 @@ struct MainScheduleView: View {
                         }
                     }
                 }
-                .padding(.vertical, 22)
-                
-                Spacer()
+                .padding(.top, 22)
+                .padding(.bottom, 40)
             }
         }
         .padding(.horizontal, 18)
