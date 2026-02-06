@@ -1,12 +1,7 @@
-//
-//  AIInferenceViewModel.swift
-//  TAMINGO
-//
-//  Created by Claude on 2/2/26.
-//
 
 import Foundation
 import Combine
+import Moya
 
 enum AIInferenceState {
     case idle
@@ -18,7 +13,12 @@ enum AIInferenceState {
 class AIInferenceViewModel: ObservableObject {
     @Published var state: AIInferenceState = .idle
     
-    // 서버 응답 시뮬레이션 (실제로는 네트워크 요청으로 대체)
+    private let provider = MoyaProvider<TodoTarget>(
+        stubClosure: MoyaProvider.delayedStub(0.5),
+        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
+    )
+    
+    /// API를 통한 실제 AI 추론 요청 (Moya Provider 방식)
     func fetchAIInference(for todoTitle: String) {
         // 빈 제목이면 추론하지 않음
         guard !todoTitle.isEmpty else {
@@ -29,16 +29,34 @@ class AIInferenceViewModel: ObservableObject {
         // 로딩 상태로 변경
         state = .loading
         
-        // 임의의 서버 응답 시간 시뮬레이션 (1.5초)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            // 임시 더미 데이터 (실제로는 서버 응답 데이터 사용)
-            let result = AIInferenceResult(
-                category: "일상",
-                location: "광운대학교 중앙도서관",
-                estimatedTime: "10분"
-            )
+        // Moya Provider 방식으로 API 호출
+        provider.request(.aiInference(title: todoTitle)) { [weak self] result in
+            guard let self = self else { return }
             
-            self?.state = .success(result)
+            switch result {
+            case .success(let response):
+                do {
+                    // 성공 상태 코드 필터링
+                    let filteredResponse = try response.filterSuccessfulStatusCodes()
+                    
+                    // BaseResponse 형식으로 디코딩
+                    let decodedData = try filteredResponse.map(BaseResponse<TodoAIInferenceResponseDTO>.self)
+                    
+                    if let resultData = decodedData.result {
+                        let inferenceResult = resultData.todoInfo.toAIInferenceResult()
+                        self.state = .success(inferenceResult)
+                    } else {
+                        self.state = .error("AI 추론 결과가 없습니다.")
+                    }
+                } catch {
+                    print("AI Inference Parsing Error: \(error)")
+                    self.state = .error("AI 추론 결과를 처리하는 중 오류가 발생했습니다.")
+                }
+                
+            case .failure(let error):
+                print("AI Inference Network Error: \(error)")
+                self.state = .error("네트워크 오류가 발생했습니다.")
+            }
         }
     }
     
@@ -47,3 +65,4 @@ class AIInferenceViewModel: ObservableObject {
         state = .idle
     }
 }
+

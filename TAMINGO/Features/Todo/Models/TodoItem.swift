@@ -2,38 +2,58 @@
 //  TodoItem.swift
 //  TAMINGO
 //
-//  Created by 엄지용 on 1/29/26.
+//  Created by Claude on 2/5/26.
 //
+
 import Foundation
 
 struct TodoItem: Identifiable {
-    let id = UUID()
+    let id: Int?  // API에서 받은 todoId (생성 전에는 nil)
+    let localId = UUID()  // 로컬 식별용
     var title: String
     var category: String
     var categoryColor: CategoryColor
     var isCompleted: Bool
     var date: Date?
     
-    // AI 추론 또는 편집에서 저장된 장소 (첫 생성 시 nil → 편집 시트에서 AI 기본값 표시)
-    var location: String? = nil
-    //AI 추론 또는 편집에서 저장된 예상 소요시간 (단위: 분) (첫 생성 시 nil → 편집 시트에서 AI 기본값 표시)
-    var estimatedMinutes: Int? = nil
-    // Sheet "일정 연결"에서 체크한 관련 일정 (저장 시에만 업데이트)
-    var relatedSchedules: [RelatedScheduleItem] = []
+    // 장소 정보
+    var placeName: String?
+    var address: String?
+    var latitude: Double?
+    var longitude: Double?
     
-    // MARK: - 루틴
+    // 예상 소요시간 (단위: 분)
+    var estimatedMinutes: Int?
+    
+    // Sheet "일정 연결"에서 체크한 관련 일정 (TodoRelatedScheduleItem 사용)
+    var relatedSchedules: [TodoRelatedScheduleItem] = []
+    var linkedScheduleId: Int?  // API 연동용 단일 일정 ID
+    
+    // MARK: - 루틴 (TodoRoutineType 사용)
     var isRoutineEnabled: Bool = false
-    var routineType: RoutineType = .daily
-    var routineEndDate: Date? = nil       // nil = 종료 날짜 미설정
+    var routineType: TodoRoutineType = .daily
+    var routineEndDate: Date? = nil
     
+    // MARK: - AI 추론 원본 정보 (서버 전송용)
+    var aiSource: AISourceInfo?
+    
+    struct AISourceInfo {
+        let aiSuggestedCategoryName: String
+        let aiSuggestedPlaceName: String?
+        let aiSuggestedDuration: Int
+    }
+    
+    // MARK: - 카테고리 색상
     enum CategoryColor {
-        case daily // 일상 - 파란색
-        case life  // 생활 - 초록색
+        case daily  // 일상 - 파란색
+        case life   // 생활 - 초록색
+        case work   // 업무 - 주황색
         
         var textColor: (r: Double, g: Double, b: Double, a: Double) {
             switch self {
             case .daily: return (103, 126, 197, 1)
             case .life: return (85, 181, 111, 1)
+            case .work: return (255, 149, 0, 1)
             }
         }
         
@@ -41,6 +61,15 @@ struct TodoItem: Identifiable {
             switch self {
             case .daily: return (231, 238, 251, 1)
             case .life: return (234, 251, 231, 1)
+            case .work: return (255, 245, 230, 1)
+            }
+        }
+        
+        static func from(category: String) -> CategoryColor {
+            switch category {
+            case "생활": return .life
+            case "업무": return .work
+            default: return .daily
             }
         }
     }

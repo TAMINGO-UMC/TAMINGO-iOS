@@ -9,6 +9,7 @@ import SwiftUI
 
 struct LocationSection: View {
     @Binding var viewModel: TodoEditViewModel
+    @State private var showingPlaceSearch = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -34,14 +35,28 @@ struct LocationSection: View {
                 expandedView
             }
         }
+        .sheet(isPresented: $showingPlaceSearch) {
+            PlaceSearchSheet { place in
+                // 선택된 장소 저장
+                viewModel.placeName = place.name
+                viewModel.address = place.address
+                viewModel.latitude = place.latitude
+                viewModel.longitude = place.longitude
+                viewModel.isLocationAIGenerated = false
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    viewModel.isLocationExpanded = false
+                }
+                showingPlaceSearch = false
+            }
+        }
     }
     
     // MARK: - Collapsed View
     private var collapsedView: some View {
         HStack(spacing: 8) {
-            Text(viewModel.location.isEmpty ? "장소를 선택하세요" : viewModel.location)
+            Text(viewModel.placeName.isEmpty ? "장소를 선택하세요" : viewModel.placeName)
                 .font(.medium14)
-                .foregroundColor(viewModel.location.isEmpty ? .gray2 : .black)
+                .foregroundColor(viewModel.placeName.isEmpty ? .gray2 : .black)
             
             Spacer()
             
@@ -51,9 +66,12 @@ struct LocationSection: View {
                 }
             })
             
-            if !viewModel.location.isEmpty {
+            if !viewModel.placeName.isEmpty {
                 DeleteButton(action: {
-                    viewModel.location = ""
+                    viewModel.placeName = ""
+                    viewModel.address = nil
+                    viewModel.latitude = nil
+                    viewModel.longitude = nil
                     viewModel.isLocationAIGenerated = false
                 })
             }
@@ -69,27 +87,29 @@ struct LocationSection: View {
     private var expandedView: some View {
         VStack(alignment: .leading, spacing: 16) {
             // 검색 바
-            HStack {
-                TextField("장소를 검색하세요", text: $viewModel.locationSearchText)
-                    .font(.medium12)
-                    .foregroundColor(.black)
-                
-                Button(action: {
-                    // 카카오 주소 검색 API 호출
-                }) {
+            Button(action: {
+                showingPlaceSearch = true
+            }) {
+                HStack {
+                    Text(viewModel.locationSearchText.isEmpty ? "장소를 검색하세요" : viewModel.locationSearchText)
+                        .font(.medium12)
+                        .foregroundColor(viewModel.locationSearchText.isEmpty ? .gray2 : .black)
+                    
+                    Spacer()
+                    
                     Image(systemName: "magnifyingglass")
                         .frame(width: 15.99, height: 15.99)
                         .foregroundColor(.gray2)
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 36)
+                .padding(.horizontal, 12)
+                .background(Color.gray0)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color(red: 254/255, green: 254/255, blue: 254/255, opacity: 0.1), lineWidth: 1)
+                )
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 36)
-            .padding(.horizontal, 12)
-            .background(Color.gray0)
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(Color(red: 254/255, green: 254/255, blue: 254/255, opacity: 0.1), lineWidth: 1)
-            )
             
             // 내 장소
             VStack(alignment: .leading, spacing: 12) {
@@ -100,9 +120,13 @@ struct LocationSection: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(viewModel.myLocations) { location in
-                            LocationButton(location: location) {
-                                viewModel.location = location.name
-                                viewModel.isLocationAIGenerated = false
+                            TodoLocationButton(location: location) {
+                                viewModel.selectPlace(
+                                    name: location.name,
+                                    address: location.address,
+                                    latitude: location.latitude,
+                                    longitude: location.longitude
+                                )
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     viewModel.isLocationExpanded = false
                                 }
@@ -135,9 +159,9 @@ struct LocationSection: View {
     }
 }
 
-// MARK: - LocationButton Component
-struct LocationButton: View {
-    let location: MyLocation
+// MARK: - TodoLocationButton Component (TodoMyLocation 사용)
+struct TodoLocationButton: View {
+    let location: TodoMyLocation
     let action: () -> Void
     
     var body: some View {
@@ -157,4 +181,12 @@ struct LocationButton: View {
             .cornerRadius(8)
         }
     }
+}
+
+
+struct PlaceInfo {
+    let name: String
+    let address: String
+    let latitude: Double
+    let longitude: Double
 }

@@ -50,7 +50,12 @@ struct TodoEditSheet: View {
                     
                     RelateSchedule(viewModel: $viewModel)
                     
-                    RoutineSection(viewModel: $viewModel)
+                    RoutineSection(
+                        isRoutineEnabled: $viewModel.isRoutineEnabled,
+                        selectedRoutine: $viewModel.selectedRoutine,
+                        routineEndDate: $viewModel.routineEndDate,
+                        hasEndDate: $viewModel.hasEndDate
+                    )
                     
                     BottomButtons(
                         viewModel: $viewModel,

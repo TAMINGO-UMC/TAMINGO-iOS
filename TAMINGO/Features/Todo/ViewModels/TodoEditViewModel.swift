@@ -1,23 +1,20 @@
-//
-//  TodoEditViewModel.swift
-//  TAMINGO
-//
-//  Created by 엄지용 on 1/31/26.
-//
+
 import SwiftUI
+import Moya
 
 @Observable
 class TodoEditViewModel {
     var title: String
-    // nil = 날짜 미지정. CalendarSheet 열기 시 nil이면 오늘 날짜로 표시
-    // 확인하지 않고 닫으면 다시 nil로 복원됨
     var selectedDate: Date?
-    var location: String
+    var placeName: String
+    var address: String?
+    var latitude: Double?
+    var longitude: Double?
     var duration: String
     var category: String
-    var relatedSchedules: [RelatedScheduleItem]
+    var relatedSchedules: [TodoRelatedScheduleItem]
     var isRoutineEnabled: Bool
-    var selectedRoutine: RoutineType
+    var selectedRoutine: TodoRoutineType
     var routineEndDate: Date
     var hasEndDate: Bool
     
@@ -38,13 +35,16 @@ class TodoEditViewModel {
     var durationDate: Date = Date()
     
     // 내 장소 목록
-    var myLocations: [MyLocation] = [
-        MyLocation(icon: "house.fill", name: "집", color: .blue),
-        MyLocation(icon: "building.2.fill", name: "학교", color: .green),
-        MyLocation(icon: "briefcase.fill", name: "회사", color: .orange),
-        MyLocation(icon: "cart.fill", name: "도서관", color: .yellow),
-        MyLocation(icon: "cup.and.saucer.fill", name: "카페", color: .brown)
-    ]
+    var myLocations: [TodoMyLocation] = []
+    
+    // 자주 가는 장소 추천 여부
+    var isFavoriteRecommendation: Bool = false
+    
+    // Moya Provider
+    private let provider = MoyaProvider<TodoTarget>(
+        stubClosure: MoyaProvider.delayedStub(0.5),
+        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
+    )
     
     // 날짜 표시 문자열
     var formattedDate: String {
@@ -58,16 +58,15 @@ class TodoEditViewModel {
     }
     
     // MARK: - init
-    // TodoItem의 실제 저장된 값으로 초기화
-    // - date가 nil이면 selectedDate도 nil 유지 → Sheet에서 "미지정" 표시
-    // - location / duration 등은 item 저장값 우선, 없으면 AI 기본값
-    // - 루틴 필드도 item에서 복원
     init(item: TodoItem) {
         self.title = item.title
         self.selectedDate = item.date
         
-        self.location = item.location ?? "학교"
-        self.isLocationAIGenerated = (item.location == nil)
+        self.placeName = item.placeName ?? ""
+        self.address = item.address
+        self.latitude = item.latitude
+        self.longitude = item.longitude
+        self.isLocationAIGenerated = (item.placeName == nil)
         
         self.duration = TodoEditViewModel.formatDuration(minutes: item.estimatedMinutes)
         self.isDurationAIGenerated = (item.estimatedMinutes == nil)
@@ -75,22 +74,19 @@ class TodoEditViewModel {
         self.category = item.category
         self.isCategoryAIGenerated = item.category.isEmpty
         
-        // 관련 일정: item에 저장된 것이 있으면 isSelected = true로 복원
-        let savedTitles = Set(item.relatedSchedules.map { $0.title })
-        self.relatedSchedules = [
-            RelatedScheduleItem(title: "팀플 미팅",  location: "광운대학교",         isSelected: savedTitles.contains("팀플 미팅")),
-            RelatedScheduleItem(title: "동아리",     location: "메가커피 광운대점",   isSelected: savedTitles.contains("동아리"))
-        ]
+        // 관련 일정: item에 저장된 것 사용
+        self.relatedSchedules = item.relatedSchedules
         
         // 루틴: item에서 복원
         self.isRoutineEnabled = item.isRoutineEnabled
-        self.selectedRoutine  = item.routineType
-        self.hasEndDate       = item.routineEndDate != nil
-        self.routineEndDate   = item.routineEndDate
+        self.selectedRoutine = item.routineType
+        self.hasEndDate = item.routineEndDate != nil
+        self.routineEndDate = item.routineEndDate
             ?? Calendar.current.date(byAdding: .month, value: 1, to: Date())
             ?? Date()
         
         self.isScheduleAIGenerated = true
+        self.isFavoriteRecommendation = false
         
         parseDuration()
         
@@ -98,6 +94,90 @@ class TodoEditViewModel {
         components.hour = selectedHour
         components.minute = selectedMinute
         self.durationDate = Calendar.current.date(from: components) ?? Date()
+        
+        // 자주 가는 장소 로드
+        loadFrequentPlaces()
+    }
+    
+    // MARK: - 자주 가는 장소 로드 (Moya Provider 방식)
+    func loadFrequentPlaces() {
+        provider.request(.getFrequentPlaces) { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let response):
+                do {
+                    let filteredResponse = try response.filterSuccessfulStatusCodes()
+                    let decodedData = try filteredResponse.map(BaseResponse<FrequentPlacesResponseDTO>.self)
+                    
+                    if let places = decodedData.result?.places {
+                        self.myLocations = places.map { $0.toTodoMyLocation() }
+                    }
+                } catch {
+                    print("자주 가는 장소 로드 실패: \(error.localizedDescription)")
+                }
+                
+            case .failure(let error):
+                print("자주 가는 장소 네트워크 오류: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // MARK: - 장소 선택 시 관련 할일 조회 (Moya Provider 방식)
+    func selectPlace(name: String, address: String, latitude: Double, longitude: Double) {
+        self.placeName = name
+        self.address = address
+        self.latitude = latitude
+        self.longitude = longitude
+        self.isLocationAIGenerated = false
+        
+        // 관련 할일 조회
+        let requestDTO = RelatedTodosRequestDTO(
+            placeName: name,
+            latitude: latitude,
+            longitude: longitude
+        )
+        
+        provider.request(.getRelatedTodos(body: requestDTO)) { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let response):
+                do {
+                    let filteredResponse = try response.filterSuccessfulStatusCodes()
+                    let decodedData = try filteredResponse.map(BaseResponse<RelatedTodosResponseDTO>.self)
+                    
+                    if let resultData = decodedData.result {
+                        // 근처 할일과 후보 할일을 relatedSchedules에 추가
+                        let nearbyItems = resultData.nearbyTodos.map { todo in
+                            TodoRelatedScheduleItem(
+                                title: todo.title,
+                                location: todo.placeName ?? "",
+                                isSelected: false,
+                                scheduleId: nil
+                            )
+                        }
+                        let candidateItems = resultData.candidateTodos.map { todo in
+                            TodoRelatedScheduleItem(
+                                title: todo.title,
+                                location: todo.placeName ?? "",
+                                isSelected: false,
+                                scheduleId: nil
+                            )
+                        }
+                        
+                        // 기존 일정 유지하면서 할일 추가
+                        self.relatedSchedules = self.relatedSchedules + nearbyItems + candidateItems
+                        self.isFavoriteRecommendation = resultData.isFavoriteRecommendation
+                    }
+                } catch {
+                    print("관련 할일 조회 파싱 오류: \(error.localizedDescription)")
+                }
+                
+            case .failure(let error):
+                print("관련 할일 조회 네트워크 오류: \(error.localizedDescription)")
+            }
+        }
     }
     
     // MARK: - duration 파싱
@@ -115,22 +195,24 @@ class TodoEditViewModel {
     }
     
     // MARK: - 저장
-    /// 편집된 모든 필드를 TodoItem에 기록
-    /// - selectedDate가 nil이면 item.date도 nil → "날짜 미지정" 섹션으로 이동
-    /// - 체크된 relatedSchedules도 item에 저장
-    /// - 루틴 상태도 item에 저장
     func saveChanges(to item: inout TodoItem) {
-        item.title            = title
-        item.date             = selectedDate
-        item.location         = location
-        item.category         = category
+        item.title = title
+        item.date = selectedDate
+        item.placeName = placeName
+        item.address = address
+        item.latitude = latitude
+        item.longitude = longitude
+        item.category = category
         item.estimatedMinutes = parsedTotalMinutes
         item.relatedSchedules = relatedSchedules.filter { $0.isSelected }
         
+        // 선택된 일정 중 첫 번째를 linkedScheduleId로 설정
+        item.linkedScheduleId = relatedSchedules.first(where: { $0.isSelected })?.scheduleId
+        
         // 루틴 저장
         item.isRoutineEnabled = isRoutineEnabled
-        item.routineType      = selectedRoutine
-        item.routineEndDate   = hasEndDate ? routineEndDate : nil
+        item.routineType = selectedRoutine
+        item.routineEndDate = hasEndDate ? routineEndDate : nil
     }
     
     // MARK: - 헬퍼
@@ -145,29 +227,7 @@ class TodoEditViewModel {
         let h = minutes / 60
         let m = minutes % 60
         if h > 0 && m > 0 { return "\(h)시간 \(m)분" }
-        if h > 0           { return "\(h)시간" }
+        if h > 0 { return "\(h)시간" }
         return "\(m)분"
     }
-}
-
-// MARK: - Supporting Models
-struct RelatedScheduleItem: Identifiable {
-    let id = UUID()
-    var title: String
-    var location: String
-    var isSelected: Bool
-}
-
-enum RoutineType: String, CaseIterable, Identifiable {
-    var id: String { rawValue }
-    case daily   = "매일"
-    case weekly  = "매주"
-    case monthly = "매달"
-}
-
-struct MyLocation: Identifiable {
-    let id = UUID()
-    let icon: String
-    let name: String
-    let color: Color
 }

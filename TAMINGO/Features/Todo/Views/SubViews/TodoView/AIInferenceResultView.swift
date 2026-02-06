@@ -1,9 +1,3 @@
-//
-//  AIInferenceResultView.swift
-//  TAMINGO
-//
-//  Created by Claude on 2/2/26.
-//
 
 import SwiftUI
 
@@ -43,7 +37,7 @@ struct AIInferenceResultView: View {
                 
                 Spacer()
                 
-                Text(result.location)
+                Text(result.locationDisplay)
                     .font(.regular10)
                     .foregroundColor(.black)
             }
@@ -56,7 +50,7 @@ struct AIInferenceResultView: View {
                 
                 Spacer()
                 
-                Text(result.estimatedTime)
+                Text(result.durationDisplay)
                     .font(.regular10)
                     .foregroundColor(.black)
             }
@@ -82,8 +76,11 @@ struct AIInferenceResultView: View {
     AIInferenceResultView(
         result: AIInferenceResult(
             category: "일상",
-            location: "광운대학교 중앙도서관",
-            estimatedTime: "10분"
+            placeName: "광운대학교 중앙도서관",
+            address: "서울 노원구 광운로 20",
+            latitude: 37.6192404638865,
+            longitude: 127.058270608867,
+            duration: 10
         )
     )
     .padding()

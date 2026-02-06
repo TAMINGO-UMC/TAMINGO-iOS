@@ -28,9 +28,10 @@ struct RelateSchedule: View {
                 .font(.regular12)
                 .foregroundColor(.gray2)
             
-            RelatedScheduleContainer(
-                schedules: $viewModel.relatedSchedules,
-                isExpanded: $viewModel.isScheduleExpanded
+            RelatedScheduleContainer (
+                relatedSchedules: $viewModel.relatedSchedules,
+                isExpanded: $viewModel.isScheduleExpanded,
+                isAIGenerated: viewModel.isScheduleAIGenerated
             )
         }
     }

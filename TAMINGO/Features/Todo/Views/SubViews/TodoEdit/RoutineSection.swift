@@ -2,52 +2,68 @@
 //  RoutineSection.swift
 //  TAMINGO
 //
-//  Created by 엄지용 on 1/29/26.
+//  Created by 엄지용 on 1/31/26.
 //
 
 import SwiftUI
 
 struct RoutineSection: View {
-    @Binding var viewModel: TodoEditViewModel
+    @Binding var isRoutineEnabled: Bool
+    @Binding var selectedRoutine: TodoRoutineType
+    @Binding var routineEndDate: Date
+    @Binding var hasEndDate: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // 루틴 토글
             HStack {
-                Text("루틴 설정")
+                Text("루틴")
                     .font(.medium14)
                     .foregroundColor(.black)
                 
                 Spacer()
                 
-                Toggle("", isOn: Binding(
-                    get: { viewModel.isRoutineEnabled },
-                    set: { newValue in
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                            viewModel.isRoutineEnabled = newValue
-                        }
-                    }
-                ))
+                Toggle("", isOn: $isRoutineEnabled)
                     .labelsHidden()
-                    .tint(.mainMint)
             }
             
-            Text("반복 주기를 선택해주세요")
-                .font(.regular10)
-                .foregroundColor(.gray2)
-            
-            // if/else 제거 → opacity + offset로 숨김
-            // 뷰 그래프에서 제거되지 않으면 Binding 체인이 안정적임
-            RoutineSelector(
-                selectedRoutine: $viewModel.selectedRoutine,
-                routineEndDate: $viewModel.routineEndDate,
-                hasEndDate: $viewModel.hasEndDate
-            )
-            .opacity(viewModel.isRoutineEnabled ? 1.0 : 0.0)
-            .frame(height: viewModel.isRoutineEnabled ? nil : 0)
-            .clipped()
-            .offset(y: viewModel.isRoutineEnabled ? 0 : -8)
-            .allowsHitTesting(viewModel.isRoutineEnabled)
-            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: viewModel.isRoutineEnabled)
+            if isRoutineEnabled {
+                // 루틴 타입 선택
+                RoutineSelector(selectedRoutine: $selectedRoutine)
+                
+                // 종료일 설정
+                HStack {
+                    Text("종료일")
+                        .font(.medium14)
+                        .foregroundColor(.black)
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $hasEndDate)
+                        .labelsHidden()
+                }
+                
+                if hasEndDate {
+                    DatePicker(
+                        "",
+                        selection: $routineEndDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                }
+            }
         }
+        .padding(.vertical, 8)
     }
+}
+
+#Preview {
+    RoutineSection(
+        isRoutineEnabled: .constant(true),
+        selectedRoutine: .constant(.daily),
+        routineEndDate: .constant(Date()),
+        hasEndDate: .constant(true)
+    )
+    .padding()
 }

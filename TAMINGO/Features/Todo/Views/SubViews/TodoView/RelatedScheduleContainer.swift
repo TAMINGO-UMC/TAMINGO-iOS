@@ -1,53 +1,107 @@
+//
+//  RelatedScheduleContainer.swift
+//  TAMINGO
+//
+//  Created by 엄지용 on 1/31/26.
+//
 
 import SwiftUI
 
-// MARK: - Related Schedule Container
 struct RelatedScheduleContainer: View {
-    @Binding var schedules: [RelatedScheduleItem]
+    @Binding var relatedSchedules: [TodoRelatedScheduleItem]
     @Binding var isExpanded: Bool
+    let isAIGenerated: Bool
     
-    var body: some View {
-        VStack(spacing: 0) {
-            // Schedule Rows (Divider 제거)
-            ForEach(schedules.prefix(isExpanded ? schedules.count : 2)) { schedule in
-                RelatedScheduleRow(schedule: binding(for: schedule))
-            }
-            
-            // 일정 전체보기/추론된 일정만 보기 버튼
-            Button(action: {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    isExpanded.toggle()
-                }
-            }) {
-                HStack {
-                    Spacer()
-                    
-                    Text(isExpanded ? "추론된 일정만 보기" : "일정 전체보기")
-                        .font(.regular12)
-                        .foregroundColor(.gray2)
-                    
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 10))
-                        .foregroundColor(.gray2)
-                    
-                    Spacer()
-                }
-                .frame(width: 309, height: 41.79)
-            }
-            .background(Color.white)
-            .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.06), radius: 6.89, x: 0, y: 2.3)
-        }
-        .frame(maxWidth: .infinity)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray1, lineWidth: 1)
-        )
+    var selectedSchedule: TodoRelatedScheduleItem? {
+        relatedSchedules.first(where: { $0.isSelected })
     }
     
-    private func binding(for schedule: RelatedScheduleItem) -> Binding<RelatedScheduleItem> {
-        guard let index = schedules.firstIndex(where: { $0.id == schedule.id }) else {
-            fatalError("Schedule not found")
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("일정 연결")
+                    .font(.medium14)
+                    .foregroundColor(.black)
+                
+                if isAIGenerated {
+                    AIBadge()
+                }
+                
+                Spacer()
+            }
+            
+            if !isExpanded {
+                // 축소 상태: 선택된 일정 표시
+                if let schedule = selectedSchedule {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(schedule.title)
+                                .font(.medium14)
+                                .foregroundColor(.black)
+                            
+                            if !schedule.location.isEmpty {
+                                Text(schedule.location)
+                                    .font(.regular12)
+                                    .foregroundColor(.gray2)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        EditButton(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                isExpanded = true
+                            }
+                        })
+                        
+                        DeleteButton(action: {
+                            if let index = relatedSchedules.firstIndex(where: { $0.id == schedule.id }) {
+                                relatedSchedules[index].isSelected = false
+                            }
+                        })
+                    }
+                } else {
+                    // 선택된 일정 없음
+                    HStack {
+                        Text("일정을 선택하세요")
+                            .font(.medium14)
+                            .foregroundColor(.gray2)
+                        
+                        Spacer()
+                        
+                        EditButton(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                isExpanded = true
+                            }
+                        })
+                    }
+                }
+            } else {
+                // 확장 상태: 일정 목록
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach($relatedSchedules) { $schedule in
+                        RelatedScheduleRow(schedule: $schedule)
+                    }
+                    
+                    // 취소 버튼
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isExpanded = false
+                        }
+                    }) {
+                        Text("취소")
+                            .font(.medium12)
+                            .foregroundColor(.gray2)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 32)
+                            .background(Color.gray0)
+                            .cornerRadius(6)
+                    }
+                }
+                .padding(16)
+                .background(Color.gray0.opacity(0.5))
+                .cornerRadius(8)
+            }
         }
-        return $schedules[index]
     }
 }

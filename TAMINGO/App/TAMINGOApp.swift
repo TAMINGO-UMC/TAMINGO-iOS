@@ -7,9 +7,16 @@ struct TamingoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LoginRootView()
-                .environment(signupProgressStore)
-                .environment(signupSessionStore)
+//            LoginRootView()
+//                .environment(signupProgressStore)
+//                .environment(signupSessionStore)
+            ToDoView()
+                .onAppear {
+                    print("Config.baseURL =", Config.baseURL)
+                }
+                  .environment(signupProgressStore)
+                  .environment(signupSessionStore)
+            
         }
     }
 }
