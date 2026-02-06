@@ -7,8 +7,13 @@
 
 import Foundation
 
-struct Place: Identifiable,Equatable {
-    let id = UUID()
+struct Place : Identifiable{
+    let id: UUID = UUID()
+
+    let name: String
     let address: String
-    let nickname: String  
+    let latitude: Double
+    let longitude: Double
 }
+
+

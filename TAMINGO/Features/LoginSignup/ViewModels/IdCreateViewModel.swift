@@ -5,7 +5,6 @@ final class IdCreateViewModel {
 
     var email: String
 
-    // 입력 데이터
     var nickname: String = ""
     var password: String = ""
     var confirmPassword: String = ""
@@ -18,23 +17,28 @@ final class IdCreateViewModel {
         !nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    var passwordDone: Bool {
-        !password.isEmpty
+    var passwordDone: Bool { !password.isEmpty }
+    var confirmDone: Bool { !confirmPassword.isEmpty }
+
+    // 8~16자 + (영문/숫자/특수문자만 허용)
+    private var passwordAllowedOnly: Bool {
+        let pw = password
+        let allowedPattern = "^[A-Za-z0-9!@#$%^&*()_+=\\-\\[\\]{};:'\",.<>/?`~\\\\|]+$"
+        return pw.range(of: allowedPattern, options: .regularExpression) != nil
     }
 
-    var confirmDone: Bool {
-        !confirmPassword.isEmpty
+    var isPasswordValid: Bool {
+        (8...16).contains(password.count) && passwordAllowedOnly
     }
 
     var isMatch: Bool {
         confirmDone && (password == confirmPassword)
     }
 
-    // 상위 항목 입력 전에는 아래 입력 비활성
     var canEditPassword: Bool { nicknameDone }
-    var canEditConfirm: Bool { passwordDone }
+    var canEditConfirm: Bool { isPasswordValid }
 
-    var canNext: Bool { nicknameDone && passwordDone && isMatch }
+    var canNext: Bool { nicknameDone && isPasswordValid && isMatch }
 
     func primaryAction(onNext: (String, String) -> Void) {
         guard canNext else { return }

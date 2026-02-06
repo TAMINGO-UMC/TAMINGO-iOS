@@ -37,7 +37,28 @@ extension Font {
         }
     }
     
+    public enum Paperlogy {
+        case onboarding1
+        case onboarding2
+        case onboarding3
+        
+        var value: String {
+            switch self {
+            case .onboarding1:
+                return "Paperlogy-6SemiBold"
+            case .onboarding2:
+                return "Paperlogy-7Bold"
+            case .onboarding3:
+                return "Paperlogy-5Medium"
+            }
+        }
+    }
+    
     static func pretendard(_ type: Pretendard, size: CGFloat = 17) -> Font {
+        return .custom(type.value, size: size)
+    }
+    
+    static func paperlogy(_ type: Paperlogy, size: CGFloat = 17) -> Font {
         return .custom(type.value, size: size)
     }
     
@@ -52,6 +73,7 @@ extension Font {
     // MARK: - SemiBold
     static var semiBold38: Font { .pretendard(.semibold, size: 38) }
     static var semiBold24: Font { .pretendard(.semibold, size: 24) }
+    static var semiBold20: Font { .pretendard(.semibold, size: 20) } //추가
     static var semiBold18: Font { .pretendard(.semibold, size: 18) }
     static var semiBold16: Font { .pretendard(.semibold, size: 16) }
     static var semiBold14: Font { .pretendard(.semibold, size: 14) }
@@ -63,10 +85,12 @@ extension Font {
     static var regular18: Font { .pretendard(.regular, size: 18) }
     static var regular13: Font { .pretendard(.regular, size: 13) }
     static var regular12: Font { .pretendard(.regular, size: 12) }
+    static var regular11: Font { .pretendard(.regular, size: 11) }
     static var regular10: Font { .pretendard(.regular, size: 10) }
     static var regular09: Font { .pretendard(.regular, size: 9) }
     
     // MARK: - Medium
+    static var medium24: Font { .pretendard(.medium, size: 24) } //추가
     static var medium18: Font { .pretendard(.medium, size: 18) }
     static var medium16: Font { .pretendard(.medium, size: 16) }
     static var medium14: Font { .pretendard(.medium, size: 14) }
@@ -77,4 +101,9 @@ extension Font {
     
     // MARK: - Light
     static var light14: Font { .pretendard(.light, size: 14) }
+    
+    // MARK: - Onboaring
+    static var onboarding1: Font { .paperlogy(.onboarding1, size: 22)}
+    static var onboarding2: Font { .paperlogy(.onboarding2, size: 12)}
+    static var onboarding3: Font { .paperlogy(.onboarding3, size: 10)}
 }

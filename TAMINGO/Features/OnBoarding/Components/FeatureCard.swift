@@ -20,11 +20,11 @@ struct FeatureCard: View {
 
             VStack(alignment: .leading, spacing: 3.54) {
                 Text(title)
-                    .font(.system(size: 11, weight: .bold)) // TODO: 폰트 변경 필요
+                    .font(.onboarding2)
                     .foregroundStyle(.black)
 
                 Text(attributedText)
-                    .font(.system(size: 8)) // TODO: 폰트 변경 필요
+                    .font(.onboarding3)
                     .foregroundStyle(.gray2)
             }
         }
@@ -87,7 +87,7 @@ private extension FeatureCard {
         for highlight in highlights {
             if let range = attributed.range(of: highlight) {
                 attributed[range].foregroundColor = .mainMint
-                attributed[range].font = .system(size: 8, weight: .semibold) // TODO: 폰트 변경 필요
+                attributed[range].font = .onboarding3
             }
         }
 

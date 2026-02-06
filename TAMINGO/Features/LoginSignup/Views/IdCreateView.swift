@@ -15,8 +15,7 @@ struct IdCreateView: View {
 
     private enum Field: Hashable { case nickname, password, confirm }
     @FocusState private var focus: Field?
-  
-    
+
     var body: some View {
         VStack(spacing: 0) {
 
@@ -53,16 +52,26 @@ struct IdCreateView: View {
                 .focused($focus, equals: .nickname)
                 .submitLabel(.next)
 
-                FieldRow(
-                    title: "비밀번호",
-                    binding: $vm.password,
-                    rightIcon: .none,
-                    isFocused: focus == .password,
-                    isEditable: vm.canEditPassword,
-                    isSecure: true
-                )
-                .focused($focus, equals: .password)
-                .submitLabel(.next)
+                //Vstack으로 묶어서 밑줄이랑 출력문구 간격 조절
+                VStack(alignment: .leading, spacing: 3) { 
+                    FieldRow(
+                        title: "비밀번호",
+                        binding: $vm.password,
+                        rightIcon: .none,
+                        isFocused: focus == .password,
+                        isEditable: vm.canEditPassword,
+                        isSecure: true
+                    )
+                    .focused($focus, equals: .password)
+                    .submitLabel(.next)
+
+                    if focus == .password && !vm.isPasswordValid {
+                        Text("8~16자의 영문 대소문자, 숫자, 특수문자만 가능합니다.")
+                            .font(.regular10)
+                            .foregroundStyle(Color("Gray2"))
+                            .padding(.top, -2) // <- 더 붙이고 싶으면 유지, 아니면 제거
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 8) {
                     FieldRow(
@@ -88,14 +97,13 @@ struct IdCreateView: View {
             }
             .padding(.horizontal, 28)
             .padding(.top, 36)
-            
+
             Spacer()
-            
+
             PrimaryActionButton(title: "다음", isEnabled: vm.canNext) {
-                // 세션 저장
                 sessionStore.nickname = vm.nickname
                 sessionStore.password = vm.password
-                
+
                 Task { @MainActor in
                     progressStore.set(1.0, animated: true)
                 }
@@ -114,82 +122,84 @@ struct IdCreateView: View {
                 vm.email = sessionStore.email
             }
         }
-        .navigationBarBackButtonHidden(true) 
+        .navigationBarBackButtonHidden(true)
     }
 }
 
-    private enum RightIconType { case none, check, error }
+private enum RightIconType { case none, check, error }
 
-    private struct FieldRow: View {
-        let title: String
-        var valueText: String? = nil
-        var binding: Binding<String>? = nil
+private struct FieldRow: View {
+    let title: String
+    var valueText: String? = nil
+    var binding: Binding<String>? = nil
 
-        let rightIcon: RightIconType
-        let isFocused: Bool
-        let isEditable: Bool
-        let isSecure: Bool
+    let rightIcon: RightIconType
+    let isFocused: Bool
+    let isEditable: Bool
+    let isSecure: Bool
 
-        init(title: String, valueText: String, rightIcon: RightIconType, isFocused: Bool, isEditable: Bool, isSecure: Bool) {
-            self.title = title
-            self.valueText = valueText
-            self.rightIcon = rightIcon
-            self.isFocused = isFocused
-            self.isEditable = isEditable
-            self.isSecure = isSecure
-        }
+    init(title: String, valueText: String, rightIcon: RightIconType, isFocused: Bool, isEditable: Bool, isSecure: Bool) {
+        self.title = title
+        self.valueText = valueText
+        self.rightIcon = rightIcon
+        self.isFocused = isFocused
+        self.isEditable = isEditable
+        self.isSecure = isSecure
+    }
 
-        init(title: String, binding: Binding<String>, rightIcon: RightIconType, isFocused: Bool, isEditable: Bool, isSecure: Bool) {
-            self.title = title
-            self.binding = binding
-            self.rightIcon = rightIcon
-            self.isFocused = isFocused
-            self.isEditable = isEditable
-            self.isSecure = isSecure
-        }
+    init(title: String, binding: Binding<String>, rightIcon: RightIconType, isFocused: Bool, isEditable: Bool, isSecure: Bool) {
+        self.title = title
+        self.binding = binding
+        self.rightIcon = rightIcon
+        self.isFocused = isFocused
+        self.isEditable = isEditable
+        self.isSecure = isSecure
+    }
 
-        var body: some View {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color("Gray2"))
+    var body: some View {
 
-                HStack(spacing: 8) {
-                    if let valueText {
-                        Text(valueText)
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color("Gray2"))
+
+            HStack(spacing: 8) {
+                if let valueText {
+                    Text(valueText)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color("Gray2"))
+                } else if let binding {
+                    if isSecure {
+                        SecureField("", text: binding)
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color("Gray2"))
-                    } else if let binding {
-                        if isSecure {
-                            SecureField("", text: binding)
-                                .font(.system(size: 16, weight: .medium))
-                                .disabled(!isEditable)
-                                .opacity(isEditable ? 1.0 : 0.45)
-                                .textContentType(.newPassword)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                        } else {
-                            TextField("", text: binding)
-                                .font(.system(size: 16, weight: .medium))
-                                .disabled(!isEditable)
-                                .opacity(isEditable ? 1.0 : 0.45)
-                        }
-                    }
-
-                    Spacer()
-
-                    switch rightIcon {
-                    case .none: EmptyView()
-                    case .check: Image(Asset.check).resizable().frame(width: 18, height: 18)
-                    case .error: Image(Asset.error).resizable().frame(width: 18, height: 18)
+                            .disabled(!isEditable)
+                            .opacity(isEditable ? 1.0 : 0.45)
+                            .textContentType(.newPassword)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                    } else {
+                        TextField("", text: binding)
+                            .font(.system(size: 16, weight: .medium))
+                            .disabled(!isEditable)
+                            .opacity(isEditable ? 1.0 : 0.45)
                     }
                 }
 
-                Rectangle()
-                    .fill(Color("MainMint").opacity(isFocused ? 1.0 : 0.25))
-                    .frame(height: isFocused ? 2 : 1)
+                Spacer()
+
+                switch rightIcon {
+                case .none:
+                    EmptyView()
+                case .check:
+                    Image(Asset.check).resizable().frame(width: 18, height: 18)
+                case .error:
+                    Image(Asset.error).resizable().frame(width: 18, height: 18)
+                }
             }
+
+            Rectangle()
+                .fill(Color("MainMint").opacity(isFocused ? 1.0 : 0.25))
+                .frame(height: isFocused ? 2 : 1)
         }
     }
-
-
+}

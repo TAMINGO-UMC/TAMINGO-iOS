@@ -43,3 +43,51 @@ extension Date {
         return formatter.string(from: self)
     }
 }
+
+extension String {
+    func toTimeDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.date(from: self)
+    }
+    
+    // Mock 데이터 용 - 실제 개발에서는 사용 X
+    func toTimeDateOrFail(
+        file: StaticString = #file,
+        line: UInt = #line
+    ) -> Date {
+        guard let date = toTimeDate() else {
+            preconditionFailure(
+                "Invalid time format: \(self)",
+                file: file,
+                line: line
+            )
+        }
+        return date
+    }
+    
+    func toDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.date(from: self)
+    }
+    
+    func toTimeStr(format: String) -> String {
+        let inputFormatter = DateFormatter()
+        // 들어오는 데이터 형식
+        inputFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        inputFormatter.locale = Locale(identifier: "ko_KR") // 포맷 고정 필수
+        
+        guard let date = inputFormatter.date(from: self) else {
+            return "" // 변환 실패 시 빈 문자열 반환
+        }
+        
+        // 원하는 데이터 형식
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = format
+        
+        return outputFormatter.string(from: date)
+    }
+}

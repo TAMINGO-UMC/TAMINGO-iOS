@@ -29,13 +29,14 @@ struct SignupTopBar: View {
                 .buttonStyle(.plain)
 
                 Text(title)
-                    .font(.bold24)
+                    .font(.medium24)
                     .foregroundStyle(.black)
 
                 Spacer()
             }
-            .padding(.horizontal, 8)
-            .padding(.top, 6)
+            .padding(.leading, 20)   // ✅ 값 키울수록 더 오른쪽
+            .padding(.trailing, 20)
+            .padding(.top, 20)
         }
     }
 }
