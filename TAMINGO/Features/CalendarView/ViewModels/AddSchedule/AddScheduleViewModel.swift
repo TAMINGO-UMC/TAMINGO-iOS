@@ -13,10 +13,8 @@ import Moya
 @Observable
 class AddScheduleViewModel {
     // MARK: - Dependencies
-    let provider = MoyaProvider<ScheduleTarget>(
-        stubClosure: MoyaProvider.delayedStub(1.0),
-        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
-    )
+    let provider = MoyaProvider<ScheduleTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
+    
     var cancellables = Set<AnyCancellable>()
     let inputSubject = PassthroughSubject<String, Never>()
     

@@ -13,13 +13,15 @@ struct ScheduleCreationResponseDTO: Decodable {
 }
 
 // MARK: - 일정 목록
-struct ScheduleListDTO: Decodable {
+struct ScheduleListDTO: Decodable, Identifiable {
     let scheduleId: Int
     let title: String
     let startTime: String
     let endTime: String
     let placeName: String
     let category: String
+    
+    var id: Int { scheduleId }
 }
 
 // MARK: - 일정 상세 정보 (일정 상세 조회 및 생성 결과용)
@@ -68,7 +70,6 @@ struct TodoSummaryDTO: Decodable {
 struct ScheduleCategoryDTO: Decodable, Identifiable{
     let id: Int
     let name: String
-    let iconCode: String
     let colorCode: String
 }
 

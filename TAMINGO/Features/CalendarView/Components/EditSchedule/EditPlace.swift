@@ -27,6 +27,7 @@ struct EditPlace: View {
             }
             
             if isEditing {
+                //TODO: 장소 검색 추가
                 placeListScroll
             } else {
                 SelectedItemRow(title: placeName) {

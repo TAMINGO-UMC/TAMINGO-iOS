@@ -48,7 +48,7 @@ struct EditTodo: View {
                     }
                 } label: {
                     HStack(spacing: 4) {
-                        Text(isTodoExpanded ? "추론된 할 일만 보기" : "할 일 전체보기")
+                        Text(isTodoExpanded ? "선택된 할 일만 보기" : "할 일 전체보기")
                         Image(systemName: isTodoExpanded ? "chevron.up" : "chevron.down")
                     }
                     .font(.medium12)

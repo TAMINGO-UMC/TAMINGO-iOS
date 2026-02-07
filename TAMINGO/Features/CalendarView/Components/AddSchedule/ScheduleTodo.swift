@@ -13,6 +13,7 @@ struct ScheduleTodo: View {
     var linkedTodos: [TodoSummaryDTO]     // 선택된(AI 추천) 할 일
     var candidateTodos: [TodoSummaryDTO]  // 선택되지 않은 나머지 할 일
     var isLoading: Bool
+    var titleInput: String
     
     // State
     @Binding var isTodoExpanded: Bool
@@ -32,8 +33,10 @@ struct ScheduleTodo: View {
             // 본문
             if isLoading {
                 AILoadingRow(text: "할 일 추론중 ...")
-            } else if linkedTodos.isEmpty && candidateTodos.isEmpty {
+            } else if titleInput.isEmpty {
                 GuideText(text: "제목 입력 시 AI가 할 일을 추천해 드립니다")
+            } else if linkedTodos.isEmpty && candidateTodos.isEmpty {
+                GuideText(text: "연결할 할 일이 없습니다")
             } else {
                 // MARK: - 메인 컨테이너 박스
                 VStack(spacing: 0) {

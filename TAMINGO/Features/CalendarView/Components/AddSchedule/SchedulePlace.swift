@@ -36,6 +36,7 @@ struct SchedulePlace: View {
             } else if titleInput.isEmpty {
                 GuideText(text: "제목 입력 시 AI가 장소를 추론합니다")
             } else if isEditing {
+                //TODO: 장소 검색 추가
                 placeListScroll
             } else {
                 SelectedItemRow(title: placeName) {

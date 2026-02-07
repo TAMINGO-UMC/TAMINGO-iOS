@@ -55,6 +55,7 @@ struct AddScheduleView: View {
                         linkedTodos: viewModel.linkedTodos,
                         candidateTodos: viewModel.candidateTodos,
                         isLoading: viewModel.isLoading,
+                        titleInput: viewModel.title,
                         isTodoExpanded: $viewModel.isTodoExpanded,
                         onToggleTodo: { todo in
                             viewModel.toggleTodoSelection(todo)
