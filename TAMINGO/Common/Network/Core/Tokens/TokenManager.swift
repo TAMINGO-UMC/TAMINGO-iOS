@@ -4,11 +4,16 @@
 //
 //  Created by 엄지용 on 2/7/26.
 //
-// 키체인 토큰 저장 및 자동 갱신
+//  키체인 토큰 저장 및 자동 갱신
 
 import Foundation
 import Security
 import Alamofire
+
+// 로그인 성공 알림 이름 추가
+extension Notification.Name {
+    static let userDidLogin = Notification.Name("userDidLogin")
+}
 
 // MARK: - Keychain Token Storage
 final class TokenManager {
@@ -66,7 +71,7 @@ final class TokenManager {
         deleteUserId()
     }
     
-    // MARK: - Private Helpers
+    // MARK: - Private Helpers (Keychain)
     private func save(_ value: String, forKey key: String) {
         guard let data = value.data(using: .utf8) else { return }
         
@@ -133,17 +138,28 @@ class TokenInterceptor: RequestInterceptor {
             return
         }
         
+        //  수정--> 무한 루프 방지: 최대 재시도 횟수 제한 (예: 3회)
+        if request.retryCount >= 3 {
+            print("재시도 횟수 초과. 로그아웃 처리")
+            TokenManager.shared.clearAll()
+            NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            completion(.doNotRetryWithError(error))
+            return
+        }
+        
         // Refresh Token으로 Access Token 갱신
         Task {
             do {
                 let newAccessToken = try await refreshAccessToken()
                 TokenManager.shared.saveAccessToken(newAccessToken)
+                print("토큰 갱신 성공, 재시도 수행")
                 completion(.retry)
             } catch {
+                print("토큰 갱신 실패: \(error)")
                 // Refresh Token도 만료된 경우 모든 토큰 삭제 후 로그인 화면으로
                 TokenManager.shared.clearAll()
                 
-                // TODO: 로그인 화면으로 이동하는 Notification 발생
+                // 로그인 화면으로 이동하는 Notification 발생
                 NotificationCenter.default.post(name: .userDidLogout, object: nil)
                 
                 completion(.doNotRetryWithError(error))
@@ -157,7 +173,11 @@ class TokenInterceptor: RequestInterceptor {
             throw APIError.transport("Refresh Token이 없습니다.")
         }
         
-        let url = URL(string: Config.baseURL + "/api/auth/refresh")!
+        // [수정됨] Force Unwrap 제거 및 URL 생성 안전하게 변경
+        guard let url = URL(string: "\(Config.baseURL)/api/auth/refresh") else {
+            throw APIError.transport("잘못된 URL입니다.")
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -186,4 +206,3 @@ class TokenInterceptor: RequestInterceptor {
 extension Notification.Name {
     static let userDidLogout = Notification.Name("userDidLogout")
 }
-
