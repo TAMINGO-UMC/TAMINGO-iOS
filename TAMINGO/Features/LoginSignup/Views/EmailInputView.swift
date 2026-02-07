@@ -1,16 +1,23 @@
+//
+//  EmailInputView.swift
+//  TAMINGO
+//
+//  Created by 엄지용 on 2/7/26.
+//
+
 import SwiftUI
 
 struct EmailInputView: View {
     @Environment(SignupProgressStore.self) private var progressStore
     @Environment(SignupSessionStore.self) private var sessionStore
     @Environment(\.dismiss) private var dismiss
-    @State var vm: EmailInputViewModel = .init(mode: .mock)
+    @State var vm: EmailInputViewModel = .init()
 
     @State private var goToIdCreate = false
     @FocusState private var isCodeFocused: Bool
 
-    @State private var isDomainMenuOpen = false      // 리스트 열렸다고 가정하는 상태
-    @State private var didPickDomain = false         // 한 번이라도  선택/입력 했는지
+    @State private var isDomainMenuOpen = false
+    @State private var didPickDomain = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,10 +41,7 @@ struct EmailInputView: View {
                     .foregroundStyle(Color("Gray2"))
                     .padding(.top, 45)
 
-                // 인증 완료 시 잠금
                 let locked = vm.isVerified
-
-                // 입력 전/후 활성화 상태
                 let isEmailActive = !vm.emailLocal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
 
                 HStack(spacing: 8) {
@@ -47,7 +51,7 @@ struct EmailInputView: View {
                         .keyboardType(.emailAddress)
                         .font(.medium16)
                         .padding(.vertical, 4)
-                        .disabled(locked) // 인증 완료 시 입력 잠금
+                        .disabled(locked)
 
                     Text("@")
                         .font(.semiBold20)
@@ -59,13 +63,12 @@ struct EmailInputView: View {
                                 vm.domain = d
                                 if d != "직접입력" { vm.customDomain = "" }
 
-                                didPickDomain = true          //선택 이후
+                                didPickDomain = true
                                 isDomainMenuOpen = false
                             }
                         }
                     } label: {
                         let textColor: Color = didPickDomain ? .black : Color("Gray1")
-                        let chevronColor: Color = didPickDomain ? Color("Gray2") : Color("Gray1")
                         let strokeColor: Color =
                             isDomainMenuOpen ? Color("MainMint")
                             : (didPickDomain ? Color("Gray2") : Color("Gray1"))
@@ -90,17 +93,15 @@ struct EmailInputView: View {
                                 .stroke(strokeColor, lineWidth: 1)
                         )
                     }
-                    .disabled(locked) // 인증 완료 시 도메인 변경 잠금
+                    .disabled(locked)
                     .simultaneousGesture(
                         TapGesture().onEnded {
-                            // 잠겨있으면 열림 상태로 바꾸지 않기
                             guard !locked else { return }
                             isDomainMenuOpen = true
                         }
                     )
                 }
 
-               
                 Rectangle()
                     .fill(isEmailActive ? Color("Gray2") : Color("Gray1"))
                     .frame(height: 2)
@@ -113,7 +114,7 @@ struct EmailInputView: View {
                         .keyboardType(.URL)
                         .font(.system(size: 14))
                         .padding(.top, 10)
-                        .disabled(locked) // 인증 완료 시 직접입력도 잠금
+                        .disabled(locked)
 
                     Rectangle()
                         .fill(Color("Gray1").opacity(0.25))
@@ -142,10 +143,10 @@ struct EmailInputView: View {
                 title: vm.primaryTitle,
                 isEnabled: vm.primaryEnabled
             ) {
-                vm.primaryAction { email, token in
+                vm.primaryAction(sessionId: sessionStore.signupSessionId) { email in
                     Task { @MainActor in
                         sessionStore.email = email
-                        sessionStore.verificationToken = token
+                        sessionStore.isEmailVerified = true
                         progressStore.set(2.0/3.0, animated: true)
                         goToIdCreate = true
                     }
@@ -165,7 +166,6 @@ struct EmailInputView: View {
             }
         }
         .onChange(of: vm.isVerified) { _, v in
-            // 인증 완료 후에 메뉴 열림 상태 
             if v { isDomainMenuOpen = false }
         }
     }
@@ -199,7 +199,9 @@ struct EmailInputView: View {
                             vm.errorMessage = "인증번호를 입력해주세요."
                             return
                         }
-                        Task { await vm.confirmCode() }
+                        Task {
+                            await vm.confirmCode(sessionId: sessionStore.signupSessionId)
+                        }
                     } label: {
                         Text("인증하기")
                             .font(.medium12)
@@ -239,7 +241,9 @@ struct EmailInputView: View {
                     }
 
                     Button {
-                        Task { await vm.resendCode() }
+                        Task {
+                            await vm.resendCode(sessionId: sessionStore.signupSessionId)
+                        }
                     } label: {
                         Text("인증번호 재전송")
                             .font(.medium12)
