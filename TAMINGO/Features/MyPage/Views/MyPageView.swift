@@ -54,6 +54,64 @@ struct MyPageView: View {
     }
 }
 
+struct WeeklyReportSection: View {
+    let metrics: [WeeklyMetric]
+
+    var body: some View {
+        Button(action:{
+            print("주간 리포트 이동") // TODO: 주간리포트 페이지 연결
+        }, label:{
+            VStack(alignment: .leading, spacing: 12) {
+                header
+
+                HStack {
+                    ForEach(Array(metrics.enumerated()), id: \.element.id) { index, metric in
+                        MainWeeklyMetricItemView(metric: metric)
+
+                        if index != metrics.count - 1 {
+                            Spacer()
+                        }
+                    }
+                }
+
+            }
+            .padding(16)
+            .cardStyle()
+            .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                    .stroke(.mainMint, lineWidth: 1)
+            )
+        })
+    }
+    
+    var header: some View {
+        HStack{
+            Image("MyPage_graph")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16)
+                .padding(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(.gray1, lineWidth: 1)
+                )
+
+            
+            Text("주간 리포트")
+                .font(.medium14)
+                .foregroundStyle(.black00)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .resizable()
+                .frame(width: 5, height: 10)
+                .foregroundStyle(.black00)
+        }
+
+    }
+}
+
 struct CategorySection: View {
     var body: some View {
         SectionContainerView(title: "카테고리 설정"){
