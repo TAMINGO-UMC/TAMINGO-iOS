@@ -15,3 +15,18 @@ struct NotificationSetting {
     let locationMoveCheckEnabled: Bool
     let routineAlertEnabled: Bool
 }
+
+extension NotificationSetting {
+
+    func toDTO() -> NotificationSettingDTO {
+        NotificationSettingDTO(
+            departAlertEnabled: departAlertEnabled,
+            departAlertMinutes: departAlertMinutes?.rawValue,
+            lateRiskAlertEnabled: lateRiskAlertEnabled,
+            realtimeTransitEnabled: realtimeTransitEnabled,
+            todoRecommendEnabled: todoRecommendEnabled,
+            locationMoveCheckEnabled: locationMoveCheckEnabled,
+            routineAlertEnabled: routineAlertEnabled
+        )
+    }
+}

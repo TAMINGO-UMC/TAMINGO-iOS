@@ -28,16 +28,19 @@ enum TransportType: CaseIterable, Identifiable {
 }
 
 extension TransportType {
+
     var dtoValue: String? {
         switch self {
-        case .none:
-            return nil
-        case .walk:
-            return "WALK"
-        case .subway:
-            return "SUBWAY"
-        case .bus:
-            return "BUS"
+        case .none: return nil
+        case .walk: return "WALK"
+        case .subway: return "SUBWAY"
+        case .bus: return "BUS"
         }
     }
+
+    func toDTO(rank: Int) -> TransportPreferenceDTO? {
+        guard let value = dtoValue else { return nil }
+        return TransportPreferenceDTO(transport: value, rank: rank)
+    }
 }
+

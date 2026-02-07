@@ -101,18 +101,17 @@ final class SetupViewModel {
     }
 
     func makeNotification() -> NotificationSetting {
-        func makeNotification() -> NotificationSetting {
-            NotificationSetting(
-                departAlertEnabled: true,
-                departAlertMinutes: arrivalBuffer,
-                lateRiskAlertEnabled: false,
-                realtimeTransitEnabled: false,
-                todoRecommendEnabled: false,
-                locationMoveCheckEnabled: false,
-                routineAlertEnabled: false
-            )
-        }
+        NotificationSetting(
+            departAlertEnabled: true,
+            departAlertMinutes: arrivalBuffer,
+            lateRiskAlertEnabled: false,
+            realtimeTransitEnabled: false,
+            todoRecommendEnabled: false,
+            locationMoveCheckEnabled: false,
+            routineAlertEnabled: false
+        )
     }
+
     
     // MARK: 최종 요청 생성
     func makeOnboardingRequest() -> OnboardingRequestDTO? {
