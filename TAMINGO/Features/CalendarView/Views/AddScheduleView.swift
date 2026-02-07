@@ -89,7 +89,7 @@ struct AddScheduleView: View {
             
             // 하단 버튼 컴포넌트로 변경
             ScheduleBottomButtons(
-                isSaveDisabled: viewModel.title.isEmpty || !viewModel.isTimeValid,
+                isSaveDisabled: viewModel.title.isEmpty || !viewModel.isTimeValid, saveTitle: "일정 추가",
                 onCancel: { dismiss() },
                 onSave: {
                     Task {
@@ -111,6 +111,7 @@ struct AddScheduleView: View {
                     placeName: viewModel.placeName,
                     isAdded: $isFavoriteAdded,
                     onAddAction: { viewModel.addFavoritePlace() },
+                    //TODO: 자주가는 장소 등록 취소 로직 추가
                     onCancelAction: {  }
                 )
                 .padding(.bottom, 100)

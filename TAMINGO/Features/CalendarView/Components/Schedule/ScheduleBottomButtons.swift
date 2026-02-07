@@ -10,6 +10,7 @@ import SwiftUI
 // MARK: - Bottom Action Buttons
 struct ScheduleBottomButtons: View {
     var isSaveDisabled: Bool
+    var saveTitle: String
     var onCancel: () -> Void
     var onSave: () -> Void
     
@@ -28,17 +29,17 @@ struct ScheduleBottomButtons: View {
                     )
             }
             
-            // 저장 버튼
+            // 메인 버튼
             Button(action: onSave) {
-                ZStack {
-                    Text("일정 추가")
-                        .font(.semiBold14)
-                        .foregroundStyle(isSaveDisabled ? .gray2 : .white)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(isSaveDisabled ? .gray1 : .mainMint)
-                .cornerRadius(8)
+                Text(saveTitle)
+                    .font(.semiBold14)
+                    .foregroundStyle(isSaveDisabled ? .gray2 : .white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .foregroundStyle(isSaveDisabled ? .gray1 : .mainMint)
+                    )
             }
             .disabled(isSaveDisabled)
         }

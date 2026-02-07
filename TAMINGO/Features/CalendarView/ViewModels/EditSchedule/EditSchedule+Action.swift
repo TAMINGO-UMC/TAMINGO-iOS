@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  EditSchedule+Action.swift
 //  TAMINGO
 //
 //  Created by 김도연 on 2/8/26.

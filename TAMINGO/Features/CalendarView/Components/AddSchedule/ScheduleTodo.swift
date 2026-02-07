@@ -82,7 +82,7 @@ struct ScheduleTodo: View {
                     .foregroundStyle(.white)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(.gray1, lineWidth: 1) // 전체 테두리
                 )
             }

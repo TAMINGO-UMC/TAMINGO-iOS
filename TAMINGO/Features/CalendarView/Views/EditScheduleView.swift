@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct EditScheduleView: View {
-    @State var viewModel = EditScheduleViewModel()
+    @State private var viewModel = EditScheduleViewModel()
     @Environment(\.dismiss) var dismiss
     
-    @State var activeSheet: SheetType? = nil
-    @State var scheduleId: Int
+    @State private var activeSheet: SheetType? = nil
+    let scheduleId: Int
     
     var onSave: (() -> Void)?
     
@@ -82,7 +82,7 @@ struct EditScheduleView: View {
             
             // 하단 버튼 컴포넌트
             ScheduleBottomButtons(
-                isSaveDisabled: viewModel.title.isEmpty || !viewModel.isTimeValid,
+                isSaveDisabled: viewModel.title.isEmpty || !viewModel.isTimeValid, saveTitle: "일정 수정",
                 onCancel: { dismiss() },
                 onSave: {
                     Task {
@@ -98,7 +98,6 @@ struct EditScheduleView: View {
             )
         }
         .task {
-            print(scheduleId)
             await viewModel.loadSchedule(id: scheduleId)
         }
         .sheet(item: $activeSheet) { type in

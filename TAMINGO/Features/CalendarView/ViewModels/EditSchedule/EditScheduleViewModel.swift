@@ -11,6 +11,7 @@ import Combine
 import Moya
 
 @Observable
+@MainActor
 class EditScheduleViewModel {
     // MARK: - Dependencies
     let provider = MoyaProvider<ScheduleTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
