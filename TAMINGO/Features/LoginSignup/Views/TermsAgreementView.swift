@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct TermsAgreementView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SignupSessionStore.self) private var sessionStore
@@ -15,18 +16,25 @@ struct TermsAgreementView: View {
     @State private var terms: [TermDTO] = []
     @State private var isLoading = false
     
-    // 약관 동의 상태
+    // 에러 알림 상태
+    @State private var showError = false
+    @State private var errorMessage = ""
+    
+    // 약관 동의 상태 (Key: 약관코드, Value: 동의여부)
     @State private var agreements: [String: Bool] = [:]
     @State private var goToEmail = false
     
+    // 필수 약관 코드 목록
     private var requiredTermCodes: [String] {
         terms.filter { $0.isRequired }.map { $0.code }
     }
     
+    // 필수 항목 모두 동의 여부
     private var isRequiredAllChecked: Bool {
         requiredTermCodes.allSatisfy { agreements[$0] == true }
     }
     
+    // 전체 동의 여부
     private var isAllChecked: Bool {
         terms.allSatisfy { agreements[$0.code] == true }
     }
@@ -66,7 +74,7 @@ struct TermsAgreementView: View {
                 
                 if isLoading {
                     ProgressView()
-                        .padding()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     AgreementBox(
                         allTitle: "전체 동의",
@@ -96,6 +104,7 @@ struct TermsAgreementView: View {
                     title: "다음",
                     isEnabled: isRequiredAllChecked
                 ) {
+                    // Moya Task와의 충돌 방지를 위해 Swift.Task 명시
                     Task {
                         await createSession()
                     }
@@ -112,6 +121,11 @@ struct TermsAgreementView: View {
         }
         .task {
             await loadTerms()
+        }
+        .alert("오류", isPresented: $showError) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text(errorMessage)
         }
     }
     
@@ -139,13 +153,16 @@ struct TermsAgreementView: View {
         isLoading = true
         defer { isLoading = false }
         
-        // 1. 서버 API 호출 시도
         do {
+            // 1.서버 API 호출 시도
             terms = try await repo.getTerms()
             print("약관 조회 성공: \(terms.count)개")
-        } catch {
-            print("약관 조회 실패, 하드코딩 데이터 사용")
             
+        } catch {
+            print("약관 조회 실패: \(error.localizedDescription)")
+            print("실패 시 하드코딩 데이터 사용 (서버 스펙 5개)")
+            
+            // 2. (서버 스펙에 맞춘 5개 항목)
             terms = [
                 TermDTO(code: "SERVICE", title: "이용약관 동의", isRequired: true),
                 TermDTO(code: "PRIVACY", title: "개인정보 수집 및 이용 동의", isRequired: true),
@@ -155,196 +172,188 @@ struct TermsAgreementView: View {
             ]
         }
         
-        // 초기값 설정
+        // 3. 초기화 (모두 false로 설정)
         for term in terms {
-            agreements[term.code] = false
+            if agreements[term.code] == nil {
+                agreements[term.code] = false
+            }
         }
     }
     
     // MARK: - API: 회원가입 세션 생성
     @MainActor
     private func createSession() async {
+        isLoading = true
+        defer { isLoading = false }
         
+        // 1. [String: Bool] 맵(Map) 구조 생성
         var termsMap: [String: Bool] = [:]
-        
-        // 현재 화면에 있는 설정값 매핑
         for term in terms {
             termsMap[term.code] = agreements[term.code] ?? false
         }
+        
         let requestDTO = CreateSessionRequestDTO(terms: termsMap)
         
-        // 디버깅 로그
-        print("[서버로 전송하는 Body - Map 형태]")
+        // 2. 전송 데이터 로그 출력
+        print("[서버로 전송하는 Body]")
         if let jsonData = try? JSONEncoder().encode(requestDTO),
            let jsonString = String(data: jsonData, encoding: .utf8) {
             print(jsonString)
         }
         
+        // 3. API 호출
         do {
             let response = try await repo.createSession(terms: requestDTO)
             print("세션 생성 성공! ID: \(response.signupSessionId)")
+            
             sessionStore.signupSessionId = response.signupSessionId
             goToEmail = true
+            
         } catch {
             print("세션 생성 실패: \(error.localizedDescription)")
-           
             
+            
+            self.errorMessage = "세션 생성에 실패했습니다.\n\(error.localizedDescription)"
+            self.showError = true
         }
     }
-    
-    // MARK: - 하위 뷰 (AgreementBox 등) - 기존과 동일
-    private struct AgreementBox: View {
-        
-        struct Item {
-            let title: String
-            let subtitle: String
-            let required: Bool
-            var isOn: Binding<Bool>
-        }
-        
-        let allTitle: String
-        let allSubtitle: String
-        var allIsOn: Binding<Bool>
-        let items: [Item]
-        
-        private let rowHPadding: CGFloat = 14
-        private let rowSpacing: CGFloat = 18
-        
-        private let titleFont: Font = .semiBold14
-        private let subtitleFont: Font = .medium12
-        private let titleColor: Color = Color(.black)
-        private let subtitleColor: Color = Color("Gray2")
-        
-        var body: some View {
-            VStack(spacing: rowSpacing) {
-                
-                AllAgreementRow(
-                    title: allTitle,
-                    subtitle: allSubtitle,
-                    isOn: allIsOn,
-                    rowHPadding: rowHPadding,
-                    titleFont: titleFont,
-                    subtitleFont: subtitleFont,
-                    titleColor: titleColor,
-                    subtitleColor: subtitleColor
-                )
-                
-                VStack(spacing: rowSpacing) {
-                    ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                        AgreementItemRow(
-                            title: item.title,
-                            subtitle: item.subtitle,
-                            required: item.required,
-                            isOn: item.isOn,
-                            rowHPadding: rowHPadding
-                        )
-                    }
-                }
-                .padding(.top, 2)
-            }
-            .padding(.vertical, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-    
-    private struct AllAgreementRow: View {
-        let title: String
-        let subtitle: String
-        @Binding var isOn: Bool
-        
-        let rowHPadding: CGFloat
-        
-        var titleFont: Font? = nil
-        var subtitleFont: Font? = nil
-        var titleColor: Color? = nil
-        var subtitleColor: Color? = nil
-        
-        var body: some View {
-            HStack(spacing: 10) {
-                HStack(spacing: 5) {
-                    Text(title)
-                        .font(titleFont ?? .semiBold14)
-                        .foregroundStyle(titleColor ?? .black)
-                    
-                    Text(subtitle)
-                        .font(subtitleFont ?? .medium12)
-                        .foregroundStyle(subtitleColor ?? Color("Gray2"))
-                }
-                
-                Spacer(minLength: 0)
-                
-                Button {
-                    isOn.toggle()
-                } label: {
-                    GhostCheckBox(isOn: isOn, activeColor: Color("MainMint"))
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, rowHPadding)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 5)
-                    .stroke(Color("Gray1"), lineWidth: 1)
-            )
-            .frame(maxWidth: .infinity)
-        }
-    }
-    
-    private struct AgreementItemRow: View {
+}
+
+// MARK: - Subviews (UI 컴포넌트)
+private struct AgreementBox: View {
+    struct Item {
         let title: String
         let subtitle: String
         let required: Bool
         var isOn: Binding<Bool>
-        
-        let rowHPadding: CGFloat
-        
-        var body: some View {
-            HStack(spacing: 10) {
-                
-                HStack(spacing: 2) {
-                    Text(title)
-                        .font(.medium12)
-                        .foregroundStyle(Color("Gray2"))
-                        .underline(true, color: Color("Gray2"))
-                    
-                    Text(subtitle)
-                        .font(.medium12)
-                        .foregroundStyle(required ? Color("MainPink") : Color("Gray1"))
-                }
-                
-                Spacer(minLength: 0)
-                
-                Button {
-                    isOn.wrappedValue.toggle()
-                } label: {
-                    GhostCheckBox(isOn: isOn.wrappedValue, activeColor: Color("MainMint"))
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, rowHPadding)
-            .padding(.vertical, 2)
-            .frame(maxWidth: .infinity)
-        }
     }
     
-    private struct GhostCheckBox: View {
-        let isOn: Bool
-        let activeColor: Color
-        
-        private let size: CGFloat = 23
-        private let radius: CGFloat = 6
-        
-        var body: some View {
-            RoundedRectangle(cornerRadius: radius)
-                .stroke(isOn ? activeColor : Color("Gray1"), lineWidth: 1.5)
-                .frame(width: size, height: size)
-                .overlay {
-                    Image(isOn ? "MintVector": "Vector")
-                        .resizable()
-                        .frame(width:12.76, height:9.26)
-                        .foregroundStyle(isOn ? activeColor : Color("Gray1"))
+    let allTitle: String
+    let allSubtitle: String
+    var allIsOn: Binding<Bool>
+    let items: [Item]
+    
+    private let rowHPadding: CGFloat = 14
+    private let rowSpacing: CGFloat = 18
+    private let titleFont: Font = .semiBold14
+    private let subtitleFont: Font = .medium12
+    private let titleColor: Color = Color(.black)
+    private let subtitleColor: Color = Color("Gray2")
+    
+    var body: some View {
+        VStack(spacing: rowSpacing) {
+            AllAgreementRow(
+                title: allTitle,
+                subtitle: allSubtitle,
+                isOn: allIsOn,
+                rowHPadding: rowHPadding,
+                titleFont: titleFont,
+                subtitleFont: subtitleFont,
+                titleColor: titleColor,
+                subtitleColor: subtitleColor
+            )
+            
+            VStack(spacing: rowSpacing) {
+                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                    AgreementItemRow(
+                        title: item.title,
+                        subtitle: item.subtitle,
+                        required: item.required,
+                        isOn: item.isOn,
+                        rowHPadding: rowHPadding
+                    )
                 }
-                .contentShape(Rectangle())
+            }
+            .padding(.top, 2)
         }
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct AllAgreementRow: View {
+    let title: String
+    let subtitle: String
+    @Binding var isOn: Bool
+    let rowHPadding: CGFloat
+    
+    var titleFont: Font?
+    var subtitleFont: Font?
+    var titleColor: Color?
+    var subtitleColor: Color?
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            HStack(spacing: 5) {
+                Text(title)
+                    .font(titleFont ?? .semiBold14)
+                    .foregroundStyle(titleColor ?? .black)
+                Text(subtitle)
+                    .font(subtitleFont ?? .medium12)
+                    .foregroundStyle(subtitleColor ?? Color("Gray2"))
+            }
+            Spacer(minLength: 0)
+            Button { isOn.toggle() } label: {
+                GhostCheckBox(isOn: isOn, activeColor: Color("MainMint"))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, rowHPadding)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 5)
+                .stroke(Color("Gray1"), lineWidth: 1)
+        )
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct AgreementItemRow: View {
+    let title: String
+    let subtitle: String
+    let required: Bool
+    var isOn: Binding<Bool>
+    let rowHPadding: CGFloat
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            HStack(spacing: 2) {
+                Text(title)
+                    .font(.medium12)
+                    .foregroundStyle(Color("Gray2"))
+                    .underline(true, color: Color("Gray2"))
+                Text(subtitle)
+                    .font(.medium12)
+                    .foregroundStyle(required ? Color("MainPink") : Color("Gray1"))
+            }
+            Spacer(minLength: 0)
+            Button { isOn.wrappedValue.toggle() } label: {
+                GhostCheckBox(isOn: isOn.wrappedValue, activeColor: Color("MainMint"))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, rowHPadding)
+        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct GhostCheckBox: View {
+    let isOn: Bool
+    let activeColor: Color
+    private let size: CGFloat = 23
+    private let radius: CGFloat = 6
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: radius)
+            .stroke(isOn ? activeColor : Color("Gray1"), lineWidth: 1.5)
+            .frame(width: size, height: size)
+            .overlay {
+                Image(isOn ? "MintVector": "Vector")
+                    .resizable()
+                    .frame(width:12.76, height:9.26)
+                    .foregroundStyle(isOn ? activeColor : Color("Gray1"))
+            }
+            .contentShape(Rectangle())
     }
 }

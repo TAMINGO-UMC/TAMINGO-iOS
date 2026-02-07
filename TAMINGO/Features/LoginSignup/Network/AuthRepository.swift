@@ -86,26 +86,31 @@ final class AuthRepository: AuthRepositoryProtocol {
         let response = try await provider.requestAsync(.refreshToken(refreshToken: refreshToken))
         return try decodeOrThrow(response, as: RefreshTokenResponseDTO.self)
     }
-    
-    // MARK: - Decode Helper (기존 BaseResponse 구조 사용)
+
+    // MARK: - Decode Helper
     private func decodeOrThrow<T: Decodable>(_ response: Response, as type: T.Type) throws -> T {
         if (200..<300).contains(response.statusCode) {
             do {
-                // 기존 BaseResponse 사용
                 let baseResponse = try decoder.decode(BaseResponse<T>.self, from: response.data)
                 guard let result = baseResponse.result else {
-                    throw APIError.server(status: response.statusCode, message: "결과가 없습니다.")
+                    throw APIError.server(status: response.statusCode, message: "서버 응답 결과(result)가 비어있습니다.")
                 }
                 return result
             } catch {
+                if let apiError = error as? APIError { throw apiError }
                 throw APIError.transport("디코딩 실패: \(error.localizedDescription)")
             }
         } else {
-            // 기존 APIErrorResponseDTO 사용
+            // [수정됨] 에러 발생 시 서버 응답 바디를 문자열로 변환하여 로깅
+            let errorBody = String(data: response.data, encoding: .utf8) ?? "알 수 없는 데이터"
+            print("[AuthRepository] 서버 에러 응답 Body: \(errorBody)")
+            
+            // 1. 정해진 에러 포맷(APIErrorResponseDTO)으로 디코딩 시도
             if let errorResponse = try? decoder.decode(APIErrorResponseDTO.self, from: response.data) {
                 throw APIError.server(status: errorResponse.status, message: errorResponse.message)
             } else {
-                throw APIError.server(status: response.statusCode, message: "서버 오류가 발생했습니다.")
+                // 2. 포맷이 맞지 않으면 Raw Body 자체를 에러 메시지로 사용
+                throw APIError.server(status: response.statusCode, message: "서버 오류: \(errorBody)")
             }
         }
     }
