@@ -12,7 +12,7 @@ import Alamofire
 enum ScheduleTarget {
     case createSchedule(body: ScheduleRequestDTO)
     case aiInference(title: String)
-    case updateSchedule(id: Int, body: ScheduleRequestDTO)
+    case updateSchedule(id: Int, body: ScheduleEditDTO)
     case aiFavoritePlaces(body: addPlaceDTO)
     case getFavoritePlaces
     case getScheduleList(date: String)
@@ -34,13 +34,13 @@ extension ScheduleTarget: APITargetType {
         case .aiFavoritePlaces:
             return "/api/favorite-places/ai"
         case .getFavoritePlaces:
-            return "/api/schedules/favorite-places"
+            return "/api/favorite-places"
         case .getScheduleList:
             return "/api/schedules"
         case .getScheduleDetail(let id):
             return "/api/schedules/\(id)"
         case .getCategories:
-            return "/api/schedules-categories"
+            return "/api/schedule-categories"
         case .getMonthly:
             return "/api/schedules/calendar"
         }
@@ -89,11 +89,6 @@ extension ScheduleTarget: APITargetType {
         case .getFavoritePlaces, .getScheduleDetail, .getCategories:
             return .requestPlain
         }
-    }
-    
-    // MARK: - Headers
-    var headers: [String : String]? {
-        return ["Content-Type": "application/json"]
     }
     
     // MARK: - Sample Data (Mock Response)
