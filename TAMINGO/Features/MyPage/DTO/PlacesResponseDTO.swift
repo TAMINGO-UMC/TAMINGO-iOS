@@ -22,8 +22,8 @@ struct PlaceDTO: Decodable {
 }
 
 extension PlaceDTO {
-    func toFrequentPlace() -> FrequentPlace {
-        FrequentPlace(
+    func toFavoritePlace() -> FavoritePlace {
+        FavoritePlace(
             id: placeId,
             name: name,
             address: address,

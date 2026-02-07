@@ -13,34 +13,42 @@ struct ActivityTimeSettingView: View {
     let onSave: (ActivityTime) -> Void
 
     var body: some View {
-        VStack(alignment:.leading, spacing:16) {
+        VStack(alignment:.leading, spacing:12) {
             header
-            ScrollView {
-                VStack(spacing: 20) {
-                    ActivityTimeSection(
-                        startTime: $vm.startTime,
-                        endTime: $vm.endTime,
-                        timeDescription: vm.timeDescription,
-                        startOffset: vm.startOffsetRatio,
-                        duration: vm.activityProgress,
-                        onStartTimeChanged: { vm.didSelectStartTime = true },
-                        onEndTimeChanged: { vm.didSelectEndTime = true }
-                    )
+            VStack{
+                ActivityTimeSection(
+                    startTime: $vm.startTime,
+                    endTime: $vm.endTime,
+                    timeDescription: vm.timeDescription,
+                    startOffset: vm.startOffsetRatio,
+                    duration: vm.activityProgress,
+                    onStartTimeChanged: { vm.didSelectStartTime = true },
+                    onEndTimeChanged: { vm.didSelectEndTime = true }
+                )
 
-                    WeekdaySection(vm: $vm)
-    
-                }
-                .padding(.horizontal, 16)
+                WeekdaySection(vm: $vm)
+
+                SaveButton(
+                    isEnabled: vm.canSave,
+                    onTap: {
+                        onSave(vm.makeActivityTime())
+                    }
+                )
+                
+                GuideBoxView(
+                    title: "활동 시간 안내",
+                    description: """
+    • 설정한 시간을 기반으로 하루 일정을 구성합니다
+    • 설정한 시간 외에는 알림이 울리지 않습니다
+    • To-do 자동 제안도 활동 시간 내에만 발송됩니다
+    """
+                )
+                
+                Spacer()
             }
-
-            SaveButton(
-                isEnabled: vm.canSave,
-                onTap: {
-                    onSave(vm.makeActivityTime())
-                }
-            )
+            .padding(.top, 16)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 32)
     }
     
     var header: some View {
@@ -57,7 +65,6 @@ struct ActivityTimeSettingView: View {
                 .font(.semiBold16)
                 .foregroundStyle(.black00)
         }
-        .padding(.horizontal, 23)
     }
 }
 
@@ -184,33 +191,15 @@ struct WeekdaySection: View {
 
             VStack(spacing: 12) {
 
-                weekdayRow("월요일", isOn: vm.isDayActive(.mon)) {
-                    vm.toggleDay(.mon, isOn: $0)
-                }
-
-                weekdayRow("화요일", isOn: vm.isDayActive(.tue)) {
-                    vm.toggleDay(.tue, isOn: $0)
-                }
-
-                weekdayRow("수요일", isOn: vm.isDayActive(.wed)) {
-                    vm.toggleDay(.wed, isOn: $0)
-                }
-
-                weekdayRow("목요일", isOn: vm.isDayActive(.thu)) {
-                    vm.toggleDay(.thu, isOn: $0)
-                }
-
-                weekdayRow("금요일", isOn: vm.isDayActive(.fri)) {
-                    vm.toggleDay(.fri, isOn: $0)
-                }
+                weekdayRow("월요일", day: .mon)
+                weekdayRow("화요일", day: .tue)
+                weekdayRow("수요일", day: .wed)
+                weekdayRow("목요일", day: .thu)
+                weekdayRow("금요일", day: .fri)
 
                 Divider().padding(.vertical, 8)
 
-                weekendRow(
-                    isOn: vm.isWeekendActive()
-                ) {
-                    vm.toggleWeekend(isOn: $0)
-                }
+                weekendRow()
             }
         }
         .padding()
@@ -219,8 +208,7 @@ struct WeekdaySection: View {
 
     private func weekdayRow(
         _ title: String,
-        isOn: Bool,
-        onToggle: @escaping (Bool) -> Void
+        day: Weekday
     ) -> some View {
         HStack {
             Text(title)
@@ -228,18 +216,20 @@ struct WeekdaySection: View {
 
             Spacer()
 
-            Toggle("", isOn: Binding(
-                get: { isOn },
-                set: onToggle
-            ))
-            .labelsHidden()
+            ToggleButton(
+                isOn: Binding(
+                    get: {
+                        vm.isDayActive(day)
+                    },
+                    set: { isOn in
+                        vm.toggleDay(day, isOn: isOn)
+                    }
+                )
+            )
         }
     }
 
-    private func weekendRow(
-        isOn: Bool,
-        onToggle: @escaping (Bool) -> Void
-    ) -> some View {
+    private func weekendRow() -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("주말")
@@ -253,13 +243,19 @@ struct WeekdaySection: View {
 
             Spacer()
 
-            Toggle("", isOn: Binding(
-                get: { isOn },
-                set: onToggle
-            ))
-            .labelsHidden()
+            ToggleButton(
+                isOn: Binding(
+                    get: {
+                        vm.isWeekendActive()
+                    },
+                    set: { isOn in
+                        vm.toggleWeekend(isOn: isOn)
+                    }
+                )
+            )
         }
     }
+
 }
 
 struct SaveButton: View {
@@ -279,7 +275,6 @@ struct SaveButton: View {
                         radius: 3.4, x: 0, y: 2.3)
         }
         .disabled(!isEnabled)
-        .padding()
     }
 }
 

@@ -13,57 +13,46 @@ struct PeriodFilterView: View {
     
     var body: some View {
         HStack(spacing:3) {
+            Text("조회 기간")
+                .font(.regular12)
+                .foregroundStyle(.gray2)
+                .lineLimit(1)
+            Spacer()
+            
             // 조회 기간 드롭다운
             Button(action: {
                 vm.isPeriodListVisible.toggle()
             }, label: {
-                Text("조회 기간")
-                    .font(.regular12)
-                    .foregroundStyle(.gray2)
-                    .lineLimit(1)
 
-                Image("MyPage_icon_chevronDown")
-                    .resizable()
-                    .frame(width: 20, height: 20)
+                HStack(spacing: 10) {
+                    Text(vm.selectedPeriodText)
+                        .font(.regular11)
+                        .foregroundStyle(.gray2)
+                        .frame(height:20)
+
+                    Image("MyPage_icon_chevronDown")
+                        .resizable()
+                        .frame(width: 10, height: 5)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 3)
+                .frame(height: 26)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color(hex: "#FAFAFA"))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(Color(hex: "#E5E5E5"))
+                    )
+            }
                 
-            })
-            Spacer()
+            )
 
-            // 시작일
-            DateBoxView(dateText: vm.startDateText)
-
-            Text("~")
-                .font(.regular12)
-                .foregroundStyle(.gray2)
-
-            // 종료일
-            DateBoxView(dateText: vm.endDateText)
         }
 
     }
 
-}
-
-struct DateBoxView: View {
-    let dateText: String
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Text(dateText)
-                .font(.regular11)
-                .foregroundStyle(.gray2)
-                .frame(height:20)
-
-            Image("MyPage_icon_cal")
-                .resizable()
-                .frame(width: 10.7, height: 10.1)
-        }
-        .frame(width: 98, height: 26)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(.gray1, lineWidth: 1)
-        )
-    }
 }
 
 

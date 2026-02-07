@@ -9,7 +9,8 @@ import SwiftUI
 
 struct FrequentPlacesView: View {
 
-    @State private var vm = FrequentPlacesViewModel()
+    @State private var vm = FavoritePlacesViewModel()
+    @State private var isPlaceSearchPresented = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -32,13 +33,29 @@ struct FrequentPlacesView: View {
                             }
                         )
                     }
-
-//                    GuidBox() // TODO: 캘린더 연동 브랜치 머지 후 추가
+                    
+                    GuideBoxView(
+                        title: "자주 가는 장소 활용",
+                        description: """
+        • 일정, 할 일 입력 시 장소를 자동으로 추천합니다
+        • 이동 경로 계산 시 우선 사용됩니다
+        • AI가 방문 패턴을 학습하여 자동 제안합니다
+        """
+                    )
                 }
                 .padding(16)
             }
         }
         .padding(.horizontal, 16)
+        .sheet(isPresented: $isPlaceSearchPresented) {
+            PlaceSearchSheet { place in
+                vm.addPlace(place)
+                isPlaceSearchPresented = false
+            }
+            .presentationDetents([.height(701)])
+            .presentationBackground(.white)
+        }
+        
     }
 
     private var header: some View {
@@ -58,7 +75,7 @@ struct FrequentPlacesView: View {
             Spacer()
             
             Button {
-                /* 기능 준비 후 구현 예정 */
+                isPlaceSearchPresented = true
             } label: {
                 Image("MyPage_icon_plus")
                     .resizable()

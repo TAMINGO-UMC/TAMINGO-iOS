@@ -18,7 +18,7 @@ struct WeeklyReportView: View {
             header
             ScrollView{
                 VStack(alignment:.leading, spacing:16){
-                    WeeklyMetricSection(vm:$vm, metrics: weeklyMetrics)
+                    WeeklyMetricSection(vm: vm, metrics: weeklyMetrics)
                     WeeklyActivitySection()
                     WeeklyInsightSection()
                     WeeklyComparisonSection(metrics: comparisonMetrics)
@@ -47,7 +47,7 @@ struct WeeklyReportView: View {
     
 }
 struct WeeklyMetricSection: View {
-    @Binding var vm: WeeklyReportViewModel
+    var vm: WeeklyReportViewModel
     let metrics: [WeeklyMetric]
 
     var body: some View {
@@ -80,7 +80,7 @@ struct WeeklyMetricSection: View {
                     },
                     titleProvider: vm.title(for:)
                 )
-                .offset(x: 10, y: 45) // 버튼 아래로
+                .offset(x: 190, y: 50)
                 .zIndex(100)
             }
         }

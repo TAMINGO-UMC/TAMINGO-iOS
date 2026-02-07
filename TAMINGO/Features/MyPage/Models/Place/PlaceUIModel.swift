@@ -14,3 +14,14 @@ struct PlaceUIModel: Identifiable {
     let weeklyVisitCount: Int
     let isAISuggested: Bool
 }
+
+extension PlaceUIModel {
+    init(place: Place) {
+        self.init(
+            name: place.name,
+            address: place.address,
+            weeklyVisitCount: 0,
+            isAISuggested: false
+        )
+    }
+}

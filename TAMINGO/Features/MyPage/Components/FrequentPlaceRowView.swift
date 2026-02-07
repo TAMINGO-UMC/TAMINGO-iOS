@@ -51,14 +51,15 @@ struct FrequentPlaceRowView: View {
 
                 Spacer()
 
-                VStack(spacing: 14) {
+                HStack(spacing: 8) {
                     Button(action: onEdit) {
                         Image("MyPage_icon_pencil")
                     }
 
                     Button(action: onDelete) {
                         Image(systemName: "MyPage_icon_trash")
-                            .foregroundColor(.red)
+                            .resizable()
+                            .frame(width: 32, height: 32)
                     }
                 }
             }

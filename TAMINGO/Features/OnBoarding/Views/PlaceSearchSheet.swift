@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum PlaceSearchStep {
-    case webSearch      // 주소 검색
+    case addressSearch      // 주소 검색
     case nameInput      // 장소 이름 입력
 }
 
@@ -25,7 +25,7 @@ struct PlaceSearchSheet: View {
                 .padding(.bottom, 22)
 
             switch vm.step {
-            case .webSearch:
+            case .addressSearch:
                 AddressSearchView { result in
                     vm.didSelectAddress(result)
                 }
