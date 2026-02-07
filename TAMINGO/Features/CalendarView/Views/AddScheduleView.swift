@@ -12,7 +12,6 @@ struct AddScheduleView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var activeSheet: SheetType? = nil
-    @State var isEndDated: Bool = true
     @State var isFavoriteAdded: Bool = false
     
     var onSave: (() -> Void)?
@@ -20,7 +19,7 @@ struct AddScheduleView: View {
     var body: some View {
         VStack(spacing: 0) {
             // 헤더 컴포넌트 사용
-            ScheduleHeaderView(
+            ScheduleHeader(
                 title: "새 일정 추가",
                 onDismiss: { dismiss() }
             )
@@ -29,10 +28,10 @@ struct AddScheduleView: View {
                 VStack(alignment: .leading, spacing: 32) {
                     
                     // 제목 입력 필드
-                    ScheduleTitleInputView(title: $viewModel.title)
+                    ScheduleTitleInput(title: $viewModel.title)
                     
                     // 날짜 및 시간
-                    ScheduleDateTimeView(
+                    ScheduleDateTime(
                         startTime: viewModel.startTime,
                         endTime: viewModel.endTime,
                         isTimeValid: viewModel.isTimeValid,
@@ -42,7 +41,7 @@ struct AddScheduleView: View {
                     )
                     
                     // AI 장소
-                    SchedulePlaceView(
+                    SchedulePlace(
                         isLoading: viewModel.isLoading,
                         titleInput: viewModel.title,
                         placeName: viewModel.placeName,
@@ -52,20 +51,18 @@ struct AddScheduleView: View {
                     )
                     
                     // AI 할 일 연결
-                    ScheduleTodoConnectionView(
-                        isLoading: viewModel.isLoading,
-                        titleInput: viewModel.title,
-                        linkedTodoIds: viewModel.linkedTodoIds,
-                        selectedTodoObjects: viewModel.selectedTodoObjects,
-                        nearbyTodos: viewModel.nearbyTodos,
+                    ScheduleTodo(
+                        linkedTodos: viewModel.linkedTodos,
                         candidateTodos: viewModel.candidateTodos,
+                        isLoading: viewModel.isLoading,
                         isTodoExpanded: $viewModel.isTodoExpanded,
-                        onToggleTodo: { viewModel.toggleTodoSelection($0) },
-                        onClearTodos: { viewModel.linkedTodoIds.removeAll() }
+                        onToggleTodo: { todo in
+                            viewModel.toggleTodoSelection(todo)
+                        }
                     )
                     
                     // AI 카테고리
-                    ScheduleCategoryView(
+                    AddScheduleCategory(
                         isLoading: viewModel.isLoading,
                         titleInput: viewModel.title,
                         categoryName: viewModel.categoryName,
@@ -76,17 +73,14 @@ struct AddScheduleView: View {
                     // 일정 반복 설정
                     ScheduleRepeatView(
                         repeatType: viewModel.repeatType,
-                        isEndDated: $isEndDated,
+                        isEndDated: $viewModel.isEndDated, // ViewModel 바인딩
                         repeatEndDate: viewModel.repeatEndDate,
                         onRepeatTypeTap: { activeSheet = .repeatType },
                         onRepeatEndDateTap: { activeSheet = .repeatEndDate }
                     )
-                    .task(id: isEndDated) {
-                        viewModel.updateRepeatEndDate(isEnabled: isEndDated)
-                    }
                     
                     // 메모 필드
-                    ScheduleMemoView(memo: $viewModel.memo)
+                    ScheduleMemo(memo: $viewModel.memo)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
@@ -112,10 +106,11 @@ struct AddScheduleView: View {
         .overlay(alignment: .bottom) {
             // 오버레이 컴포넌트 사용
             if viewModel.isFavoriteRecommendation {
-                RecommendationOverlayView(
+                RecommendationOverlay(
                     placeName: viewModel.placeName,
                     isAdded: $isFavoriteAdded,
-                    onAddAction: { viewModel.addFavoritePlace() }
+                    onAddAction: { viewModel.addFavoritePlace() },
+                    onCancelAction: {  }
                 )
                 .padding(.bottom, 100)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -123,7 +118,7 @@ struct AddScheduleView: View {
         }
         .sheet(item: $activeSheet) { type in
             // 시트 콘텐츠 컴포넌트 사용
-            ScheduleSheetContentView(
+            ScheduleSheetContent(
                 type: type,
                 startTime: $viewModel.startTime,
                 endTime: $viewModel.endTime,

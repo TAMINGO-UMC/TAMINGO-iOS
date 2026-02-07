@@ -22,7 +22,6 @@ class AddScheduleViewModel {
     
     // MARK: - State Properties
     var isLoading: Bool = false
-    var isEditing: Bool = false
     var isTodoExpanded: Bool = false
     
     var categories: [ScheduleCategoryDTO] = []
@@ -31,7 +30,6 @@ class AddScheduleViewModel {
     // MARK: - Input Properties
     var title: String = "" {
         didSet {
-            // 이전 값과 다를 때만 이벤트를 방출하여 불필요한 로딩 방지
             if title != oldValue {
                 inputSubject.send(title)
             }
@@ -49,18 +47,40 @@ class AddScheduleViewModel {
     
     var isTimeValid: Bool {
         let calendar = Calendar.current
-        
         let startComp = calendar.dateComponents([.hour, .minute], from: startTime)
         let endComp = calendar.dateComponents([.hour, .minute], from: endTime)
-        
         let startTotalMinutes = (startComp.hour ?? 0) * 60 + (startComp.minute ?? 0)
         let endTotalMinutes = (endComp.hour ?? 0) * 60 + (endComp.minute ?? 0)
-        
         return endTotalMinutes > startTotalMinutes
     }
     
     var memo: String = ""
-    var repeatType: RepeatType = .none
+    
+    // MARK: - Repeat Logic (Updated)
+    var repeatType: RepeatType = .none {
+        didSet {
+            // 반복 설정이 켜질 때, 종료 날짜 토글이 꺼져있다면 자동으로 켜줌 (사용자 편의)
+            if repeatType != .none && !isEndDated {
+                isEndDated = true
+            }
+        }
+    }
+    
+    // View와 바인딩될 종료 날짜 토글 상태
+    var isEndDated: Bool = true {
+        didSet {
+            // 토글을 켜면 날짜를 오늘로 리셋 (혹은 기존 날짜 유지)
+            if isEndDated {
+                // 만약 현재 날짜가 먼 미래(비활성 상태 값)라면 오늘로 초기화
+                let calendar = Calendar.current
+                if calendar.component(.year, from: repeatEndDate) >= 2999 {
+                    self.repeatEndDate = Date()
+                }
+            }
+        }
+    }
+    
+    // 실제 종료 날짜 값
     var repeatEndDate: Date = Date()
     
     // MARK: - AI Inference Properties
@@ -72,9 +92,8 @@ class AddScheduleViewModel {
     var scheduleCategoryId: Int = 0
     var categoryName: String = ""
     
-    var nearbyTodos: [TodoSummaryDTO] = []
+    var linkedTodos: [TodoSummaryDTO] = []
     var candidateTodos: [TodoSummaryDTO] = []
-    var linkedTodoIds: [Int] = []
     
     var isFavoriteRecommendation: Bool = false
     var aiInferenceSource = AIInferenceSource(aiSuggestedPlaceName: "", aiSuggestedCategoryName: "")
@@ -88,42 +107,24 @@ class AddScheduleViewModel {
     
     // MARK: - Binding Logic
     func bindInputs() {
-        // 1. [즉시 실행] 사용자가 타이핑을 시작하자마자 로딩 상태를 true로 변경
         inputSubject
             .sink { [weak self] text in
                 if !text.isEmpty {
                     self?.isLoading = true
                 } else {
-                    // 만약 글자를 다 지우면 로딩도 끄고 데이터도 초기화
                     self?.isLoading = false
                     self?.resetInferredData()
                 }
             }
             .store(in: &cancellables)
         
-        // 2. [지연 실행] 1초간 입력이 없을 때만 실제 AI API 호출
         inputSubject
             .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
             .removeDuplicates()
             .filter { !$0.isEmpty }
             .sink { [weak self] text in
-                // 여기서 performAIInference가 실행되며,
-                // 내부의 Moya closure에서 마지막에 isLoading = false가 호출됩니다.
                 self?.performAIInference(query: text)
             }
             .store(in: &cancellables)
-    }
-    
-    func updateRepeatEndDate(isEnabled: Bool) {
-        if isEnabled {
-            // 활성화 시: 오늘 날짜로 초기화
-            self.repeatEndDate = Date()
-        } else {
-            // 비활성화 시: 먼 미래로 설정
-            let components = DateComponents(year: 2999, month: 12, day: 31)
-            if let farFuture = Calendar.current.date(from: components) {
-                self.repeatEndDate = farFuture
-            }
-        }
     }
 }

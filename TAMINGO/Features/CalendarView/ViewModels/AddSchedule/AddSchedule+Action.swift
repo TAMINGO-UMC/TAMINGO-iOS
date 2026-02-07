@@ -14,6 +14,12 @@ extension AddScheduleViewModel {
     func createSchedule() async -> Bool {
         guard !title.isEmpty else { return false }
         
+        // 반복 종료일 처리
+        let repeatEndDateString: String? = (repeatType != .none && isEndDated) ? repeatEndDate.toString(format: "yyyy-MM-dd") : nil
+        
+        // 선택된 투두 객체들에서 ID 추출
+        let finalLinkedTodoIds = linkedTodos.map { $0.todoId }
+        
         let requestDTO = ScheduleRequestDTO(
             title: title,
             scheduleDate: startTime.toString(format: "yyyy-MM-dd"),
@@ -26,8 +32,8 @@ extension AddScheduleViewModel {
             scheduleCategoryId: scheduleCategoryId,
             memo: memo,
             repeatType: repeatType.rawValue,
-            repeatEndDate: repeatEndDate.toString(format: "yyyy-MM-dd"),
-            linkedTodoIds: linkedTodoIds,
+            repeatEndDate: repeatEndDateString,
+            linkedTodoIds: finalLinkedTodoIds,
             aiInferenceSource: aiInferenceSource
         )
         
