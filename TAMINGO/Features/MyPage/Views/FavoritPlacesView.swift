@@ -46,7 +46,7 @@ struct FrequentPlacesView: View {
                 .padding(16)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(16)
         .sheet(isPresented: $isPlaceSearchPresented) {
             PlaceSearchSheet { place in
                 vm.addPlace(place)

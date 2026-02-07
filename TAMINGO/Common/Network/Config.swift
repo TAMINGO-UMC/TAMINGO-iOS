@@ -29,7 +29,7 @@ enum Config {
        return key
    }()
     
-    static let KakaoAddressAPIKey: String = {
+    static let kakaoAddressAPIKey: String = {
         guard let key = Config.infoDictionary["KAKAO_API_KEY"] as? String else {
             fatalError("KAKAO_API_KEY not found in Info.plist")
         }

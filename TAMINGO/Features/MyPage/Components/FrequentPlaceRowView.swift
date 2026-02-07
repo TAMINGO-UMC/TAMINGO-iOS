@@ -57,9 +57,10 @@ struct FrequentPlaceRowView: View {
                     }
 
                     Button(action: onDelete) {
-                        Image(systemName: "MyPage_icon_trash")
+                        Image("MyPage_icon_trash")
                             .resizable()
-                            .frame(width: 32, height: 32)
+                            .frame(width: 16, height: 16)
+                            .padding(8)
                     }
                 }
             }
@@ -91,6 +92,7 @@ struct FrequentPlaceRowView: View {
     VStack(spacing: 16) {
         FrequentPlaceRowView(
             place: PlaceUIModel(
+                id: 1,
                 name: "집",
                 address: "서울시 노원구 광운로 21",
                 weeklyVisitCount: 6,
@@ -102,6 +104,7 @@ struct FrequentPlaceRowView: View {
 
         FrequentPlaceRowView(
             place: PlaceUIModel(
+                id: 2,
                 name: "중앙도서관",
                 address: "서울시 노원구 광운로 21",
                 weeklyVisitCount: 12,

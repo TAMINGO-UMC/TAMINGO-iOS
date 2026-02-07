@@ -13,8 +13,9 @@ struct ActivityTimeSettingView: View {
     let onSave: (ActivityTime) -> Void
 
     var body: some View {
-        VStack(alignment:.leading, spacing:12) {
+        VStack(alignment:.leading, spacing:0) {
             header
+                .padding(.horizontal, 16)
             VStack{
                 ActivityTimeSection(
                     startTime: $vm.startTime,
@@ -46,9 +47,9 @@ struct ActivityTimeSettingView: View {
                 
                 Spacer()
             }
-            .padding(.top, 16)
+            .padding(16)
         }
-        .padding(.horizontal, 32)
+        .padding(16)
     }
     
     var header: some View {
@@ -172,8 +173,8 @@ struct ActiveTimeProgressBar: View {
                 
                 Capsule()
                     .fill(.mainPink)
-                    .frame(width: geo.size.width * duration)
-                    .offset(x: geo.size.width * startOffset)
+                    .frame(width: geo.size.width * min(duration, 1.0 - startOffset))
+                    .offset(x: geo.size.width * min(startOffset, 1.0))
             }
         }
         .frame(height: 10)

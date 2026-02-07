@@ -12,12 +12,14 @@ extension PlaceUIModel {
 
     static let mock: [PlaceUIModel] = [
         .init(
+            id: 1,
             name: "집",
             address: "서울시 노원구 광운로 21",
             weeklyVisitCount: 6,
             isAISuggested: false
         ),
         .init(
+            id: 2,
             name: "중앙도서관",
             address: "서울시 노원구 광운로 21",
             weeklyVisitCount: 6,

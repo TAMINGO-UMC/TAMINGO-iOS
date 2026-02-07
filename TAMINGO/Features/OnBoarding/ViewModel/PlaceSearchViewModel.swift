@@ -87,6 +87,7 @@ final class PlaceSearchViewModel {
         else { return nil }
 
         return Place(
+            id: TempPlaceIdGenerator.next(),
             name: placeName,
             address: address,
             latitude: latitude,

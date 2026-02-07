@@ -8,7 +8,7 @@
 import Foundation
 
 struct PlaceUIModel: Identifiable {
-    let id = UUID()
+    let id: Int
     let name: String
     let address: String
     let weeklyVisitCount: Int
@@ -18,6 +18,7 @@ struct PlaceUIModel: Identifiable {
 extension PlaceUIModel {
     init(place: Place) {
         self.init(
+            id: place.id,
             name: place.name,
             address: place.address,
             weeklyVisitCount: 0,

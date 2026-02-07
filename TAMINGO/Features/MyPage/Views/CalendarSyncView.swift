@@ -1,5 +1,5 @@
 //
-//  AppleCalendarView.swift
+//  CalendarSyncView.swift
 //  TAMINGO
 //
 //  Created by 권예원 on 2/4/26.
@@ -22,7 +22,6 @@ struct CalendarSyncView: View {
                 introText
                 
                 linkedCalendarCard
-                    .cardStyle()
 
 
                 GuideBoxView(
@@ -39,14 +38,14 @@ struct CalendarSyncView: View {
             .padding(16)
 
         }
-        .padding(.horizontal, 16)
+        .padding(16)
         
         
     }
     var header : some View {
         HStack(spacing: 14) {
             Button {
-                
+                // TODO: 뒤로가기
             } label: {
                 Image("Previous_Chevron")
                     .resizable()
@@ -104,8 +103,7 @@ private extension CalendarSyncView {
             disconnectButton
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
+        .cardStyle()
     }
 }
 

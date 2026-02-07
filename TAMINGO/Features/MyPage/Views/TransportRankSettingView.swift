@@ -64,13 +64,12 @@ struct TransportRankSettingView: View {
                 )
                 .position(
                     x: frame.midX,
-                    y: frame.maxY - 15
+                    y: frame.maxY + 45
                 )
                 .zIndex(100)
             }
-
-            
         }
+        .coordinateSpace(name: "TransportRankSpace")
     }
     var header: some View {
         HStack(spacing: 14){
@@ -124,7 +123,7 @@ struct TrafficSection: View {
                             Color.clear
                                 .onAppear {
                                     labelFrames[rank] =
-                                        geo.frame(in: .global)
+                                        geo.frame(in: .named("TransportRankSpace"))
                                 }
                         }
                     )

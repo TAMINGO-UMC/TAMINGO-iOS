@@ -23,6 +23,7 @@ enum ActivityTimeMock {
     )
 }
 
+
 @Observable
 final class TimeSettingViewModel{
     
@@ -30,7 +31,7 @@ final class TimeSettingViewModel{
     var startTime: Date
     var endTime: Date
     var activeDays: Set<Weekday>
-
+  
     // UI
     var didSelectStartTime = false
     var didSelectEndTime = false
@@ -80,6 +81,10 @@ final class TimeSettingViewModel{
     // MARK: - 시간 텍스트
 
     var timeDescription: String {
+        guard isTimeValid else {
+            return ""
+        }
+
         let totalMinutes = Int(activityDuration / 60)
         let hours = totalMinutes / 60
         let minutes = totalMinutes % 60

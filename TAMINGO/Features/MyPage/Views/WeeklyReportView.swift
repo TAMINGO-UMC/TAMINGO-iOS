@@ -14,8 +14,9 @@ struct WeeklyReportView: View {
     let comparisonMetrics: [WeeklyComparisonMetric]
     
     var body: some View {
-        VStack(alignment:.leading, spacing:16){
+        VStack(alignment:.leading, spacing:0){
             header
+                .padding(.horizontal, 16)
             ScrollView{
                 VStack(alignment:.leading, spacing:16){
                     WeeklyMetricSection(vm: vm, metrics: weeklyMetrics)
@@ -23,7 +24,7 @@ struct WeeklyReportView: View {
                     WeeklyInsightSection()
                     WeeklyComparisonSection(metrics: comparisonMetrics)
                 }
-                .padding(.horizontal, 16)
+                .padding(16)
             }
         }
     }
@@ -42,7 +43,6 @@ struct WeeklyReportView: View {
                 .font(.semiBold16)
                 .foregroundStyle(.black00)
         }
-        .padding(.horizontal, 23)
     }
     
 }

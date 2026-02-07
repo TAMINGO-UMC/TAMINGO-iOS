@@ -18,7 +18,6 @@ struct ActivityTimeDTO: Encodable {
 }
 
 extension ActivityTime {
-
     func toDTO() -> ActivityTimeDTO {
         ActivityTimeDTO(
             startTime: startTime.toString(format: "HH:mm"),
@@ -28,7 +27,8 @@ extension ActivityTime {
             wedEnabled: activeDays.contains(.wed),
             thuEnabled: activeDays.contains(.thu),
             friEnabled: activeDays.contains(.fri),
-            weekendEnabled: activeDays.contains(where: { $0.isWeekend })
+            weekendEnabled: activeDays.contains(.sat) && activeDays.contains(.sun)
         )
     }
 }
+
