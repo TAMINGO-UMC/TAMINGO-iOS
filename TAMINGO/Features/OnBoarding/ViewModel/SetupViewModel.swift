@@ -92,18 +92,26 @@ final class SetupViewModel {
     }
 
     // MARK: - 도메인 모델 생성
-    func makeActiveTime() -> ActiveTime {
-        ActiveTime(
+    func makeActiveTime() -> ActivityTime { // 마이페이지 내에 있는 모델로 변경
+        ActivityTime(
             startTime: startTime,
-            endTime: endTime
+            endTime: endTime,
+            activeDays: Set(Weekday.allCases)
         )
     }
 
-    func makeNotification() -> OnboardingNotification {
-        OnboardingNotification(
-            isEnabled: true,
-            arrivalBuffer: arrivalBuffer
-        )
+    func makeNotification() -> NotificationSetting {
+        func makeNotification() -> NotificationSetting {
+            NotificationSetting(
+                departAlertEnabled: true,
+                departAlertMinutes: arrivalBuffer,
+                lateRiskAlertEnabled: false,
+                realtimeTransitEnabled: false,
+                todoRecommendEnabled: false,
+                locationMoveCheckEnabled: false,
+                routineAlertEnabled: false
+            )
+        }
     }
     
     // MARK: 최종 요청 생성

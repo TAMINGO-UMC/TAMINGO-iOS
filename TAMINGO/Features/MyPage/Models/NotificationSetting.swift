@@ -5,6 +5,7 @@
 //  Created by 권예원 on 1/24/26.
 //
 
+// 온보딩에서도 사용
 struct NotificationSetting {
     let departAlertEnabled: Bool
     let departAlertMinutes: ArrivalBufferType?
