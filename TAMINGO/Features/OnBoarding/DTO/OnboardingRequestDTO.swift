@@ -7,38 +7,41 @@
 
 
 struct OnboardingRequestDTO: Encodable {
-    let activeTime: ActiveTimeDTO
+    let activityTime: ActivityTimeDTO
     let favoritePlaces: [CreatePlaceRequestDTO]
     let transportPreferences: [TransportPreferenceDTO]
-    let onboardingNotification: OnboardingNotificationDTO
+    let notificationSetting: NotificationSettingDTO
 }
 
 extension OnboardingRequestDTO {
+
     init?(viewModel: SetupViewModel) {
         guard viewModel.isValid else { return nil }
 
-        self.activeTime = ActiveTime(
+        // 활동 시간
+        self.activityTime = ActivityTime(
             startTime: viewModel.startTime,
-            endTime: viewModel.endTime
+            endTime: viewModel.endTime,
+            activeDays: Set(Weekday.allCases)   // ← 지금 화면 기준
         ).toDTO()
 
+        // 자주 가는 장소
         self.favoritePlaces = viewModel.places.map {
             $0.toCreateRequestDTO()
         }
 
+        // 이동 수단 선호
         let transports = viewModel.transportRanks
             .compactMap { rank, type in
-                TransportPreferenceDTO(rank: rank, type: type)
+                type.toDTO(rank: rank)
             }
             .sorted { $0.rank < $1.rank }
 
         guard transports.count == 3 else { return nil }
         self.transportPreferences = transports
 
-        let onboardingNotification = viewModel.makeNotification()
-        self.onboardingNotification = OnboardingNotificationDTO(
-            setting:onboardingNotification
-        )
+        // 알림 설정
+        let notification = viewModel.makeNotification()
+        self.notificationSetting = notification.toDTO()
     }
 }
-

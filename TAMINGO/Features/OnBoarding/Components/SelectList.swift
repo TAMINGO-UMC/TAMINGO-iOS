@@ -13,7 +13,7 @@ struct SelectList<Item: Identifiable & Equatable>: View {
 
     let items: [Item]
     let selected: Item?
-    let rowHeight: CGFloat
+    let width: CGFloat
     let isDisabled: (Item) -> Bool
     let onSelect: (Item) -> Void
     let titleProvider: (Item) -> String
@@ -41,20 +41,21 @@ struct SelectList<Item: Identifiable & Equatable>: View {
                         Spacer()
                     }
                     .padding(.horizontal, 4)
-                    .frame(height: rowHeight)
+                    .frame(height: 20)
                     .opacity(isDisabled(item) ? 0.5 : 1)
                 }
                 .disabled(isDisabled(item))
 
                 if index < items.count - 1 {
                     Divider()
+                        .foregroundStyle(Color(red: 0.85, green: 0.85, blue: 0.85))
                 }
             }
         }
         .background(.gray1)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 8)
-        .frame(width: 86)
+        .frame(width: width)
     }
 }
 
