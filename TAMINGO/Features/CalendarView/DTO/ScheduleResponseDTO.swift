@@ -35,7 +35,7 @@ struct ScheduleResponseDTO: Decodable {
     let longitude: Double
     let category: String
     let repeatType: String
-    let repeatEndDate: String
+    let repeatEndDate: String?
     let memo: String
     let linkedTodos: [TodoSummaryDTO]
     let candidateTodos: [TodoSummaryDTO]

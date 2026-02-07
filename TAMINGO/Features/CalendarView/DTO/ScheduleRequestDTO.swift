@@ -30,7 +30,7 @@ struct AIInferenceSource: Encodable {
     var aiSuggestedCategoryName: String
 }
 
-struct ScheduleDTO: Encodable {
+struct ScheduleEditDTO: Encodable {
     let title: String
     let scheduleDate: String
     let startTime: String
