@@ -12,14 +12,14 @@ struct ScheduleCardView: View {
     let schedule: ScheduleSummary
     let state: ScheduleCardState
     let isExpanded: Bool
-    let detail: ScheduleDetail?
+    let detailVM: ScheduleDetailViewModel?
     let onChevronTap: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .top, spacing: 17) {
 
             // 시간
-            Text("\(schedule.startTime)")
+            Text("\(schedule.startTimeText)")
                 .font(.medium14)
                 .foregroundStyle(timeColor)
                 .frame(alignment: .leading)
@@ -38,21 +38,23 @@ struct ScheduleCardView: View {
                                 .font(.medium14)
                                 .foregroundStyle(titleColor)
                                 .lineLimit(1)
+                            
+                            if state == .next {
+                                Text("이번 일정")
+                                    .font(.regular12)
+                                    .foregroundStyle(Color.mainMint)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background{
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color("SubMint"))
+                                    }
+                            }
                         }
+                        
                         
                         Spacer()
                         
-                        if state == .next {
-                            Text("다음 일정")
-                                .font(.regular12)
-                                .foregroundStyle(Color.mainMint)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background{
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(Color("SubMint"))
-                                }
-                        }
                         
                         rightArea
                     }
@@ -63,26 +65,33 @@ struct ScheduleCardView: View {
                             .foregroundStyle(Color("Gray2"))
                             .lineLimit(1)
                         
-                        Text("·")
-                            .font(.regular12)
-                            .foregroundStyle(Color("Gray2"))
+//                        Text("·")
+//                            .font(.regular12)
+//                            .foregroundStyle(Color("Gray2"))
                         
-                        Text("\(schedule.duration)분")
-                            .font(.regular12)
-                            .foregroundStyle(Color("Gray2"))
-                            .lineLimit(1)
+//                        Text("\(schedule.duration)분")
+//                            .font(.regular12)
+//                            .foregroundStyle(Color("Gray2"))
+//                            .lineLimit(1)
                     }
                 }
                 
-                // 출발 카드
-                if let detail {
+                if let detailVM, let detail = detailVM.detail, isExpanded {
                     DepartureStatusCardView(
                         status: detail.travel.status,
-                        departureTime: detail.travel.departureTime,
-                        arrivalTime: detail.travel.arrivalTime,
-                        routeLink: detail.recommendedTodo?.toRouteLink()
+                        departureTime: detail.travel.departureTimeText,
+                        arrivalTime: detail.travel.arrivalTimeText,
+                        routeLink: detail.detourRecommendations.first,
+                        onRouteAccept: { detour in
+                            detailVM.acceptRoute(
+                                baseScheduleId: schedule.id,
+                                detour: detour
+                            )
+                        },
+                        onRouteReject: { _ in
+                            detailVM.rejectRoute(scheduleId: schedule.id)
+                        }
                     )
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
             .padding(16)
@@ -105,32 +114,36 @@ struct ScheduleCardView: View {
 }
 
 private extension ScheduleCardView {
-
     @ViewBuilder
     var rightArea: some View {
         switch state {
-
+            
         case .next:
-//            if let onChevronTap {
-                Button {
-                    onChevronTap?()
-                } label: {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color("MainMint"))
+            Group {
+                if let onChevronTap {
+                    Button {
+                        onChevronTap()
+                    } label: {
+                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color("MainMint"))
+                    }
+                } else {
+                    EmptyView()
                 }
-//            }
-
+            }
+            
         case .upcoming:
-            Text("\(schedule.leftMinuteText)")
+            Text(schedule.leftMinuteText)
                 .font(.regular12)
                 .foregroundStyle(Color("Gray2"))
-
+            
         case .past:
             EmptyView()
         }
     }
 }
+
 
 private extension ScheduleCardView {
 
@@ -175,7 +188,7 @@ private extension ScheduleCardView {
             ),
             state: .next,
             isExpanded: true,
-            detail: nil,
+            detailVM: nil,
             onChevronTap: {}
         )
 
@@ -191,7 +204,7 @@ private extension ScheduleCardView {
             ),
             state: .past,
             isExpanded: false,
-            detail: nil,
+            detailVM: nil,
             onChevronTap: nil
         )
     }

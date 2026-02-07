@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GapTime: Identifiable {
+struct GapTime: Identifiable, Hashable {
     let id: Int            // suggestionId
     let minutes: String
     let title: String

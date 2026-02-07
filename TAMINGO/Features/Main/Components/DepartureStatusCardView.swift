@@ -12,9 +12,11 @@ struct DepartureStatusCardView: View {
     let status: DepartureStatus
     let departureTime: String
     let arrivalTime: String
-    let routeLink: RouteLink?
+    let routeLink: RouteDetour?
     
-    @State private var routeLinkState: RouteLinkState = .normal
+    let onRouteAccept: ((RouteDetour) -> Void)?
+    let onRouteReject: ((Int) -> Void)?
+    
     @State private var showRouteLink: Bool = true   // 삭제용
 
     var body: some View {
@@ -98,20 +100,16 @@ struct DepartureStatusCardView: View {
                 .fill(status.backgroundColor)
         )
         
-        if showRouteLink {
+        if let routeLink, showRouteLink {
             RouteLinkCardView(
-                routeLink: RouteLink(
-                    title: "약 수령",
-                    location: "명동역 약국",
-                    detourText: "+2분 우회",
-                    suggestionText: "팀플 미팅 가는 길에 들를 수 있어요"
-                ),
-                state: routeLinkState,
+                detour: routeLink,
+                state: .normal,
                 onVisitTap: {
-                    routeLinkState = .accepted
+                    onRouteAccept?(routeLink)
                 },
                 onDeleteTap: {
                     showRouteLink = false
+                    onRouteReject?(routeLink.id)
                 }
             )
         }
@@ -141,12 +139,12 @@ struct DepartureStatusCardView: View {
 
 #Preview {
     VStack(spacing: 5) {
-        DepartureStatusCardView(
-            status: .preparing(remainingMinutes: 5),
-            departureTime: "오전 08:40",
-            arrivalTime: "오전 09:10",
-            routeLink: nil
-        )
+//        DepartureStatusCardView(
+//            status: .preparing(remainingMinutes: 5),
+//            departureTime: "오전 08:40",
+//            arrivalTime: "오전 09:10",
+//            routeLink: nil
+//        )
 //        DepartureStatusCardView(status: .now(remainingMinutes: 5))
 //        DepartureStatusCardView(status: .delayed(remainingMinutes: 5))
 //        DepartureStatusCardView(status: .late(remainingMinutes: 6, delayMinutes: 35))

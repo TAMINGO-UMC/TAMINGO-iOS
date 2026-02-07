@@ -10,44 +10,82 @@ import Observation
 
 @Observable
 final class HomeScheduleViewModel {
-
+    
+    // MARK: - Dependencies
+    private let service = HomeService()
+    
+    // MARK: - State
     var timelineItems: [HomeTimelineItem] = []
     var expandedScheduleId: Int?
-
-    var scheduleDetails: [Int: ScheduleDetail] = [:]
     
-    init() {
-        loadMock()
+    var scheduleDetailVMs: [Int: ScheduleDetailViewModel] = [:]
+    
+    var isLoading: Bool = false
+    var errorMessage: String?
+    
+    var detailViewModels: [Int: ScheduleDetailViewModel] = [:]
+    let accessToken: String = ""
+    
+    // MARK: - API 연동
+    
+    func loadToday(accessToken: String) {
+        isLoading = true
+        errorMessage = nil
+        
+        service.fetchTodayTimeline(accessToken: accessToken) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isLoading = false
+                
+                switch result {
+                    
+                case .success(let response):
+                    // DTO → Model 변환
+                    self.timelineItems = response.result.items
+                        .compactMap { $0.toModel() }
+                    
+                    print("✅ HomeSchedule 서버 연동 성공")
+                    print("📦 timelineItems:", self.timelineItems.count)
+                    dump(self.timelineItems)
+                    
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    print("❌ HomeSchedule 서버 연동 실패:", error)
+                }
+            }
+        }
     }
-
-    func toggleDepartureCard(for schedule: ScheduleSummary) {
+    
+    // MARK: - UI Interaction (View가 쓰는 것들)
+    func toggleDepartureCard(
+        for schedule: ScheduleSummary,
+        accessToken: String
+    ) {
         if expandedScheduleId == schedule.id {
             expandedScheduleId = nil
         } else {
             expandedScheduleId = schedule.id
-            loadScheduleDetailIfNeeded(id: schedule.id)
+
+            if scheduleDetailVMs[schedule.id] == nil {
+                let vm = ScheduleDetailViewModel(
+                    scheduleId: schedule.id,
+                    accessToken: accessToken
+                )
+                scheduleDetailVMs[schedule.id] = vm
+                vm.load()
+            }
         }
     }
-
-    func loadScheduleDetailIfNeeded(id: Int) {
-        guard scheduleDetails[id] == nil else { return }
-        
-        // 임시 mock
-        scheduleDetails[id] = ScheduleDetail.mock(id: id)
-    }
-
-
+    
+    // MARK: - GAP (틈새 시간)
     func acceptGap(_ gap: GapTime) {
         guard let index = timelineItems.firstIndex(where: {
-            if case .gap(let g) = $0 {
-                return g.id == gap.id
-            }
+            if case .gap(let g) = $0 { return g.id == gap.id }
             return false
         }) else { return }
-
-        // gap → schedule 변환
+        
         let newSchedule = ScheduleSummary(
-            id: Int.random(in: 1000...9999), // 임시 ID
+            id: Int.random(in: 1000...9999),
             title: gap.title,
             startTime: gap.gapStartTime,
             placeName: gap.location,
@@ -55,67 +93,30 @@ final class HomeScheduleViewModel {
             duration: 0,
             isNextSchedule: false
         )
-
-        // 같은 위치에 schedule로 교체
+        
         timelineItems[index] = .schedule(newSchedule)
     }
-
+    
     func rejectGap(_ gap: GapTime) {
         timelineItems.removeAll {
             if case .gap(let g) = $0 { return g.id == gap.id }
             return false
         }
     }
+    
+    // MARK: -  detail-ViewModel
+    func detailViewModel(for scheduleId: Int) -> ScheduleDetailViewModel {
+        if let vm = detailViewModels[scheduleId] {
+            return vm
+        }
 
-    private func loadMock() {
-        timelineItems = [
-            .schedule(
-                ScheduleSummary(
-                    id: 1,
-                    title: "팀플 미팅",
-                    startTime: "09:40",
-                    placeName: "S관 301",
-                    leftMinute: 23,
-                    duration: 13,
-                    isNextSchedule: true
-                )
-            ),
-
-            .gap(
-                GapTime(
-                    id: 5,
-                    minutes: "5–7분",
-                    title: "도서 반납",
-                    location: "도서관",
-                    availableText: "12:10–12:30 공강에 처리 가능",
-                    gapStartTime: "12:10",
-                    gapEndTime: "12:30"
-                )
-            ),
-
-            .schedule(
-                ScheduleSummary(
-                    id: 2,
-                    title: "강의",
-                    startTime: "14:00",
-                    placeName: "공학관",
-                    leftMinute: 55,
-                    duration: 21,
-                    isNextSchedule: false
-                )
-            ),
-
-            .schedule(
-                ScheduleSummary(
-                    id: 3,
-                    title: "스터디",
-                    startTime: "18:30",
-                    placeName: "중앙도서관",
-                    leftMinute: 180,
-                    duration: 20,
-                    isNextSchedule: false
-                )
-            )
-        ]
+        let vm = ScheduleDetailViewModel(
+            scheduleId: scheduleId,
+            accessToken: accessToken
+        )
+        vm.load()
+        detailViewModels[scheduleId] = vm
+        return vm
     }
+
 }

@@ -135,21 +135,3 @@ private struct GapSecondaryButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
-
-#Preview {
-    GapTimeCardView(
-        gapTime: GapTime(
-            id: 5,
-            minutes: "5–7분",
-            title: "도서 반납",
-            location: "도서관",
-            availableText: "12:10–12:30 공강에 처리 가능",
-            gapStartTime: "12:30",
-            gapEndTime: "12:40"
-        ),
-        onAssignTap: { print("편성") },
-        onLaterTap: { print("나중에") }
-    )
-    .padding()
-}
-

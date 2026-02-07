@@ -1,5 +1,5 @@
 //
-//  ScheduleItemDTO.swift
+//  ScheduleResponseDTO.swift
 //  TAMINGO
 //
 //  Created by Jung Hyun Han on 2/1/26.
@@ -7,9 +7,21 @@
 
 import Foundation
 
-struct HomeScheduleItemDTO: Decodable {
-    let type: ScheduleItemType
+// MARK: - Root Response
+struct HomeScheduleResponseDTO: Decodable {
+    let isSuccess: Bool
+    let code: String
+    let message: String
+    let result: HomeScheduleResultDTO
+}
 
+// MARK: - Result
+struct HomeScheduleResultDTO: Decodable {
+    let date: String
+    let items: [HomeScheduleItemDTO]
+}
+
+struct HomeScheduleItemDTO: Decodable {
     // SCHEDULE
     let scheduleId: Int?
     let title: String?
@@ -22,9 +34,11 @@ struct HomeScheduleItemDTO: Decodable {
     // GAP_RECOMMEND
     let suggestionId: Int?
     let location: String?
-    let time: String?
     let requiredMinutes: Int?
+    let time: String?
     let message: String?
+    
+    let type: ScheduleItemType
 }
 
 enum ScheduleItemType: String, Decodable {
@@ -63,17 +77,18 @@ extension HomeScheduleItemDTO {
         case .gapRecommend:
             guard
                 let suggestionId,
-                let message,
-                let time,
+                let title,
                 let location,
-                let requiredMinutes
+                let time,
+                let requiredMinutes,
+                let message
             else { return nil }
             
             return .gap(
                 GapTime(
                     id: suggestionId,
                     minutes: "약 \(requiredMinutes)분",
-                    title: message,
+                    title: title,
                     location: location,
                     availableText: message,
                     gapStartTime: time,

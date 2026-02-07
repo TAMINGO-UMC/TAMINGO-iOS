@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ScheduleSummary: Identifiable {
+struct ScheduleSummary: Identifiable, Hashable {
     let id: Int
     let title: String
     let startTime: String
@@ -15,14 +15,20 @@ struct ScheduleSummary: Identifiable {
     let leftMinute: Int
     let duration: Int
     let isNextSchedule: Bool
-    
-    var leftMinuteText: String {
-        "\(leftMinute)분 후"
-    }
 }
 
 enum ScheduleCardState {
     case next
     case upcoming
     case past
+}
+
+extension ScheduleSummary {
+    var startTimeText: String {
+        String(startTime.prefix(5))
+    }
+    
+    var leftMinuteText: String {
+        "\(leftMinute)분 후"
+    }
 }

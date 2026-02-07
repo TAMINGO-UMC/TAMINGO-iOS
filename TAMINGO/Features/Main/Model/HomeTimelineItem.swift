@@ -1,5 +1,5 @@
 //
-//  Enum.swift
+//  HomeTimelineItem.swift
 //  TAMINGO
 //
 //  Created by Jung Hyun Han on 2/2/26.
@@ -13,8 +13,8 @@ enum HomeTimelineItem: Identifiable {
 
     var id: String {
         switch self {
-        case .schedule(let s): return "schedule-\(s.id)"
-        case .gap(let g): return "gap-\(g.id)"
+        case .schedule(let schedule): return "s-\(schedule.id)"
+        case .gap(let gap): return "g-\(gap.id)"
         }
     }
 }
