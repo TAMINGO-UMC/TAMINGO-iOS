@@ -1,5 +1,5 @@
 //
-//  TransportButton.swift
+//  RankLabel.swift
 //  TAMINGO
 //
 //  Created by 권예원 on 1/17/26.
@@ -18,6 +18,7 @@ struct RankLabel: View {
                 Text("\(rank)순위")
                     .font(.medium14)
                     .foregroundStyle(.black)
+                    .frame(height: 21)
                 HStack(spacing: 2.17){
                     Text(title)
                         .font(.medium14)

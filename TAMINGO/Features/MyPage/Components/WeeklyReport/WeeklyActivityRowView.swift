@@ -56,13 +56,13 @@ struct WeeklyActivityRowView: View {
                         .font(.medium14)
                         .foregroundStyle(.mainMint)
                 }
-                CustomProgressBar(value: progress)
+                ReportProgressBar(value: progress)
             }
         }
     }
 }
 
-struct CustomProgressBar: View {
+struct ReportProgressBar: View {
     let value: Double
 
     var body: some View {

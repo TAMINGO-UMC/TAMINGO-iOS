@@ -5,6 +5,8 @@
 //  Created by 권예원 on 1/30/26.
 //
 
+// 마이페이지에서도 사용
+
 struct CreatePlaceRequestDTO: Encodable {
     let name: String
     let address: String

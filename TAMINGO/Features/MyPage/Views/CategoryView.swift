@@ -51,7 +51,7 @@ VM.CategoryType: CategoryItem {
                 .padding(.horizontal, 16)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(16)
     }
 }
 

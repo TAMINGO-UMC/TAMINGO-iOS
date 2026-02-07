@@ -145,8 +145,8 @@ struct SyncSection: View {
             VStack(spacing: 0) {
                 CategorySettingRowView(
                     title: "캘린더 연동",
-                    sub: "3개 연동",
-                    textColor: .mainMint
+                    sub: "연동되지 않음",
+                    textColor: .gray2
                 ) {
                     print("캘린더 연동 이동")
                 }

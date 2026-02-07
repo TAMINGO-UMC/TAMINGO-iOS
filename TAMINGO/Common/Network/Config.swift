@@ -21,4 +21,20 @@ enum Config {
         }
         return baseURL
     }()
+    
+    static let kakaoLoginKey: String = {
+       guard let key = Config.infoDictionary["KAKAO_LOGIN_KEY"] as? String else {
+           fatalError("KAKAO_LOGIN_KEY not found in Info.plist")
+       }
+       return key
+   }()
+    
+    static let kakaoAddressAPIKey: String = {
+        guard let key = Config.infoDictionary["KAKAO_API_KEY"] as? String else {
+            fatalError("KAKAO_API_KEY not found in Info.plist")
+        }
+        return key
+    }()
 }
+
+
