@@ -38,7 +38,7 @@ extension AddScheduleViewModel {
     
     // MARK: - AI Helpers
     func applyInferenceResult(_ data: AIInferenceResponseDTO) {
-        // 장소
+        // 장소 매핑
         self.placeName = data.aiInference.placeName
         self.address = data.aiInference.address
         self.latitude = data.aiInference.latitude
@@ -52,12 +52,14 @@ extension AddScheduleViewModel {
         // 카테고리 매칭
         self.scheduleCategoryId = findCategoryId(by: data.aiInference.category) ?? 0
         
-        // 할 일 리스트
-        self.nearbyTodos = data.nearbyTodos
+        // 할 일 리스트 매핑
+        self.linkedTodos = data.nearbyTodos
         self.candidateTodos = data.candidateTodos
+        
+        // UI 상태 업데이트
         self.isFavoriteRecommendation = data.isFavoriteRecommendation
         
-        print("AI 추론 완료: \(self.placeName), 카테고리: \(self.categoryName)")
+        print("AI 추론 완료: \(self.placeName), 선택된 할 일 개수: \(self.linkedTodos.count)")
     }
     
     func resetInferredData() {
@@ -66,7 +68,9 @@ extension AddScheduleViewModel {
         self.latitude = nil
         self.longitude = nil
         self.categoryName = "카테고리 없음"
-        self.nearbyTodos = []
+        
+        // 투두 리셋
+        self.linkedTodos = []
         self.candidateTodos = []
         self.isFavoriteRecommendation = false
     }

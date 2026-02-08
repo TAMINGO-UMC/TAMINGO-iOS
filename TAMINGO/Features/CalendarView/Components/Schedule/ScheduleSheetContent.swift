@@ -1,5 +1,5 @@
 //
-//  ScheduleSheetContentView.swift
+//  ScheduleSheetContent.swift
 //  TAMINGO
 //
 //  Created by 김도연 on 2/2/26.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 // MARK: - Sheet Content View
-struct ScheduleSheetContentView: View {
+struct ScheduleSheetContent: View {
     let type: SheetType
     
     // Bindings required for different sheets

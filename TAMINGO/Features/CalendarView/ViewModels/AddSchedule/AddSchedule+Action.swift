@@ -14,6 +14,12 @@ extension AddScheduleViewModel {
     func createSchedule() async -> Bool {
         guard !title.isEmpty else { return false }
         
+        // 반복 종료일 처리
+        let repeatEndDateString: String? = (repeatType != .none && isEndDated) ? repeatEndDate.toString(format: "yyyy-MM-dd") : nil
+        
+        // 선택된 투두 객체들에서 ID 추출
+        let finalLinkedTodoIds = linkedTodos.map { $0.todoId }
+        
         let requestDTO = ScheduleRequestDTO(
             title: title,
             scheduleDate: startTime.toString(format: "yyyy-MM-dd"),
@@ -26,27 +32,17 @@ extension AddScheduleViewModel {
             scheduleCategoryId: scheduleCategoryId,
             memo: memo,
             repeatType: repeatType.rawValue,
-            repeatEndDate: repeatEndDate.toString(format: "yyyy-MM-dd"),
-            linkedTodoIds: linkedTodoIds,
+            repeatEndDate: repeatEndDateString,
+            linkedTodoIds: finalLinkedTodoIds,
             aiInferenceSource: aiInferenceSource
         )
         
-        return await withCheckedContinuation { continuation in
-            provider.request(.createSchedule(body: requestDTO)) { result in
-                switch result {
-                case .success(let response):
-                    do {
-                        _ = try response.filterSuccessfulStatusCodes()
-                        continuation.resume(returning: true)
-                    } catch {
-                        print("생성 실패 (Status Code): \(error)")
-                        continuation.resume(returning: false)
-                    }
-                case .failure(let error):
-                    print("생성 실패 (Network): \(error)")
-                    continuation.resume(returning: false)
-                }
-            }
+        do {
+            let _: BaseResponse<ScheduleCreationResponseDTO> = try await provider.request(.createSchedule(body: requestDTO))
+            return true
+        } catch {
+            print("생성 실패: \(error)")
+            return false
         }
     }
 }
