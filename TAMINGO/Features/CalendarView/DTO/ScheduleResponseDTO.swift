@@ -43,8 +43,6 @@ struct ScheduleResponseDTO: Decodable {
     let candidateTodos: [TodoSummaryDTO]
 }
 
-import Foundation
-
 // MARK: - AI 추론 결과 응답 (ai-inference)
 struct AIInferenceResponseDTO: Decodable {
     let aiInference: AIInferenceData
