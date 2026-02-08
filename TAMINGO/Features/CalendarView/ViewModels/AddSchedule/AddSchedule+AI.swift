@@ -53,11 +53,11 @@ extension AddScheduleViewModel {
         self.scheduleCategoryId = findCategoryId(by: data.aiInference.category) ?? 0
         
         // 할 일 리스트 매핑
-        self.linkedTodos = data.nearbyTodos
-        self.candidateTodos = data.candidateTodos
+        self.linkedTodos = data.context.nearbyTodos
+        self.candidateTodos = data.context.candidateTodos
         
         // UI 상태 업데이트
-        self.isFavoriteRecommendation = data.isFavoriteRecommendation
+        self.isFavoriteRecommendation = data.context.isFavoriteRecommendation
         
         print("AI 추론 완료: \(self.placeName), 선택된 할 일 개수: \(self.linkedTodos.count)")
     }
