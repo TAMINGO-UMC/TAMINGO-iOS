@@ -46,6 +46,10 @@ struct ScheduleResponseDTO: Decodable {
 // MARK: - AI 추론 결과 응답 (ai-inference)
 struct AIInferenceResponseDTO: Decodable {
     let aiInference: AIInferenceData
+    let context: AIInferenceContext
+}
+
+struct AIInferenceContext: Decodable {
     let nearbyTodos: [TodoSummaryDTO]
     let candidateTodos: [TodoSummaryDTO]
     let isFavoriteRecommendation: Bool
@@ -59,7 +63,7 @@ struct AIInferenceData: Decodable {
     let category: String
 }
 
-// MARK: - 할 일 요약 (내부 리스트용)
+// MARK: - 할 일 요약
 struct TodoSummaryDTO: Decodable {
     let todoId: Int
     let title: String
