@@ -63,15 +63,15 @@ extension AddScheduleViewModel {
     }
     
     func resetInferredData() {
-            self.placeName = ""
-            self.address = ""
-            self.latitude = nil
-            self.longitude = nil
-            self.categoryName = "카테고리 없음"
-            
-            // 투두 리셋
-            self.linkedTodos = []
-            self.candidateTodos = []
-            self.isFavoriteRecommendation = false
+        self.placeName = ""
+        self.address = ""
+        self.latitude = nil
+        self.longitude = nil
+        self.categoryName = "카테고리 없음"
+        
+        // 투두 리셋
+        self.linkedTodos = []
+        self.candidateTodos = []
+        self.isFavoriteRecommendation = false
     }
 }

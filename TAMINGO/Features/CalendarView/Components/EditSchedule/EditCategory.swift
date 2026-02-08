@@ -23,7 +23,7 @@ struct EditCategory: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
+            HStack {
                 ScheduleSectionHeader(title: "카테고리", isRequired: false)
             }
             

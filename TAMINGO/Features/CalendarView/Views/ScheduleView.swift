@@ -11,7 +11,6 @@ struct ScheduleView: View {
     @State private var calendarVM = CalendarViewModel()
     
     @State private var showAddSheet = false
-    @State private var showEditSheet: Bool = false
     @State private var selectedSchedule: ScheduleListDTO? = nil
     
     var body: some View {

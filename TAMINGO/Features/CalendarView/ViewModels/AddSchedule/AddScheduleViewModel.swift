@@ -70,11 +70,8 @@ class AddScheduleViewModel {
         didSet {
             // 토글을 켜면 날짜를 오늘로 리셋 (혹은 기존 날짜 유지)
             if isEndDated {
-                // 만약 현재 날짜가 먼 미래(비활성 상태 값)라면 오늘로 초기화
                 let calendar = Calendar.current
-                if calendar.component(.year, from: repeatEndDate) >= 2999 {
-                    self.repeatEndDate = Date()
-                }
+                self.repeatEndDate = Date()
             }
         }
     }

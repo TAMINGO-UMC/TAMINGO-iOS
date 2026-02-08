@@ -67,7 +67,7 @@ struct TodoSummaryDTO: Decodable {
 }
 
 // MARK: - 카테고리 정보
-struct ScheduleCategoryDTO: Decodable, Identifiable{
+struct ScheduleCategoryDTO: Decodable, Identifiable {
     let id: Int
     let name: String
     let colorCode: String

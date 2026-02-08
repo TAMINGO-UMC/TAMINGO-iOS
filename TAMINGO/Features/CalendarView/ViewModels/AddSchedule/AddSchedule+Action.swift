@@ -37,22 +37,12 @@ extension AddScheduleViewModel {
             aiInferenceSource: aiInferenceSource
         )
         
-        return await withCheckedContinuation { continuation in
-            provider.request(.createSchedule(body: requestDTO)) { result in
-                switch result {
-                case .success(let response):
-                    do {
-                        _ = try response.filterSuccessfulStatusCodes()
-                        continuation.resume(returning: true)
-                    } catch {
-                        print("생성 실패 (Status Code): \(error)")
-                        continuation.resume(returning: false)
-                    }
-                case .failure(let error):
-                    print("생성 실패 (Network): \(error)")
-                    continuation.resume(returning: false)
-                }
-            }
+        do {
+            let _: BaseResponse<ScheduleCreationResponseDTO> = try await provider.request(.createSchedule(body: requestDTO))
+            return true
+        } catch {
+            print("생성 실패: \(error)")
+            return false
         }
     }
 }
