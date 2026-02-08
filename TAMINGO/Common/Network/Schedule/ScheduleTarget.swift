@@ -32,7 +32,7 @@ extension ScheduleTarget: APITargetType {
         case .updateSchedule(let id, _):
             return "/api/schedules/\(id)"
         case .aiFavoritePlaces:
-            return "/api/favorite-places/ai"
+            return "/api/favorite-places"
         case .getFavoritePlaces:
             return "/api/favorite-places"
         case .getScheduleList:
