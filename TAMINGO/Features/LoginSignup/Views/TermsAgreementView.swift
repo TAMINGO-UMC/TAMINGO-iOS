@@ -1,41 +1,56 @@
+//
+//  TermsAgreementView.swift
+//  TAMINGO
+//
+//  Created by 엄지용 on 2/7/26.
+//
+
 import SwiftUI
+
 
 struct TermsAgreementView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SignupSessionStore.self) private var sessionStore
-
-    // 필수
-    @State private var agreeService = false
-    @State private var agreePrivacy = false
-    @State private var agreeAI = false
-    @State private var agreeLocation = false
-
-    // 선택
-    @State private var agreeMarketing = false
-
+    
+    @State private var repo: AuthRepositoryProtocol = AuthRepository()
+    @State private var terms: [TermDTO] = []
+    @State private var isLoading = false
+    
+    // 에러 알림 상태
+    @State private var showError = false
+    @State private var errorMessage = ""
+    
+    // 약관 동의 상태 (Key: 약관코드, Value: 동의여부)
+    @State private var agreements: [String: Bool] = [:]
     @State private var goToEmail = false
-
+    
+    // 필수 약관 코드 목록
+    private var requiredTermCodes: [String] {
+        terms.filter { $0.isRequired }.map { $0.code }
+    }
+    
+    // 필수 항목 모두 동의 여부
     private var isRequiredAllChecked: Bool {
-        agreeService && agreePrivacy && agreeAI && agreeLocation
+        requiredTermCodes.allSatisfy { agreements[$0] == true }
     }
-
+    
+    // 전체 동의 여부
     private var isAllChecked: Bool {
-        isRequiredAllChecked && agreeMarketing
+        terms.allSatisfy { agreements[$0.code] == true }
     }
-
+    
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 0) {
-
+                
                 Spacer().frame(height: geo.safeAreaInsets.top)
-
+                
                 VStack(spacing: 45.53) {
-
+                    
                     Image("Tamingo_logo_text")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 180, height: 29.55)
-                        //뒤로가기 버튼 추가
                         .overlay(alignment: .leading) {
                             Button {
                                 sessionStore.popToLoginFromEmail = true
@@ -46,41 +61,53 @@ struct TermsAgreementView: View {
                                     .scaledToFit()
                                     .frame(width: 9.05, height: 15.35)
                                     .contentShape(Rectangle())
-                                    .padding(12) // 터치영역 확보
+                                    .padding(12)
                             }
                             .buttonStyle(.plain)
                             .offset(x: -90, y: -40)
                         }
-
+                    
                     agreementTitle
                         .multilineTextAlignment(.center)
                 }
                 .padding(.bottom, 26)
-
-                AgreementBox(
-                    allTitle: "전체 동의",
-                    allSubtitle: "(선택항목 포함)",
-                    allIsOn: Binding(
-                        get: { isAllChecked },
-                        set: { setAll($0) }
-                    ),
-                    items: [
-                        .init(title: "이용약관 동의", subtitle: "(필수)", required: true, isOn: $agreeService),
-                        .init(title: "개인정보 수집 및 이용 동의", subtitle: "(필수)", required: true, isOn: $agreePrivacy),
-                        .init(title: "AI기반 서비스 이용약관 동의", subtitle: "(필수)", required: true, isOn: $agreeAI),
-                        .init(title: "위치기반 서비스 이용약관 동의", subtitle: "(필수)", required: true, isOn: $agreeLocation),
-                        .init(title: "마케팅 알림 수신 동의", subtitle: "(선택)", required: false, isOn: $agreeMarketing),
-                    ]
-                )
-                .padding(.horizontal, 20)
-
+                
+                if isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    AgreementBox(
+                        allTitle: "전체 동의",
+                        allSubtitle: "(선택항목 포함)",
+                        allIsOn: Binding(
+                            get: { isAllChecked },
+                            set: { setAll($0) }
+                        ),
+                        items: terms.map { term in
+                            AgreementBox.Item(
+                                title: term.title,
+                                subtitle: term.isRequired ? "(필수)" : "(선택)",
+                                required: term.isRequired,
+                                isOn: Binding(
+                                    get: { agreements[term.code] ?? false },
+                                    set: { agreements[term.code] = $0 }
+                                )
+                            )
+                        }
+                    )
+                    .padding(.horizontal, 20)
+                }
+                
                 Spacer()
-
+                
                 PrimaryActionButton(
                     title: "다음",
                     isEnabled: isRequiredAllChecked
                 ) {
-                    goToEmail = true
+                    // Moya Task와의 충돌 방지를 위해 Swift.Task 명시
+                    Task {
+                        await createSession()
+                    }
                 }
                 .padding(.bottom, 20)
             }
@@ -92,55 +119,129 @@ struct TermsAgreementView: View {
             EmailInputView()
                 .navigationBarBackButtonHidden(true)
         }
+        .task {
+            await loadTerms()
+        }
+        .alert("오류", isPresented: $showError) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text(errorMessage)
+        }
     }
-
+    
     private var agreementTitle: some View {
         let full = "시작을 위해서는,\n약관 동의가 필요해요."
         var attr = AttributedString(full)
         attr.font = .pretendard(.semibold, size: 22)
         attr.foregroundColor = Color("Gray2")
-
+        
         if let range = attr.range(of: "약관 동의") {
             attr[range].foregroundColor = Color("MainMint")
         }
         return Text(attr)
     }
-
+    
     private func setAll(_ on: Bool) {
-        agreeService = on
-        agreePrivacy = on
-        agreeAI = on
-        agreeLocation = on
-        agreeMarketing = on
+        for term in terms {
+            agreements[term.code] = on
+        }
+    }
+    
+    // MARK: - API: 약관 목록 조회
+    @MainActor
+    private func loadTerms() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // 1.서버 API 호출 시도
+            terms = try await repo.getTerms()
+            print("약관 조회 성공: \(terms.count)개")
+            
+        } catch {
+            print("약관 조회 실패: \(error.localizedDescription)")
+            print("실패 시 하드코딩 데이터 사용 (서버 스펙 5개)")
+            
+            // 2. (서버 스펙에 맞춘 5개 항목)
+            terms = [
+                TermDTO(code: "SERVICE", title: "이용약관 동의", isRequired: true),
+                TermDTO(code: "PRIVACY", title: "개인정보 수집 및 이용 동의", isRequired: true),
+                TermDTO(code: "AI_SERVICE", title: "AI 기반 서비스 이용약관 동의", isRequired: true),
+                TermDTO(code: "LOCATION", title: "위치기반 서비스 이용약관 동의", isRequired: true),
+                TermDTO(code: "MARKETING", title: "마케팅 알림 수신 동의", isRequired: false)
+            ]
+        }
+        
+        // 3. 초기화 (모두 false로 설정)
+        for term in terms {
+            if agreements[term.code] == nil {
+                agreements[term.code] = false
+            }
+        }
+    }
+    
+    // MARK: - API: 회원가입 세션 생성
+    @MainActor
+    private func createSession() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        // 1. [String: Bool] 맵(Map) 구조 생성
+        var termsMap: [String: Bool] = [:]
+        for term in terms {
+            termsMap[term.code] = agreements[term.code] ?? false
+        }
+        
+        let requestDTO = CreateSessionRequestDTO(terms: termsMap)
+        
+        // 2. 전송 데이터 로그 출력
+        print("[서버로 전송하는 Body]")
+        if let jsonData = try? JSONEncoder().encode(requestDTO),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            print(jsonString)
+        }
+        
+        // 3. API 호출
+        do {
+            let response = try await repo.createSession(terms: requestDTO)
+            print("세션 생성 성공! ID: \(response.signupSessionId)")
+            
+            sessionStore.signupSessionId = response.signupSessionId
+            goToEmail = true
+            
+        } catch {
+            print("세션 생성 실패: \(error.localizedDescription)")
+            
+            
+            self.errorMessage = "세션 생성에 실패했습니다.\n\(error.localizedDescription)"
+            self.showError = true
+        }
     }
 }
 
+// MARK: - Subviews (UI 컴포넌트)
 private struct AgreementBox: View {
-
     struct Item {
         let title: String
         let subtitle: String
         let required: Bool
         var isOn: Binding<Bool>
     }
-
+    
     let allTitle: String
     let allSubtitle: String
     var allIsOn: Binding<Bool>
     let items: [Item]
-
-    // Row 공통 패딩/간격 (전체동의/항목 동일)
+    
     private let rowHPadding: CGFloat = 14
     private let rowSpacing: CGFloat = 18
-    
     private let titleFont: Font = .semiBold14
     private let subtitleFont: Font = .medium12
-    private let titleColor: Color = Color(.black)     // 또는 .black
-    private let subtitleColor: Color = Color("Gray2")  // 또는 .gray
+    private let titleColor: Color = Color(.black)
+    private let subtitleColor: Color = Color("Gray2")
+    
     var body: some View {
         VStack(spacing: rowSpacing) {
-
-
             AllAgreementRow(
                 title: allTitle,
                 subtitle: allSubtitle,
@@ -151,7 +252,7 @@ private struct AgreementBox: View {
                 titleColor: titleColor,
                 subtitleColor: subtitleColor
             )
-
+            
             VStack(spacing: rowSpacing) {
                 ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                     AgreementItemRow(
@@ -160,7 +261,6 @@ private struct AgreementBox: View {
                         required: item.required,
                         isOn: item.isOn,
                         rowHPadding: rowHPadding
-                        
                     )
                 }
             }
@@ -175,32 +275,25 @@ private struct AllAgreementRow: View {
     let title: String
     let subtitle: String
     @Binding var isOn: Bool
-
     let rowHPadding: CGFloat
-
-  
-    var titleFont: Font? = nil
-    var subtitleFont: Font? = nil
-    var titleColor: Color? = nil
-    var subtitleColor: Color? = nil
-
+    
+    var titleFont: Font?
+    var subtitleFont: Font?
+    var titleColor: Color?
+    var subtitleColor: Color?
+    
     var body: some View {
         HStack(spacing: 10) {
             HStack(spacing: 5) {
                 Text(title)
                     .font(titleFont ?? .semiBold14)
                     .foregroundStyle(titleColor ?? .black)
-
                 Text(subtitle)
                     .font(subtitleFont ?? .medium12)
                     .foregroundStyle(subtitleColor ?? Color("Gray2"))
             }
-
             Spacer(minLength: 0)
-
-            Button {
-                isOn.toggle()
-            } label: {
+            Button { isOn.toggle() } label: {
                 GhostCheckBox(isOn: isOn, activeColor: Color("MainMint"))
             }
             .buttonStyle(.plain)
@@ -220,30 +313,21 @@ private struct AgreementItemRow: View {
     let subtitle: String
     let required: Bool
     var isOn: Binding<Bool>
-
     let rowHPadding: CGFloat
-
+    
     var body: some View {
         HStack(spacing: 10) {
-
-            
             HStack(spacing: 2) {
                 Text(title)
                     .font(.medium12)
                     .foregroundStyle(Color("Gray2"))
                     .underline(true, color: Color("Gray2"))
-
                 Text(subtitle)
                     .font(.medium12)
                     .foregroundStyle(required ? Color("MainPink") : Color("Gray1"))
             }
-
             Spacer(minLength: 0)
-
-          
-            Button {
-                isOn.wrappedValue.toggle()
-            } label: {
+            Button { isOn.wrappedValue.toggle() } label: {
                 GhostCheckBox(isOn: isOn.wrappedValue, activeColor: Color("MainMint"))
             }
             .buttonStyle(.plain)
@@ -257,10 +341,9 @@ private struct AgreementItemRow: View {
 private struct GhostCheckBox: View {
     let isOn: Bool
     let activeColor: Color
-
     private let size: CGFloat = 23
     private let radius: CGFloat = 6
-
+    
     var body: some View {
         RoundedRectangle(cornerRadius: radius)
             .stroke(isOn ? activeColor : Color("Gray1"), lineWidth: 1.5)

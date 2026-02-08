@@ -1,3 +1,10 @@
+//
+//  SignupCompleteView.swift
+//  TAMINGO
+//
+//  Created by 엄지용 on 2/7/26.
+//
+
 import SwiftUI
 
 struct SignupCompleteView: View {
@@ -20,6 +27,7 @@ struct SignupCompleteView: View {
                 .scaledToFit()
                 .frame(width: 315, height: 283)
                 .padding(.bottom, 26)
+            
             VStack(spacing: 2) {
                 HStack(spacing: 0) {
                     Text(sessionStore.nickname)
@@ -42,6 +50,7 @@ struct SignupCompleteView: View {
             Spacer()
 
             PrimaryActionButton(title: "로그인", isEnabled: true) {
+                // 로그인 화면으로 복귀 신호
                 sessionStore.didFinishSignup = true
             }
             .padding(.horizontal, 20)
