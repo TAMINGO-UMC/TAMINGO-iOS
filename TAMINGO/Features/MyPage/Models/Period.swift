@@ -15,9 +15,9 @@ enum PeriodOption: Identifiable, CaseIterable {
     
     var displayTitle: String {
         switch self {
-        case .thisWeek: return "이번 주"
-        case .lastWeek: return "지난 주"
-        case .thisMonth: return "이번 달"
+        case .thisWeek: return "이번주"
+        case .lastWeek: return "지난주"
+        case .thisMonth: return "이번달"
         }
     }
 }

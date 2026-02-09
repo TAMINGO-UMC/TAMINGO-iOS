@@ -13,13 +13,15 @@ struct ScheduleCreationResponseDTO: Decodable {
 }
 
 // MARK: - 일정 목록
-struct ScheduleListDTO: Decodable {
+struct ScheduleListDTO: Decodable, Identifiable {
     let scheduleId: Int
     let title: String
     let startTime: String
     let endTime: String
     let placeName: String
     let category: String
+    
+    var id: Int { scheduleId }
 }
 
 // MARK: - 일정 상세 정보 (일정 상세 조회 및 생성 결과용)
@@ -35,7 +37,7 @@ struct ScheduleResponseDTO: Decodable {
     let longitude: Double
     let category: String
     let repeatType: String
-    let repeatEndDate: String
+    let repeatEndDate: String?
     let memo: String
     let linkedTodos: [TodoSummaryDTO]
     let candidateTodos: [TodoSummaryDTO]
@@ -44,6 +46,10 @@ struct ScheduleResponseDTO: Decodable {
 // MARK: - AI 추론 결과 응답 (ai-inference)
 struct AIInferenceResponseDTO: Decodable {
     let aiInference: AIInferenceData
+    let context: AIInferenceContext
+}
+
+struct AIInferenceContext: Decodable {
     let nearbyTodos: [TodoSummaryDTO]
     let candidateTodos: [TodoSummaryDTO]
     let isFavoriteRecommendation: Bool
@@ -57,7 +63,7 @@ struct AIInferenceData: Decodable {
     let category: String
 }
 
-// MARK: - 할 일 요약 (내부 리스트용)
+// MARK: - 할 일 요약
 struct TodoSummaryDTO: Decodable {
     let todoId: Int
     let title: String
@@ -65,10 +71,9 @@ struct TodoSummaryDTO: Decodable {
 }
 
 // MARK: - 카테고리 정보
-struct ScheduleCategoryDTO: Decodable, Identifiable{
+struct ScheduleCategoryDTO: Decodable, Identifiable {
     let id: Int
     let name: String
-    let iconCode: String
     let colorCode: String
 }
 

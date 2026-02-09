@@ -23,6 +23,12 @@ final class WeeklyReportViewModel {
         .lastWeek,
         .thisMonth
     ]
+    
+    // 선택 기간 표시
+    var selectedPeriodText: String {
+        let range = selectedRange
+        return "\(selectedPeriod.displayTitle) (\(range.formatted))"
+    }
 
     init(baseDate: Date = Date()) {
         self.baseDate = baseDate

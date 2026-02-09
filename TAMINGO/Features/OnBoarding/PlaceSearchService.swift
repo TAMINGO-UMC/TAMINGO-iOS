@@ -27,13 +27,13 @@ final class PlaceSearchService {
 
         var request = URLRequest(url: url)
         request.addValue(
-            "KakaoAK \(KakaoAddressAPIKey.kakao)",
+            "KakaoAK \(Config.kakaoAddressAPIKey)",
             forHTTPHeaderField: "Authorization"
         )
 
 
         let (data, response) = try await URLSession.shared.data(for: request)
-        
+
         // HTTP 상태 코드 검증
         guard let http = response as? HTTPURLResponse,
               (200...299).contains(http.statusCode) else {

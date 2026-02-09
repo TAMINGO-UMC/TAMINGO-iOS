@@ -12,10 +12,3 @@ struct TransportPreferenceDTO: Encodable {
     let rank: Int
 }
 
-extension TransportPreferenceDTO {
-    init?(rank: Int, type: TransportType) {
-        guard let transport = type.dtoValue else { return nil }
-        self.transport = transport
-        self.rank = rank
-    }
-}

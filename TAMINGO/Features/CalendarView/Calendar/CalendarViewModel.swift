@@ -17,7 +17,7 @@ struct Marker: Hashable {
 
 @Observable
 class CalendarViewModel {
-    private let provider = MoyaProvider<ScheduleTarget>(stubClosure: MoyaProvider.immediatelyStub)
+    private let provider = MoyaProvider<ScheduleTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
     
     private let calendar = Calendar.current
     

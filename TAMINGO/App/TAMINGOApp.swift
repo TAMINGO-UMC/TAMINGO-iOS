@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import KakaoSDKCommon
-import KakaoSDKAuth
 
 @main
 struct TAMINGOApp: App {
@@ -16,11 +14,6 @@ struct TAMINGOApp: App {
     
     @State private var isLoggedIn = false
     @State private var isLoading = true
-    
-    init() {
-        // 카카오 SDK 초기화
-        KakaoSDK.initSDK(appKey: Config.kakaoLoginKey)
-    }
     
     var body: some Scene {
         WindowGroup {
@@ -36,23 +29,17 @@ struct TAMINGOApp: App {
                     LoginRootView()
                         .environment(signupProgressStore)
                         .environment(signupSessionStore)
-                        .onOpenURL { url in
-                            // 카카오 로그인 콜백 처리
-                            if AuthApi.isKakaoTalkLoginUrl(url) {
-                                _ = AuthController.handleOpenUrl(url: url)
-                            }
-                        }
                 }
             }
             .task {
                 await checkLoginStatus()
             }
-            // 로그인 성공 이벤트 수신
+            // [수정됨] 로그인 성공 이벤트 수신
             .onReceive(NotificationCenter.default.publisher(for: .userDidLogin)) { _ in
                 print("로그인 감지: 메인 화면으로 전환")
                 isLoggedIn = true
             }
-            // 로그아웃 이벤트 수신
+            // [수정됨] 로그아웃 이벤트 수신
             .onReceive(NotificationCenter.default.publisher(for: .userDidLogout)) { _ in
                 print("로그아웃 감지: 로그인 화면으로 전환")
                 isLoggedIn = false

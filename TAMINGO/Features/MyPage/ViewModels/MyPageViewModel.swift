@@ -8,6 +8,28 @@
 import Foundation
 import Observation
 
+enum FavoritePlaceMock {
+
+    static let `default`: [FavoritePlace] = [
+        FavoritePlace(
+            id: 1,
+            name: "집",
+            address: "서울시 노원구 광운로 21",
+            latitude: 37.6195,
+            longitude: 127.0598,
+            weeklyVisitCount: 6
+        ),
+        FavoritePlace(
+            id: 2,
+            name: "중앙도서관",
+            address: "서울시 노원구 광운로 21",
+            latitude: 37.6201,
+            longitude: 127.0589,
+            weeklyVisitCount: 6
+        )
+    ]
+}
+
 @Observable
 final class MyPageViewModel {
 
@@ -20,15 +42,23 @@ final class MyPageViewModel {
     // MARK: - Init (Mock 기준)
     init(
         activityTime: ActivityTime = ActivityTimeMock.weekdayDefault,
-        notificationSetting: NotificationSetting = NotificationSettingMock.allDisabled
+        notificationSetting: NotificationSetting = NotificationSettingMock.allDisabled,
+        favoritePlaces: [FavoritePlace] = FavoritePlaceMock.default,
+        errorLogSetting: ErrorLogSetting = ErrorLogSettingMock.enabled
     ) {
         self.activityTime = activityTime
         self.notificationSetting = notificationSetting
-        self.favoritePlaces = FavoritePlaceMock.default
-        self.errorLogSetting = ErrorLogSettingMock.enabled
+        self.favoritePlaces = favoritePlaces
+        self.errorLogSetting = errorLogSetting
     }
 
     // MARK: - 조회용
+    
+    // 캘린더 연동 여부
+//    var calendarSyncStatusText: String {
+//        
+//    }
+    
     // 활동 시간 반환
     var activityTimeText: String {
         "\(activityTime.startTime.toString(format: "HH:mm")) - \(activityTime.endTime.toString(format: "HH:mm"))"

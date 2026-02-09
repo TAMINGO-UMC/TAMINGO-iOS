@@ -36,6 +36,15 @@ struct RoadAddress: Decodable {
     let address_name: String
 }
 
+// 임시 id 생성
+enum TempPlaceIdGenerator {
+    static var current = -1
+
+    static func next() -> Int {
+        defer { current -= 1 }
+        return current
+    }
+}
 
 extension AddressDocument {
     func toPlace() -> Place? {
@@ -45,6 +54,7 @@ extension AddressDocument {
         else { return nil }
 
         return Place(
+            id: TempPlaceIdGenerator.next(),
             name: road_address?.address_name ?? address_name,
             address: address_name,
             latitude: latitude,
