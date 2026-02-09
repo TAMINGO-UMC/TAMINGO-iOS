@@ -7,7 +7,7 @@
 
 
 struct FavoritePlaceDTO: Codable {
-    let placeId: Int
+    let id: Int
     let name: String
     let address: String
     let latitude: Double
@@ -21,7 +21,7 @@ typealias FavoritePlacesDTO = [FavoritePlaceDTO]
 extension FavoritePlaceDTO {
     func toDomain() -> FavoritePlace {
         FavoritePlace(
-            id: placeId,
+            id: id,
             name: name,
             address: address,
             latitude: latitude,

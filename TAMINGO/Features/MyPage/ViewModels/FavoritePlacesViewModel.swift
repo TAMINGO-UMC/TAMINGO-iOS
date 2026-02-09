@@ -23,6 +23,7 @@ final class FavoritePlacesViewModel {
     ) {
         self.service = service ?? FavoritePlacesService()
         self.places = initialPlaces
+        print("🔥 FavoritePlacesViewModel init", ObjectIdentifier(self))
     }
 
     // MARK: - View에서 호출
@@ -53,7 +54,9 @@ extension FavoritePlacesViewModel {
         errorMessage = nil
         do {
             let domainPlaces = try await service.fetchPlaces()
+            print("🔥 fetched:", domainPlaces)
             self.places = domainPlaces.map { PlaceUIModel(place: $0) }
+            print("🔥 ui places:", places)
         } catch let error as APIError {
             self.errorMessage = error.localizedDescription
         } catch {
@@ -75,7 +78,7 @@ extension FavoritePlacesViewModel {
     private func deletePlace(id: Int) async {
         do {
             _ = try await service.deletePlace(placeId: id)
-            places.removeAll { $0.id == id }
+            await fetchPlaces()
         } catch let error as APIError {
             self.errorMessage = error.localizedDescription
         } catch {
