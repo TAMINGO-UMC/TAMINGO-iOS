@@ -21,8 +21,12 @@ struct PlaceDTO: Decodable {
     let weeklyVisitCount: Int
 }
 
+struct PlaceIdResponseDTO: Decodable {
+    let placeId: Int
+}
+
 extension PlaceDTO {
-    func toFavoritePlace() -> FavoritePlace {
+    func toDomain() -> FavoritePlace {
         FavoritePlace(
             id: placeId,
             name: name,

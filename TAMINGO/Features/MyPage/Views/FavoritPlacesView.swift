@@ -29,7 +29,9 @@ struct FrequentPlacesView: View {
                                 vm.editPlace(place)
                             },
                             onDelete: {
-                                vm.deletePlace(place)
+                                Task {
+                                    await vm.deletePlace(place)
+                                }
                             }
                         )
                     }
@@ -49,11 +51,16 @@ struct FrequentPlacesView: View {
         .padding(16)
         .sheet(isPresented: $isPlaceSearchPresented) {
             PlaceSearchSheet { place in
-                vm.addPlace(place)
-                isPlaceSearchPresented = false
+                Task {
+                    await vm.addPlace(place)
+                    isPlaceSearchPresented = false
+                }
             }
             .presentationDetents([.height(701)])
             .presentationBackground(.white)
+        }
+        .task {
+            await vm.fetchPlaces()
         }
         
     }

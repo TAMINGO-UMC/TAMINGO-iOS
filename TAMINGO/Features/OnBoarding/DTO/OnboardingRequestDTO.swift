@@ -8,7 +8,7 @@
 
 struct OnboardingRequestDTO: Encodable {
     let activityTime: ActivityTimeDTO
-    let favoritePlaces: [CreatePlaceRequestDTO]
+    let favoritePlaces: [PlaceRequestDTO]
     let transportPreferences: [TransportPreferenceDTO]
     let notificationSetting: NotificationSettingDTO
 }

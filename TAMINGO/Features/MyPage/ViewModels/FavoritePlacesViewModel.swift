@@ -8,46 +8,89 @@
 import Foundation
 import Observation
 
-extension PlaceUIModel {
-
-    static let mock: [PlaceUIModel] = [
-        .init(
-            id: 1,
-            name: "집",
-            address: "서울시 노원구 광운로 21",
-            weeklyVisitCount: 6,
-            isAISuggested: false
-        ),
-        .init(
-            id: 2,
-            name: "중앙도서관",
-            address: "서울시 노원구 광운로 21",
-            weeklyVisitCount: 6,
-            isAISuggested: true
-        )
-    ]
-}
-
+@MainActor
 @Observable
 final class FavoritePlacesViewModel {
 
-    var places: [PlaceUIModel]
+    var places: [PlaceUIModel] = []
+    var errorMessage: String?
 
-    init(places: [PlaceUIModel] = PlaceUIModel.mock) {
-        self.places = places
+    private let service: FavoritePlacesServiceProtocol
+
+    init(
+        service: FavoritePlacesServiceProtocol? = nil,
+        initialPlaces: [PlaceUIModel] = []
+    ) {
+        self.service = service ?? FavoritePlacesService()
+        self.places = initialPlaces
     }
 
-    func deletePlace(_ place: PlaceUIModel) {
-        places.removeAll { $0.id == place.id }
+    // MARK: - View에서 호출
+
+    func addPlace(_ place: Place) async {
+        let request = PlaceRequestDTO(
+            name: place.name,
+            address: place.address,
+            latitude: place.latitude,
+            longitude: place.longitude
+        )
+        await addPlace(request: request)
+    }
+
+    func deletePlace(_ place: PlaceUIModel) async {
+        await deletePlace(id: place.id)
     }
 
     func editPlace(_ place: PlaceUIModel) {
-        // TODO: 수정 화면 연결
-    }
-
-    func addPlace(_ place: Place) {
-        let uiModel = PlaceUIModel(place: place)
-        places.append(uiModel)
+        // TODO: 수정 시트 / 네비게이션 트리거
     }
 }
 
+// 요청
+extension FavoritePlacesViewModel {
+
+    func fetchPlaces() async {
+        errorMessage = nil
+        do {
+            let domainPlaces = try await service.fetchPlaces()
+            self.places = domainPlaces.map { PlaceUIModel(place: $0) }
+        } catch let error as APIError {
+            self.errorMessage = error.localizedDescription
+        } catch {
+            self.errorMessage = "네트워크 오류가 발생했습니다."
+        }
+    }
+
+    private func addPlace(request: PlaceRequestDTO) async {
+        do {
+            _ = try await service.createPlace(request)
+            await fetchPlaces()
+        } catch let error as APIError {
+            self.errorMessage = error.localizedDescription
+        } catch {
+            self.errorMessage = "네트워크 오류가 발생했습니다."
+        }
+    }
+
+    private func deletePlace(id: Int) async {
+        do {
+            _ = try await service.deletePlace(placeId: id)
+            places.removeAll { $0.id == id }
+        } catch let error as APIError {
+            self.errorMessage = error.localizedDescription
+        } catch {
+            self.errorMessage = "네트워크 오류가 발생했습니다."
+        }
+    }
+
+    private func updatePlace(id: Int, request: PlaceRequestDTO) async {
+        do {
+            _ = try await service.updatePlace(placeId: id, dto: request)
+            await fetchPlaces()
+        } catch let error as APIError {
+            self.errorMessage = error.localizedDescription
+        } catch {
+            self.errorMessage = "네트워크 오류가 발생했습니다."
+        }
+    }
+}

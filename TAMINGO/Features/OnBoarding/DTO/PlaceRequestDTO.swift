@@ -7,7 +7,7 @@
 
 // 마이페이지에서도 사용
 
-struct CreatePlaceRequestDTO: Encodable {
+struct PlaceRequestDTO: Encodable {
     let name: String
     let address: String
     let latitude: Double
@@ -15,8 +15,8 @@ struct CreatePlaceRequestDTO: Encodable {
 }
 
 extension Place {
-    func toCreateRequestDTO() -> CreatePlaceRequestDTO {
-        CreatePlaceRequestDTO(
+    func toCreateRequestDTO() -> PlaceRequestDTO {
+        PlaceRequestDTO(
             name: name,
             address: address,
             latitude: latitude,

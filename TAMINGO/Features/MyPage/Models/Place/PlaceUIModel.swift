@@ -26,3 +26,14 @@ extension PlaceUIModel {
         )
     }
 }
+
+extension PlaceUIModel {
+    init(place: FavoritePlace) {
+        self.id = place.id
+        self.name = place.name
+        self.address = place.address
+        self.weeklyVisitCount = place.weeklyVisitCount
+        self.isAISuggested = false
+    }
+}
+
