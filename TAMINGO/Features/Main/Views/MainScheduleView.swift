@@ -9,26 +9,35 @@ import SwiftUI
 
 struct MainScheduleView: View {
 
-    @State private var viewModel = HomeScheduleViewModel()
+    @State private var viewModel = HomeScheduleViewModel(accessToken: "ACCESS_TOKEN")
 
     var body: some View {
         VStack(alignment: .leading) {
-
+            
             TodayHeaderView()
-
+            
             ScrollView {
                 VStack(spacing: 17) {
                     let items: [HomeTimelineItem] = Array(viewModel.timelineItems)
-
-                    ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                    
+                    ForEach(viewModel.timelineItems, id: \.id) { item in
                         switch item {
+
                         case .schedule(let schedule):
+
+                            let state = viewModel.scheduleState(for: schedule)
+
                             ScheduleCardView(
                                 schedule: schedule,
-                                state: schedule.isNextSchedule ? .next : .upcoming,
+                                state: state,
                                 isExpanded: viewModel.expandedScheduleId == schedule.id,
                                 detailVM: viewModel.scheduleDetailVMs[schedule.id],
-                                onChevronTap: { viewModel.toggleDepartureCard(for: schedule, accessToken: "ACCESS_TOKEN") }
+                                onChevronTap: state == .now ? {
+                                    viewModel.toggleDepartureCard(
+                                        for: schedule,
+                                        accessToken: "ACCESS_TOKEN"
+                                    )
+                                } : nil
                             )
 
                         case .gap(let gap):
@@ -40,6 +49,7 @@ struct MainScheduleView: View {
                         }
                     }
 
+                    
                 }
                 .padding(.top, 22)
                 .padding(.bottom, 40)

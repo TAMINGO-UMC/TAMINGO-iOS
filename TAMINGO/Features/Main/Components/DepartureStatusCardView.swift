@@ -138,20 +138,5 @@ struct DepartureStatusCardView: View {
 }
 
 #Preview {
-    VStack(spacing: 5) {
-//        DepartureStatusCardView(
-//            status: .preparing(remainingMinutes: 5),
-//            departureTime: "오전 08:40",
-//            arrivalTime: "오전 09:10",
-//            routeLink: nil
-//        )
-//        DepartureStatusCardView(status: .now(remainingMinutes: 5))
-//        DepartureStatusCardView(status: .delayed(remainingMinutes: 5))
-//        DepartureStatusCardView(status: .late(remainingMinutes: 6, delayMinutes: 35))
-    }
-    .padding()
-}
-
-#Preview {
     MainScheduleView()
 }

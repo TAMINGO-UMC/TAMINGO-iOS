@@ -30,33 +30,45 @@ extension ScheduleStatusDTO {
         let status: DepartureStatus
 
         switch currentStatus {
-
         case .ready:
-            status = .preparing(
-                remainingMinutes: leftOrDelayMinutes
-            )
+            status = .preparing(remainingMinutes: leftOrDelayMinutes)
 
         case .departed:
-            status = .now(
-                remainingMinutes: leftOrDelayMinutes
-            )
+            status = .now(remainingMinutes: leftOrDelayMinutes)
 
         case .departureDelayed:
-            status = .delayed(
-                remainingMinutes: leftOrDelayMinutes
-            )
+            status = .delayed(remainingMinutes: leftOrDelayMinutes)
 
         case .departureExtremeDelayed:
             status = .late(
-                remainingMinutes: 0,
+                remainingMinutes: leftOrDelayMinutes,
                 delayMinutes: lateArrivalMinutes
             )
         }
-
+        
         return TravelStatus(
             status: status,
-            expectedDepartureTime: expectedDepartureTime,
-            expectedArrivalTime: expectedArrivalTime
+            expectedDepartureTimeText: expectedDepartureTime.hhmm,
+            expectedArrivalTimeText: expectedArrivalTime.hhmm,
+            lateArrivalMinutes: lateArrivalMinutes,
+            leftOrDelayMinutes: leftOrDelayMinutes,
+            isStarted: isStarted
         )
+    }
+}
+
+
+extension String {
+    var hhmm: String {
+        // 1) ISO면 T 뒤만
+        let tSplit = self.split(separator: "T", maxSplits: 1, omittingEmptySubsequences: true)
+        let timePart = (tSplit.count == 2) ? String(tSplit[1]) : self
+
+        // 2) "03:30:00" → "03:30"
+        let comps = timePart.split(separator: ":")
+        guard comps.count >= 2 else { return self }
+        let h = comps[0]
+        let m = comps[1]
+        return "\(h):\(m)"
     }
 }

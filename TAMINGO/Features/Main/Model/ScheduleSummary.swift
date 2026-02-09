@@ -14,11 +14,11 @@ struct ScheduleSummary: Identifiable, Hashable {
     let placeName: String
     let leftMinute: Int
     let duration: Int
-    let isNextSchedule: Bool
+    let isNowSchedule: Bool
 }
 
 enum ScheduleCardState {
-    case next
+    case now
     case upcoming
     case past
 }

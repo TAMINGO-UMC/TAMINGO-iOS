@@ -12,7 +12,7 @@ struct HomeScheduleResponseDTO: Decodable {
     let isSuccess: Bool
     let code: String
     let message: String
-    let result: HomeScheduleResultDTO
+    let result: HomeScheduleResultDTO?
 }
 
 // MARK: - Result
@@ -29,7 +29,7 @@ struct HomeScheduleItemDTO: Decodable {
     let placeName: String?
     let leftMinute: Int?
     let duration: Int?
-    let nextSchedule: Bool?
+    let nowSchedule: Bool?
 
     // GAP_RECOMMEND
     let suggestionId: Int?
@@ -56,23 +56,21 @@ extension HomeScheduleItemDTO {
                 let scheduleId,
                 let title,
                 let startTime,
-                let placeName,
-                let leftMinute,
-                let duration,
-                let nextSchedule
+                let placeName
             else { return nil }
-            
+
             return .schedule(
                 ScheduleSummary(
                     id: scheduleId,
                     title: title,
                     startTime: startTime,
                     placeName: placeName,
-                    leftMinute: leftMinute,
-                    duration: duration,
-                    isNextSchedule: nextSchedule
+                    leftMinute: leftMinute ?? 0,
+                    duration: duration ?? 0,
+                    isNowSchedule: nowSchedule ?? false
                 )
             )
+
             
         case .gapRecommend:
             guard

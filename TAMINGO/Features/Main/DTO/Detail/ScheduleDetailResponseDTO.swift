@@ -11,8 +11,10 @@ struct ScheduleDetailResponseDTO: Decodable {
     let isSuccess: Bool
     let code: String
     let message: String
-    let result: ScheduleDetailResultDTO
+    let result: ScheduleDetailResultDTO?
 }
+
+
 
 struct ScheduleDetailResultDTO: Decodable {
     let scheduleStatus: ScheduleStatusDTO

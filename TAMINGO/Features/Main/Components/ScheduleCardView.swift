@@ -39,7 +39,7 @@ struct ScheduleCardView: View {
                                 .foregroundStyle(titleColor)
                                 .lineLimit(1)
                             
-                            if state == .next {
+                            if state == .now {
                                 Text("이번 일정")
                                     .font(.regular12)
                                     .foregroundStyle(Color.mainMint)
@@ -76,20 +76,21 @@ struct ScheduleCardView: View {
                     }
                 }
                 
-                if let detailVM, let detail = detailVM.detail, isExpanded {
+                if isExpanded, let detail = detailVM?.detail {
+
                     DepartureStatusCardView(
                         status: detail.travel.status,
-                        departureTime: detail.travel.departureTimeText,
-                        arrivalTime: detail.travel.arrivalTimeText,
+                        departureTime: detail.travel.expectedDepartureTimeText,
+                        arrivalTime: detail.travel.expectedArrivalTimeText,
                         routeLink: detail.detourRecommendations.first,
                         onRouteAccept: { detour in
-                            detailVM.acceptRoute(
+                            detailVM?.acceptRoute(
                                 baseScheduleId: schedule.id,
                                 detour: detour
                             )
                         },
-                        onRouteReject: { _ in
-                            detailVM.rejectRoute(scheduleId: schedule.id)
+                        onRouteReject: { detourId in
+                            detailVM?.rejectRoute(scheduleId: detourId)
                         }
                     )
                 }
@@ -118,10 +119,11 @@ private extension ScheduleCardView {
     var rightArea: some View {
         switch state {
             
-        case .next:
+        case .now:
             Group {
                 if let onChevronTap {
                     Button {
+                        print("👉 Chevron tapped:", schedule.id)
                         onChevronTap()
                     } label: {
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
@@ -153,7 +155,7 @@ private extension ScheduleCardView {
 
     var borderColor: Color {
         switch state {
-        case .next:
+        case .now:
             return Color("MainMint")
         case .upcoming, .past:
             return Color.clear
@@ -184,9 +186,9 @@ private extension ScheduleCardView {
                 placeName: "S관 301",
                 leftMinute: 23,
                 duration: 32,
-                isNextSchedule: true
+                isNowSchedule: true
             ),
-            state: .next,
+            state: .now,
             isExpanded: true,
             detailVM: nil,
             onChevronTap: {}
@@ -200,7 +202,7 @@ private extension ScheduleCardView {
                 placeName: "공학관",
                 leftMinute: 55,
                 duration: 12,
-                isNextSchedule: false
+                isNowSchedule: false
             ),
             state: .past,
             isExpanded: false,

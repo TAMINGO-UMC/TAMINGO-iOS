@@ -17,3 +17,10 @@ struct GapTime: Identifiable, Hashable {
     let gapStartTime: String
     let gapEndTime: String
 }
+
+
+extension GapTime {
+    var gapStartTimeText: String {
+        String(gapStartTime.prefix(5))
+    }
+}

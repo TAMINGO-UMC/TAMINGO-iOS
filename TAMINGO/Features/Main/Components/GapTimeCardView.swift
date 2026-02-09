@@ -17,7 +17,7 @@ struct GapTimeCardView: View {
         HStack(alignment: .top, spacing: 17) {
 
             // 시간
-            Text(gapTime.gapStartTime)
+            Text(gapTime.gapStartTimeText)
                 .font(.medium14)
                 .foregroundStyle(Color("Black00"))
                 .frame(alignment: .leading)
@@ -65,6 +65,7 @@ struct GapTimeCardView: View {
 
                     HStack(spacing: 12) {
                         Button("편성") {
+                            print("🟡 편성 버튼 눌림:", gapTime.id)
                             onAssignTap()
                         }
                         .buttonStyle(GapPrimaryButtonStyle())
@@ -87,6 +88,7 @@ struct GapTimeCardView: View {
                         Color("SubYellow4"),
                         style: StrokeStyle(lineWidth: 1, dash: [4])
                     )
+                    .allowsHitTesting(false)
             }
             .shadow(
                 color: Color.black.opacity(0.06),

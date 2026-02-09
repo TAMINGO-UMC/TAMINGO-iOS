@@ -12,7 +12,7 @@ struct RouteAcceptRequestDTO: Encodable {
     let baseScheduleId: Int
     let title: String
     let location: LocationDTO
-    let requiredMinutes: Int
+    let requiredMinutes: Int?
 
     struct LocationDTO: Encodable {
         let name: String

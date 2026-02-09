@@ -14,21 +14,30 @@ struct ScheduleDetail: Identifiable {
     let detourRecommendations: [RouteDetour]
 }
 
+extension ScheduleDetail {
+    /// ScheduleCardView에서 바로 쓰기 위한 값들
+    var departureTimeText: String {
+        String(travel.expectedDepartureTimeText.prefix(5))
+    }
+    
+    var arrivalTimeText: String {
+        String(travel.expectedArrivalTimeText.prefix(5))
+    }
+    
+}
+
 struct TravelStatus {
     let status: DepartureStatus
-    let expectedDepartureTime: String
-    let expectedArrivalTime: String
+    let expectedDepartureTimeText: String
+    let expectedArrivalTimeText: String
+    let lateArrivalMinutes: Int
+    let leftOrDelayMinutes: Int
+    let isStarted: Bool
 }
 
 extension TravelStatus {
-
-    var departureTimeText: String {
-        String(expectedDepartureTime.prefix(5))
-    }
-
-    var arrivalTimeText: String {
-        String(expectedArrivalTime.prefix(5))
-    }
+    var departureTimeText: String { expectedDepartureTimeText }
+    var arrivalTimeText: String { expectedArrivalTimeText }
 }
 
 struct LinkedTodo: Identifiable {

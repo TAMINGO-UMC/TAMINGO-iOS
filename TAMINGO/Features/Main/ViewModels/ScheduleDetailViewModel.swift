@@ -12,8 +12,7 @@ import Observation
 final class ScheduleDetailViewModel {
 
     private let service = HomeDetailService()
-    private let accessToken: String
-
+    let accessToken: String
     let scheduleId: Int
 
     var detail: ScheduleDetail?
@@ -29,40 +28,29 @@ final class ScheduleDetailViewModel {
     func load() {
         isLoading = true
         errorMessage = nil
+        print("🚀 Detail load start:", scheduleId)
 
-        service.fetchScheduleDetail(
-            scheduleId: scheduleId,
-            accessToken: accessToken
-        ) { [weak self] result in
+        service.fetchScheduleDetail(scheduleId: scheduleId, accessToken: accessToken) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
+                print("✅ Detail completion arrived:", self.scheduleId)
+
                 self.isLoading = false
 
                 switch result {
                 case .success(let detail):
                     self.detail = detail
-                    print("✅ ScheduleDetail 로드 성공")
-                    dump(detail)
+                    print("✅ Detail success:", self.scheduleId)
 
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
-                    print("❌ ScheduleDetail 실패:", error)
+                    print("❌ Detail fail:", self.scheduleId, error.localizedDescription)
                 }
             }
         }
     }
-}
 
-extension ScheduleDetail {
-    /// ScheduleCardView에서 바로 쓰기 위한 값들
-    var departureTimeText: String {
-        String(travel.expectedDepartureTime.prefix(5))
-    }
-    
-    var arrivalTimeText: String {
-        String(travel.expectedArrivalTime.prefix(5))
-    }
-    
+
 }
 
 extension ScheduleDetailViewModel {
@@ -80,7 +68,7 @@ extension ScheduleDetailViewModel {
                 lat: detour.lat,
                 lng: detour.lng
             ),
-            requiredMinutes: detour.detourMinutes
+            requiredMinutes: Int(detour.detourMinutes) ?? 0
         )
 
         service.acceptRoute(
@@ -110,3 +98,4 @@ extension ScheduleDetailViewModel {
         }
     }
 }
+

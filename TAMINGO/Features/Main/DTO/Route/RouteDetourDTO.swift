@@ -11,19 +11,21 @@ struct RouteDetourDTO: Decodable {
     let suggestionId: Int
     let suggestionTitle: String
     let placeName: String
-    let detourMinutes: Int
+    let detourMinutes: String
     let recommendationMessage: String
 }
 
 extension RouteDetourDTO {
-
     func toModel(lat: Double = 0, lng: Double = 0) -> RouteDetour {
-        RouteDetour(
+
+        let minutesInt = Int(detourMinutes) ?? 0
+
+        return RouteDetour(
             id: suggestionId,
             title: suggestionTitle,
             location: placeName,
-            detourMinutes: detourMinutes,
-            detourText: "+\(detourMinutes)분 우회",
+            detourMinutes: minutesInt,
+            detourText: "+\(minutesInt)분 우회",
             suggestionText: recommendationMessage,
             lat: lat,
             lng: lng
