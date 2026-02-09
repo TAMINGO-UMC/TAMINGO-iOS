@@ -16,11 +16,6 @@ enum FavoritePlaceAPI {
     case deletePlace(placeId: Int)
 }
 
-enum AuthConstants {
-    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwNjM1NTAxLCJleHAiOjE3NzA2MzkxMDF9.LN84yqwGfLp1pUEUW643Es1bF1Aa8EwloSuQhZknnoM"
-    static let userId = 6
-}
-
 extension FavoritePlaceAPI: APITargetType {
     var path: String{
         switch self {

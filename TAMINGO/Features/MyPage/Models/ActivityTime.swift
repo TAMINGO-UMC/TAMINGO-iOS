@@ -69,3 +69,30 @@ enum WeekdayGroup: Identifiable, Equatable {
     }
 }
 
+extension Set where Element == Weekday {
+
+    static func from(
+        mon: Bool,
+        tue: Bool,
+        wed: Bool,
+        thu: Bool,
+        fri: Bool,
+        weekend: Bool
+    ) -> Set<Weekday> {
+
+        var days: Set<Weekday> = []
+
+        if mon { days.insert(.mon) }
+        if tue { days.insert(.tue) }
+        if wed { days.insert(.wed) }
+        if thu { days.insert(.thu) }
+        if fri { days.insert(.fri) }
+
+        if weekend {
+            days.insert(.sat)
+            days.insert(.sun)
+        }
+
+        return days
+    }
+}

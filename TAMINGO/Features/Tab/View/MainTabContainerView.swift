@@ -22,7 +22,7 @@ struct MainTabContainerView: View {
                 case .todo:
                     MainView()
                 case .my:
-                    MyPageView()
+                    MyPageRootView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

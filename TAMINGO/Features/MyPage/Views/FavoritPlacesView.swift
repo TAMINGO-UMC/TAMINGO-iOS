@@ -7,11 +7,12 @@
 
 import SwiftUI
 
-struct FrequentPlacesView: View {
+struct FavoritPlacesView: View {
 
     @State private var vm = FavoritePlacesViewModel()
     @State private var isPlaceSearchPresented = false
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss) private var dismiss // 시트 용
+    let onBack: () -> Void
     
 
     var body: some View {
@@ -63,13 +64,14 @@ struct FrequentPlacesView: View {
         .task {
             await vm.fetchPlaces()
         }
-        
+        .navigationBarBackButtonHidden(true)
+
     }
 
     private var header: some View {
         HStack(spacing: 14) {
             Button {
-                dismiss()
+                onBack()
             } label: {
                 Image("Previous_Chevron")
                     .resizable()
@@ -97,5 +99,5 @@ struct FrequentPlacesView: View {
 }
 
 #Preview {
-    FrequentPlacesView()
+    FavoritPlacesView(onBack: { print("back")})
 }

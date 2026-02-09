@@ -13,6 +13,7 @@ struct TransportRankSettingView: View {
     @State private var activePicker: SetUpActivePicker?
     
     @State private var labelFrames: [Int: CGRect] = [:]
+    let onBack: () -> Void
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -70,11 +71,13 @@ struct TransportRankSettingView: View {
             }
         }
         .coordinateSpace(name: "TransportRankSpace")
+        .navigationBarBackButtonHidden(true)
+
     }
     var header: some View {
         HStack(spacing: 14){
             Button(action: {
-                
+                onBack()
             }, label: {
                 Image("Previous_Chevron")
                     .resizable()
@@ -137,5 +140,7 @@ struct TrafficSection: View {
 
 
 #Preview {
-    TransportRankSettingView()
+    TransportRankSettingView(onBack: {
+        print("back")
+    })
 }

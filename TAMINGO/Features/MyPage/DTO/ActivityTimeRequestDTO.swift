@@ -6,7 +6,7 @@
 //
 
 // 온보딩에서도 사용
-struct ActivityTimeDTO: Encodable {
+struct ActivityTimeRequestDTO: Encodable {
     let startTime: String
     let endTime: String
     let monEnabled: Bool
@@ -18,8 +18,8 @@ struct ActivityTimeDTO: Encodable {
 }
 
 extension ActivityTime {
-    func toDTO() -> ActivityTimeDTO {
-        ActivityTimeDTO(
+    func toDTO() -> ActivityTimeRequestDTO {
+        ActivityTimeRequestDTO(
             startTime: startTime.toString(format: "HH:mm"),
             endTime: endTime.toString(format: "HH:mm"),
             monEnabled: activeDays.contains(.mon),

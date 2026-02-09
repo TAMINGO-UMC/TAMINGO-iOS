@@ -33,20 +33,21 @@ enum FavoritePlaceMock {
 @Observable
 final class MyPageViewModel {
 
+    private let activityTimeService: ActivityTimeServiceProtocol
     // MARK: - Stored Domain Models (조회 대상)
-    var activityTime: ActivityTime
+    var activityTime: ActivityTime?
     var notificationSetting: NotificationSetting
     var favoritePlaces : [FavoritePlace]
     var errorLogSetting : ErrorLogSetting
     
     // MARK: - Init (Mock 기준)
     init(
-        activityTime: ActivityTime = ActivityTimeMock.weekdayDefault,
+        activityTimeService: ActivityTimeServiceProtocol = ActivityTimeSettingService(),
         notificationSetting: NotificationSetting = NotificationSettingMock.allDisabled,
         favoritePlaces: [FavoritePlace] = FavoritePlaceMock.default,
         errorLogSetting: ErrorLogSetting = ErrorLogSettingMock.enabled
     ) {
-        self.activityTime = activityTime
+        self.activityTimeService = activityTimeService
         self.notificationSetting = notificationSetting
         self.favoritePlaces = favoritePlaces
         self.errorLogSetting = errorLogSetting
@@ -59,9 +60,23 @@ final class MyPageViewModel {
 //        
 //    }
     
+    @MainActor
+    func fetchActivityTime() async {
+        self.activityTime = try? await activityTimeService.fetchActivityTime()
+    }
+
+    @MainActor
+    func updateActivityTime(_ activityTime: ActivityTime) {
+        self.activityTime = activityTime
+    }
+    
     // 활동 시간 반환
     var activityTimeText: String {
-        "\(activityTime.startTime.toString(format: "HH:mm")) - \(activityTime.endTime.toString(format: "HH:mm"))"
+        guard let activityTime else {
+            return "활동 시간 미설정"
+        }
+
+        return "\(activityTime.startTime.toString(format: "HH:mm")) - \(activityTime.endTime.toString(format: "HH:mm"))"
     }
     // 자주 가는 장소
     var favoritePlacesText : String {

@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct MyPageView: View {
-    
-    @State private var vm: MyPageViewModel = MyPageViewModel()
+    let onSelect: (MyPageRoute) -> Void
+    @State var vm: MyPageViewModel
     
     var body: some View {
         ScrollView{
@@ -17,12 +17,35 @@ struct MyPageView: View {
                 Text("마이페이지")
                     .font(.semiBold18)
                 profile
-                WeeklyReportSection(metrics: weeklyMetricMocks)
-                CategorySection()
-                SyncSection()
-                PlaceTimeSection(vm:vm)
-                NotificationSection(vm:vm)
-                AppInfoSection()
+                WeeklyReportSection(
+                    metrics: weeklyMetricMocks,
+                    onTap: {
+                        onSelect(.weeklyReport)
+                    }
+                )
+                CategorySection(onTapSchedule: {
+                    onSelect(.scheduleCategory)
+                }, onTapTodo: {
+                    onSelect(.todoCategory)
+                })
+                SyncSection(onTap: {
+                    onSelect(.calendarSetting)
+                })
+                PlaceTimeSection(vm:vm, onTapPlace: {
+                    onSelect(.favoritePlace)
+                }, onTapTime: {
+                    onSelect(.activityTime)
+                }, onTapTransport: {
+                    onSelect(.transport)
+                })
+                NotificationSection(vm:vm, onTapNotification: {
+                    onSelect(.notification)
+                }, onTapErrorLog: {
+                    onSelect(.personalization)
+                })
+                AppInfoSection(onTap:{
+                    onSelect(.setting)
+                })
             }
             .padding(.horizontal, 30)
         }
@@ -56,10 +79,11 @@ struct MyPageView: View {
 
 struct WeeklyReportSection: View {
     let metrics: [WeeklyMetric]
+    let onTap: () -> Void
 
     var body: some View {
         Button(action:{
-            print("주간 리포트 이동") // TODO: 주간리포트 페이지 연결
+            onTap()
         }, label:{
             VStack(alignment: .leading, spacing: 12) {
                 header
@@ -113,6 +137,9 @@ struct WeeklyReportSection: View {
 }
 
 struct CategorySection: View {
+    let onTapSchedule: () -> Void
+    let onTapTodo: () -> Void
+
     var body: some View {
         SectionContainerView(title: "카테고리 설정"){
             VStack(spacing: 0) {
@@ -121,7 +148,7 @@ struct CategorySection: View {
                     sub: "4개",
                     textColor: .gray2
                 ) {
-                    print("일정 카테고리 이동")
+                    onTapSchedule()
                 }
 
                 Divider()
@@ -131,7 +158,7 @@ struct CategorySection: View {
                     sub: "6개",
                     textColor: .gray2
                 ) {
-                    print("할일 카테고리 이동")
+                    onTapTodo()
                 }
 
             }
@@ -140,6 +167,8 @@ struct CategorySection: View {
 }
 
 struct SyncSection: View {
+    let onTap: () -> Void
+    
     var body: some View {
         SectionContainerView(title: "연동 & 동기화"){
             VStack(spacing: 0) {
@@ -148,7 +177,7 @@ struct SyncSection: View {
                     sub: "연동되지 않음",
                     textColor: .gray2
                 ) {
-                    print("캘린더 연동 이동")
+                    onTap()
                 }
 
             }
@@ -158,6 +187,11 @@ struct SyncSection: View {
 
 struct PlaceTimeSection: View {
     let vm: MyPageViewModel
+    let onTapPlace: () -> Void
+    let onTapTime: () -> Void
+    let onTapTransport: () -> Void
+    
+    
     var body: some View {
         SectionContainerView(title: "장소 & 시간 설정"){
             VStack(spacing: 0) {
@@ -166,7 +200,7 @@ struct PlaceTimeSection: View {
                     sub: vm.favoritePlacesText,
                     textColor: .gray2
                 ) {
-                    print("자주 가는 장소 이동")
+                    onTapPlace()
                 }
             }
             
@@ -178,7 +212,7 @@ struct PlaceTimeSection: View {
                     sub: vm.activityTimeText,
                     textColor: .gray2
                 ) {
-                    print("활동 시간 설정 이동")
+                    onTapTime()
                 }
             }
             
@@ -189,7 +223,7 @@ struct PlaceTimeSection: View {
                 sub: "버스 > 지하철 > 도보",
                 textColor: .gray2
             ) {
-                print("이동수단 설정 이동")
+                onTapTransport()
             }
         }
     }
@@ -197,6 +231,9 @@ struct PlaceTimeSection: View {
 
 struct NotificationSection: View {
     let vm: MyPageViewModel
+    let onTapNotification: () -> Void
+    let onTapErrorLog: () -> Void
+    
     var body: some View {
         SectionContainerView(title: "알림 & 데이터"){
             VStack(spacing: 0) {
@@ -204,7 +241,7 @@ struct NotificationSection: View {
                     title: "알림 설정",
                     sub: vm.notificationStatusText, textColor: .mainMint
                 ) {
-                    print("알림 설정 이동")
+                    onTapNotification()
                 }
             }
             
@@ -216,7 +253,7 @@ struct NotificationSection: View {
                     sub: vm.errorLogSettingText,
                     textColor: .gray2
                 ) {
-                    print("개인화 학습 데이터 이동")
+                    onTapErrorLog()
                 }
             }
         
@@ -225,6 +262,8 @@ struct NotificationSection: View {
 }
 
 struct AppInfoSection: View {
+    let onTap: () -> Void
+    
     var body: some View {
         SectionContainerView(title: "앱 정보"){
             VStack(spacing: 0) {
@@ -233,7 +272,7 @@ struct AppInfoSection: View {
                     sub: "앱 설정 및 정보",
                     textColor: .gray2
                 ) {
-                    print("설정 이동")
+                    onTap()
                 }
             }
         }
@@ -243,5 +282,5 @@ struct AppInfoSection: View {
 
 
 #Preview {
-    MyPageView()
+    MyPageView(onSelect: {_ in print("myPageView")}, vm: MyPageViewModel())
 }

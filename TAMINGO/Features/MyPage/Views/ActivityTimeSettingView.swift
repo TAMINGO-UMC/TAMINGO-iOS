@@ -11,6 +11,7 @@ struct ActivityTimeSettingView: View {
 
     @State private var vm = TimeSettingViewModel()
     let onSave: (ActivityTime) -> Void
+    let onBack: () -> Void
 
     var body: some View {
         VStack(alignment:.leading, spacing:0) {
@@ -32,7 +33,14 @@ struct ActivityTimeSettingView: View {
                 SaveButton(
                     isEnabled: vm.canSave,
                     onTap: {
-                        onSave(vm.makeActivityTime())
+                        Task {
+                            do {
+                                let saved = try await vm.save()
+                                onSave(saved)
+                            } catch {
+                                print("❌ save failed:", error)
+                            }
+                        }
                     }
                 )
                 
@@ -50,12 +58,17 @@ struct ActivityTimeSettingView: View {
             .padding(16)
         }
         .padding(16)
+        .task {
+            await vm.fetchActivityTime()
+        }
+        .navigationBarBackButtonHidden(true)
+
     }
     
     var header: some View {
         HStack(spacing: 14){
             Button(action: {
-                
+                onBack()
             }, label: {
                 Image("Previous_Chevron")
                     .resizable()
@@ -285,5 +298,7 @@ struct SaveButton: View {
 #Preview {
     ActivityTimeSettingView(onSave: {_ in 
         print("save")
+    }, onBack: {
+        print("back")
     })
 }

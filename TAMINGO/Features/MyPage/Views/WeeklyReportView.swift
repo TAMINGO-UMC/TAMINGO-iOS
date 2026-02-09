@@ -7,11 +7,23 @@
 
 import SwiftUI
 
+
 struct WeeklyReportView: View {
     @State private var vm = WeeklyReportViewModel()
-    
+
     let weeklyMetrics: [WeeklyMetric]
     let comparisonMetrics: [WeeklyComparisonMetric]
+    let onBack: () -> Void
+    
+    init(
+        weeklyMetrics: [WeeklyMetric],
+        comparisonMetrics: [WeeklyComparisonMetric],
+        onBack: @escaping () -> Void
+    ) {
+        self.weeklyMetrics = weeklyMetrics
+        self.comparisonMetrics = comparisonMetrics
+        self.onBack = onBack
+    }
     
     var body: some View {
         VStack(alignment:.leading, spacing:0){
@@ -27,12 +39,14 @@ struct WeeklyReportView: View {
                 .padding(16)
             }
         }
+        .navigationBarBackButtonHidden(true)
+
     }
     
     var header: some View {
         HStack(spacing: 14){
             Button(action: {
-                
+                onBack()
             }, label: {
                 Image("Previous_Chevron")
                     .resizable()
@@ -171,6 +185,6 @@ struct WeeklyComparisonSection: View {
 
 
 #Preview {
-    WeeklyReportView(weeklyMetrics: weeklyMetricMocks, comparisonMetrics:weeklyComparisonMocks )
+    WeeklyReportView(weeklyMetrics: weeklyMetricMocks, comparisonMetrics: weeklyComparisonMocks, onBack:{print("back")} )
         .padding()
 }

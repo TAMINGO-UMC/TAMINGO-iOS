@@ -11,6 +11,7 @@ import SwiftUI
 struct CalendarSyncView: View {
 
     @State private var vm = CalendarSyncViewModel()
+    let onBack: () -> Void
 
     var body: some View {
         VStack(spacing:0){
@@ -39,13 +40,15 @@ struct CalendarSyncView: View {
 
         }
         .padding(16)
+        .navigationBarBackButtonHidden(true)
+
         
         
     }
     var header : some View {
         HStack(spacing: 14) {
             Button {
-                // TODO: 뒤로가기
+                onBack()
             } label: {
                 Image("Previous_Chevron")
                     .resizable()
@@ -171,5 +174,7 @@ private extension CalendarSyncView {
 
 
 #Preview {
-    CalendarSyncView()
+    CalendarSyncView(onBack: {
+        print("back")
+    })
 }

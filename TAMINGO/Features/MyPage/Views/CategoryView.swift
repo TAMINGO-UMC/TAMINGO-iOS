@@ -11,11 +11,21 @@ struct CategoryView<VM: CategoryViewModel>: View
 where
 VM: CategoryViewModel & Observable & AnyObject,
 VM.CategoryType: CategoryItem {
-    let type: CategoryType
-   
-    @State private var vm: VM
-    @Environment(\.dismiss) private var dismiss
 
+    let type: CategoryType
+    @State private var vm: VM
+    @Environment(\.dismiss) private var dismiss // 시트용
+    let onBack: () -> Void
+
+    init(
+        type: CategoryType,
+        vm: VM,
+        onBack: @escaping () -> Void
+    ) {
+        self.type = type
+        self.onBack = onBack          // ✅ 초기화
+        _vm = State(wrappedValue: vm)
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
 
@@ -52,6 +62,8 @@ VM.CategoryType: CategoryItem {
             }
         }
         .padding(16)
+        .navigationBarBackButtonHidden(true)
+
     }
 }
 
@@ -93,17 +105,18 @@ private extension CategoryView {
     }
 }
 
-// 프리뷰용
-extension CategoryView {
-    init(type: CategoryType, previewVM: VM) {
-        self.type = type
-        _vm = State(wrappedValue: previewVM)
-    }
-}
 
-#Preview {
-    CategoryView(
-        type: .todo,
-        previewVM: TodoCategoryViewModel()
-    )
-}
+//// 프리뷰용
+//extension CategoryView {
+//    init(type: CategoryType, previewVM: VM) {
+//        self.type = type
+//        _vm = State(wrappedValue: previewVM)
+//    }
+//}
+//
+//#Preview {
+//    CategoryView(
+//        type: .todo,
+//        previewVM: TodoCategoryViewModel()
+//    )
+//}

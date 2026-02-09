@@ -8,36 +8,38 @@
 import Foundation
 
 //Mock Data
-enum ActivityTimeMock {
-
-    static let weekdayDefault = ActivityTime(
-        startTime: "08:00".toTimeDate()!,
-        endTime: "22:00".toTimeDate()!,
-        activeDays: [.mon, .tue, .wed, .thu, .fri]
-    )
-
-    static let weekendOnly = ActivityTime(
-        startTime: "10:00".toTimeDateOrFail(),
-        endTime: "18:00".toTimeDateOrFail(),
-        activeDays: [.sat, .sun]
-    )
-}
-
+//enum ActivityTimeMock {
+//
+//    static let weekdayDefault = ActivityTime(
+//        startTime: "08:00".toTimeDate()!,
+//        endTime: "22:00".toTimeDate()!,
+//        activeDays: [.mon, .tue, .wed, .thu, .fri]
+//    )
+//
+//    static let weekendOnly = ActivityTime(
+//        startTime: "10:00".toTimeDateOrFail(),
+//        endTime: "18:00".toTimeDateOrFail(),
+//        activeDays: [.sat, .sun]
+//    )
+//}
+//
 
 @Observable
 final class TimeSettingViewModel{
     
+    private let service: ActivityTimeServiceProtocol
+    
     // MARK: - State
-    var startTime: Date
-    var endTime: Date
-    var activeDays: Set<Weekday>
+    var startTime: Date = Date()
+    var endTime: Date = Date()
+    var activeDays: Set<Weekday> = []
   
     // UI
     var didSelectStartTime = false
     var didSelectEndTime = false
 
     // 변경 비교용
-    private let originalActivityTime: ActivityTime
+    private var originalActivityTime: ActivityTime?
 
     // MARK: - Validation
     // 시간 유효성 검증
@@ -47,9 +49,10 @@ final class TimeSettingViewModel{
     
     // 변경 감지 - 버튼 활성화 여부 판단
     var hasChanges: Bool {
-        startTime != originalActivityTime.startTime ||
-        endTime != originalActivityTime.endTime ||
-        activeDays != originalActivityTime.activeDays
+        guard let original = originalActivityTime else { return false }
+        return startTime != original.startTime ||
+               endTime != original.endTime ||
+               activeDays != original.activeDays
     }
     
     // 저장 가능 여부
@@ -101,14 +104,10 @@ final class TimeSettingViewModel{
     }
 
 
-    init(activityTime: ActivityTime = ActivityTimeMock.weekdayDefault) {
-        self.startTime = activityTime.startTime
-        self.endTime = activityTime.endTime
-        self.activeDays = activityTime.activeDays
-        self.originalActivityTime = activityTime
+    // MARK: - Init
+    init(service: ActivityTimeServiceProtocol = ActivityTimeSettingService()) {
+        self.service = service
     }
-    
-
     
     // MARK: - 요일
 
@@ -147,4 +146,38 @@ final class TimeSettingViewModel{
         )
     }
     
+}
+
+// 실행
+extension TimeSettingViewModel {
+    @MainActor
+    func fetchActivityTime() async {
+        do {
+            let activityTime = try await service.fetchActivityTime()
+
+            startTime = activityTime.startTime
+            endTime = activityTime.endTime
+            activeDays = activityTime.activeDays
+
+            originalActivityTime = activityTime
+        } catch {
+            print("❌ fetch error:", error)
+        }
+    }
+    
+    @MainActor
+    func save() async throws -> ActivityTime {
+        let saved = try await service.saveActivityTime(
+            makeActivityTime().toDTO()
+        )
+
+        startTime = saved.startTime
+        endTime = saved.endTime
+        activeDays = saved.activeDays
+        originalActivityTime = saved
+
+        return saved
+    }
+
+
 }

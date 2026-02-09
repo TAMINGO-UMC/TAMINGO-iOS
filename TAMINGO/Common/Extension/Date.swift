@@ -91,6 +91,21 @@ extension String {
         return outputFormatter.string(from: date)
     }
 
+    func toTimeOnlyDate() -> Date? {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "ko_KR")
+
+            // 서버에서 오는 포맷 전부 대응
+            let formats = ["HH:mm", "HH:mm:ss"]
+
+            for format in formats {
+                formatter.dateFormat = format
+                if let date = formatter.date(from: self) {
+                    return date
+                }
+            }
+            return nil
+        }
     
 }
 
