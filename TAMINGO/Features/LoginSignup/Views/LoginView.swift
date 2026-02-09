@@ -1,3 +1,10 @@
+//
+//  LoginView.swift
+//  TAMINGO
+//
+//  Created by 엄지용 on 2/7/26.
+//
+
 import SwiftUI
 import Combine
 
@@ -13,22 +20,22 @@ struct LoginView: View {
     init(vm: LoginViewModel) {
         self.vm = vm
     }
+    
     var body: some View {
-            content
-                .onReceive(vm.actionPublisher) { action in
-                    switch action {
-                    case .goSignup:
-                        break
-                        
-                    case .loginSuccess(let id):
-                        print("로그인 성공:", id)
-                        // TODO: AppState setLoggedIn 등 처리
-                        
-                    case .kakaoLogin:
-                        print("카카오 로그인 시작")
-                    }
+        content
+            .onReceive(vm.actionPublisher) { action in
+                switch action {
+                case .goSignup:
+                    break
+                    
+                case .loginSuccess(let userId, let onboardingCompleted):
+                    print("로그인 성공:", userId)
+                    // TODO: onboardingCompleted에 따라 OnboardingView 또는 HomeView로 이동
+                    
+                case .kakaoLogin:
+                    print("카카오 로그인 시작")
                 }
-        
+            }
     }
     
     private var content: some View {
@@ -109,11 +116,13 @@ struct LoginView: View {
                 isEnabled: vm.canLogin
             ) {
                 focus = nil
-                vm.loginTapped()
-                
-                if vm.isLoginFailed {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                        focus = .id
+                Task {
+                    await vm.loginTapped()
+                    
+                    if vm.isLoginFailed {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            focus = .id
+                        }
                     }
                 }
             }
@@ -169,7 +178,6 @@ struct LoginView: View {
         }
     }
     
-   
     private struct LoginTextField: View {
         let placeholder: String
         @Binding var text: String
@@ -184,9 +192,7 @@ struct LoginView: View {
             return isFocused ? Color("MainMint") : Color("Gray1")
         }
         
-        private var strokeWidth: CGFloat {
-           return 1
-        }
+        private var strokeWidth: CGFloat { return 1 }
         
         init(
             placeholder: String,
@@ -236,6 +242,4 @@ struct LoginView: View {
             )
         }
     }
-    
-    
 }
