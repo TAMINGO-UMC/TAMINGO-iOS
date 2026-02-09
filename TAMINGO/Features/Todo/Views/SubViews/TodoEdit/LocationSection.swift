@@ -2,7 +2,8 @@
 //  LocationSection.swift
 //  TAMINGO
 //
-//  Created by 엄지용 on 1/29/26.
+//  Created by 엄지용 on 2/8/26.
+//  Updated: async/await 호출 반영
 //
 
 import SwiftUI
@@ -25,28 +26,28 @@ struct LocationSection: View {
                 Spacer()
             }
             
-            // 축소 상태: 선택된 장소 표시 + 수정/삭제 버튼
             if !viewModel.isLocationExpanded {
                 collapsedView
             }
             
-            // 확장 상태: 검색 바 + 내 장소 목록 + 취소 버튼
             if viewModel.isLocationExpanded {
                 expandedView
             }
         }
         .sheet(isPresented: $showingPlaceSearch) {
             PlaceSearchSheet { place in
-                // 선택된 장소 저장
-                viewModel.placeName = place.name
-                viewModel.address = place.address
-                viewModel.latitude = place.latitude
-                viewModel.longitude = place.longitude
-                viewModel.isLocationAIGenerated = false
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    viewModel.isLocationExpanded = false
+                Task {
+                    await viewModel.selectPlace(
+                        name: place.name,
+                        address: place.address,
+                        latitude: place.latitude,
+                        longitude: place.longitude
+                    )
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        viewModel.isLocationExpanded = false
+                    }
+                    showingPlaceSearch = false
                 }
-                showingPlaceSearch = false
             }
         }
     }
@@ -119,16 +120,18 @@ struct LocationSection: View {
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(viewModel.myLocations) { location in
+                        ForEach(viewModel.myLocations, id: \.id) { location in
                             TodoLocationButton(location: location) {
-                                viewModel.selectPlace(
-                                    name: location.name,
-                                    address: location.address,
-                                    latitude: location.latitude,
-                                    longitude: location.longitude
-                                )
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    viewModel.isLocationExpanded = false
+                                Task {
+                                    await viewModel.selectPlace(
+                                        name: location.name,
+                                        address: location.address,
+                                        latitude: location.latitude,
+                                        longitude: location.longitude
+                                    )
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        viewModel.isLocationExpanded = false
+                                    }
                                 }
                             }
                         }
@@ -159,30 +162,23 @@ struct LocationSection: View {
     }
 }
 
-// MARK: - TodoLocationButton Component (TodoMyLocation 사용)
+// MARK: - TodoLocationButton (아이콘 제거, ID 기반 색상)
 struct TodoLocationButton: View {
     let location: TodoMyLocation
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: location.icon)
-                    .font(.system(size: 12))
-                    .foregroundColor(location.color)
-                
-                Text(location.name)
-                    .font(.regular12)
-                    .foregroundColor(location.color)
-            }
-            .padding(.horizontal, 12)
-            .frame(height: 32)
-            .background(location.color.opacity(0.1))
-            .cornerRadius(8)
+            Text(location.name)
+                .font(.regular12)
+                .foregroundColor(location.color)
+                .padding(.horizontal, 12)
+                .frame(height: 32)
+                .background(location.color.opacity(0.15))
+                .cornerRadius(8)
         }
     }
 }
-
 
 struct PlaceInfo {
     let name: String

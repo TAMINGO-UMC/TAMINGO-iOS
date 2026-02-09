@@ -20,10 +20,9 @@ struct MainTabContainerView: View {
                 case .calendar:
                     ScheduleView()
                 case .todo:
-                    ToDoView()
-                case .my:
                     MainView()
-                    
+                case .my:
+                    MyPageView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

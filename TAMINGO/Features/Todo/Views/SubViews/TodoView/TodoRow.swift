@@ -1,9 +1,11 @@
 //
-//  TodoRowComponent.swift
+//  TodoRow.swift
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
+//  Updated: 2/8/26 - 카테고리 색상 체크박스, 완료 시 스타일 제거
 //
+
 import SwiftUI
 
 struct TodoRow: View {
@@ -13,19 +15,31 @@ struct TodoRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // MARK: - 완료 영역
-            // isCompleted == false → 빈 체크박스 (테두리만)
-            // isCompleted == true  → 채워진 체크박스 (체크표시 포함)
+            // MARK: - 완료 영역 (카테고리 색상 적용)
             Button(action: onToggle) {
-                Image(systemName: item.isCompleted ? "checkmark.square.fill" : "square")
-                    .foregroundColor(item.isCompleted ? .mainMint : .gray1)
-                    .frame(width: 20, height: 20)
+                ZStack {
+                    if item.isCompleted {
+                        // 완료 시: 카테고리 색상으로 채워진 박스 + 흰색 체크마크
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(item.categoryColor.color)
+                            .frame(width: 20, height: 20)
+                        
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                    } else {
+                        // 미완료: 회색 테두리만
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(Color.gray1, lineWidth: 1.5)
+                            .frame(width: 20, height: 20)
+                    }
+                }
             }
             
+            // 제목 (완료 여부와 관계없이 동일한 스타일)
             Text(item.title)
                 .font(.medium12)
-                .foregroundColor(item.isCompleted ? .gray2 : .black)
-                .strikethrough(item.isCompleted)
+                .foregroundColor(.black)
             
             CategoryTag(category: item.category, categoryColor: item.categoryColor)
             

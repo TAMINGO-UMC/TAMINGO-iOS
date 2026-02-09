@@ -1,9 +1,9 @@
-
 //
 //  CalendarSheetView.swift
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/31/26.
+//  Updated: 2/8/26 - onConfirm 콜백 추가
 //
 
 import SwiftUI
@@ -12,6 +12,7 @@ struct CalendarSheetView: View {
     @State var calendarViewModel: CalendarViewModel
     @Binding var isPresented: Bool
     @Binding var selectedDate: Date
+    var onConfirm: (() -> Void)? = nil  // 확인 버튼 콜백 추가
     
     var body: some View {
         NavigationView {
@@ -28,6 +29,7 @@ struct CalendarSheetView: View {
                 
                 // 확인 버튼
                 Button(action: {
+                    onConfirm?()  // 콜백 호출
                     isPresented = false
                 }) {
                     Text("확인")

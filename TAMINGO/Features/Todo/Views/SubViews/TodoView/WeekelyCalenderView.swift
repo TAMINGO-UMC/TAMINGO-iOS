@@ -43,7 +43,6 @@ struct WeeklyCalendarView: View {
                 ZStack {
                     // 고정된 배경 박스
                     VStack(spacing: 0) {
-                        // 요일 헤더 (고정)
                         HStack(spacing: 7) {
                             ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { day in
                                 Text(day)
@@ -55,15 +54,14 @@ struct WeeklyCalendarView: View {
                         .padding(.top, 12)
                         .padding(.bottom, 8)
                         
-                        Spacer()
-                            .frame(height: 48) // 날짜 공간
+                        Spacer().frame(height: 48)
                     }
                     .frame(width: 333, height: 107.46)
                     .background(Color.white)
                     .cornerRadius(13)
                     .shadow(color: Color.black.opacity(0.08), radius: 4.75, x: 2, y: 3)
                     
-                    // 스크롤되는 날짜 (ZStack 위에)
+                    // 스크롤되는 날짜
                     GeometryReader { geometry in
                         ScrollViewReader { proxy in
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -95,7 +93,7 @@ struct WeeklyCalendarView: View {
                             .scrollTargetBehavior(.paging)
                             .padding(.top, 32)
                             .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
-                                // 스크롤 위치 기반으로 주차 계산
+                                // 페이지 단위(333)로 오프셋 계산하여 현재 주차 업데이트
                                 let pageWidth: CGFloat = 333
                                 let newOffset = Int(round(-offset / pageWidth))
                                 if newOffset != currentWeekOffset {
@@ -117,23 +115,16 @@ struct WeeklyCalendarView: View {
             }
         }
         .onAppear {
-            // 뷰가 처음 나타날 때 기준 날짜 설정
             baseDate = calendarViewModel.selectDate
         }
     }
     
-    // MARK: - 헤더 텍스트 계산 (현재 보이는 주의 년/월/주차)
+    // 스크롤된 위치 기준 헤더 텍스트
     private var headerText: String {
         let calendar = Calendar.current
-        
-        // baseDate 기준으로 현재 스크롤된 주의 시작일 계산
         guard let targetWeekDate = calendar.date(byAdding: .weekOfYear, value: currentWeekOffset, to: baseDate),
-              let startOfTargetWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: targetWeekDate)) else {
-            return ""
-        }
-        
-        // 주의 중간 날짜(수요일)를 기준으로 월/년도 결정 (더 정확한 표시를 위해)
-        guard let midWeekDate = calendar.date(byAdding: .day, value: 3, to: startOfTargetWeek) else {
+              let startOfTargetWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: targetWeekDate)),
+              let midWeekDate = calendar.date(byAdding: .day, value: 3, to: startOfTargetWeek) else {
             return ""
         }
         
@@ -144,32 +135,19 @@ struct WeeklyCalendarView: View {
         return "\(year)년 \(month)월 \(weekOfMonth)째주"
     }
     
-    // MARK: - 해당 월의 몇째 주인지 계산
     private func calculateWeekOfMonth(for date: Date, in calendar: Calendar) -> Int {
-        // 해당 날짜가 속한 월의 1일
         let components = calendar.dateComponents([.year, .month], from: date)
-        guard let firstDayOfMonth = calendar.date(from: components) else {
+        guard let firstDayOfMonth = calendar.date(from: components),
+              let firstWeekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: firstDayOfMonth)),
+              let targetWeekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)) else {
             return 1
         }
-        
-        // 1일이 속한 주의 시작일 (일요일)
-        guard let firstWeekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: firstDayOfMonth)) else {
-            return 1
-        }
-        
-        // 입력된 날짜가 속한 주의 시작일 (일요일)
-        guard let targetWeekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)) else {
-            return 1
-        }
-        
-        // 두 주 사이의 주 차이 계산
         let weeksDifference = calendar.dateComponents([.weekOfYear], from: firstWeekStart, to: targetWeekStart).weekOfYear ?? 0
-        
         return weeksDifference + 1
     }
 }
 
-// MARK: - Scroll Offset Preference Key
+// PreferenceKey & Components 생략 없이 포함
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -177,29 +155,21 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
     }
 }
 
-// MARK: - Week Dates Row (날짜만 - 스크롤됨)
 struct WeekDatesRow: View {
     @Bindable var calendarViewModel: CalendarViewModel
-    let baseDate: Date  // 고정된 기준 날짜
+    let baseDate: Date
     let weekOffset: Int
     var onDateSelected: ((Date) -> Void)?
     
     private var weekDates: [DateValue] {
         let calendar = Calendar.current
-        
-        // baseDate 기준으로 주 계산 (selectDate가 아님!)
-        guard let targetDate = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: baseDate) else {
+        guard let targetDate = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: baseDate),
+              let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: targetDate)) else {
             return []
         }
-        
-        guard let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: targetDate)) else {
-            return []
-        }
-        
         return (0..<7).compactMap { dayOffset in
             if let date = calendar.date(byAdding: .day, value: dayOffset, to: startOfWeek) {
                 let day = calendar.component(.day, from: date)
-                // 현재 표시중인 주의 월과 비교
                 let isCurrentMonth = calendar.isDate(date, equalTo: targetDate, toGranularity: .month)
                 return DateValue(day: day, date: date, isCurrentMonth: isCurrentMonth)
             }
@@ -216,7 +186,6 @@ struct WeekDatesRow: View {
                     isSelected: dateValue.date.isSameDay(as: calendarViewModel.selectDate),
                     markers: calendarViewModel.dateMarkers[dateValue.date.startOfDay] ?? [],
                     onSelect: {
-                        // 날짜만 업데이트하고 스크롤은 하지 않음
                         calendarViewModel.selectDate = dateValue.date.startOfDay
                         onDateSelected?(dateValue.date)
                     }
@@ -226,7 +195,6 @@ struct WeekDatesRow: View {
     }
 }
 
-// MARK: - Week Day Cell
 struct WeekDayCell: View {
     let dateValue: DateValue
     let isToday: Bool
@@ -237,41 +205,18 @@ struct WeekDayCell: View {
     var body: some View {
         Button(action: onSelect) {
             VStack(spacing: 4) {
-                // 날짜
                 Text("\(dateValue.day)")
                     .font(.regular13)
-                    .foregroundColor(
-                        isSelected ? .mainMint :
-                        (dateValue.isCurrentMonth ? .black : .gray2)
-                    )
+                    .foregroundColor(isSelected ? .mainMint : (dateValue.isCurrentMonth ? .black : .gray2))
                     .frame(width: 40, height: 40)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(isSelected ? Color.subMint : Color.clear)
-                    )
+                    .background(RoundedRectangle(cornerRadius: 12).fill(isSelected ? Color.subMint : Color.clear))
                 
-                // 마커
                 HStack(spacing: 1) {
-                    if markers.isEmpty {
-                        Circle()
-                            .fill(.clear)
-                            .frame(width: 4, height: 4)
-                    } else {
-                        ForEach(markers.prefix(3), id: \.self) { marker in
-                            Circle()
-                                .fill(marker.color)
-                                .frame(width: 4, height: 4)
-                        }
+                    ForEach(markers.prefix(3), id: \.self) { marker in
+                        Circle().fill(marker.color).frame(width: 4, height: 4)
                     }
                 }
             }
         }
     }
-}
-
-#Preview {
-    WeeklyCalendarView(
-        calendarViewModel: CalendarViewModel(),
-        isExpanded: .constant(true)
-    )
 }

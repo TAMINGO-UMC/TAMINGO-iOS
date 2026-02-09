@@ -3,6 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
+//  Updated: Container 연결
 //
 
 import SwiftUI
@@ -12,6 +13,7 @@ struct RelateSchedule: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // 헤더 영역
             HStack {
                 Text("일정 연결")
                     .font(.medium14)
@@ -28,10 +30,10 @@ struct RelateSchedule: View {
                 .font(.regular12)
                 .foregroundColor(.gray2)
             
-            RelatedScheduleContainer (
+            // 컨테이너 영역 (실제 리스트/선택 UI)
+            RelatedScheduleContainer(
                 relatedSchedules: $viewModel.relatedSchedules,
-                isExpanded: $viewModel.isScheduleExpanded,
-                isAIGenerated: viewModel.isScheduleAIGenerated
+                isExpanded: $viewModel.isScheduleExpanded
             )
         }
     }

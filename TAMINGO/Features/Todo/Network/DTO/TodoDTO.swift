@@ -3,13 +3,20 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 2/5/26.
+//  Updated: 2/8/26 - recommend-schedules DTO 추가
 //
 
 import Foundation
 import SwiftUI
 
 // MARK: - 1. 내장소 가져오기 Response
-// Schedule의 MyPlaceDTO를 공유하여 사용
+struct MyPlacesDTO: Codable {
+    let id: Int
+    let name: String
+    let address: String
+    let latitude: Double
+    let longitude: Double
+}
 
 // MARK: - 2. 할 일 생성 Request
 struct TodoCreateRequestDTO: Codable {
@@ -24,7 +31,6 @@ struct TodoCreateRequestDTO: Codable {
     let aiSource: TodoAISourceDTO
 }
 
-// Todo 전용 AI Source DTO (Schedule의 AIInferenceSource와 구분)
 struct TodoAISourceDTO: Codable {
     let aiSuggestedCategoryName: String
     let aiSuggestedPlaceName: String?
@@ -51,7 +57,7 @@ struct TodoUpdateRequestDTO: Codable {
     let linkedScheduleId: Int?
 }
 
-// MARK: - 4. AI 추론 Response (Todo 전용)
+// MARK: - 4. AI 추론 Response
 struct TodoAIInferenceResponseDTO: Codable {
     let todoInfo: TodoInfoDTO
     
@@ -65,43 +71,38 @@ struct TodoAIInferenceResponseDTO: Codable {
     }
 }
 
-// MARK: - 5. 자주 가는 장소 목록 조회 Response
-struct FrequentPlacesResponseDTO: Codable {
-    let places: [FrequentPlaceDTO]
-}
-
-struct FrequentPlaceDTO: Codable {
-    let placeId: Int
-    let name: String
+// MARK: - 5. 장소 수정 시 일정 추천 Request (NEW)
+struct RecommendSchedulesRequestDTO: Codable {
+    let placeName: String
     let address: String
     let latitude: Double
     let longitude: Double
-    let weeklyVisitCount: Int
 }
 
-// MARK: - 6. 장소 선택 시 관련 할일 조회 Request
-struct RelatedTodosRequestDTO: Codable {
-    let placeName: String
-    let latitude: Double
-    let longitude: Double
-}
-
-// MARK: - 6. 장소 선택 시 관련 할일 조회 Response
-struct RelatedTodosResponseDTO: Codable {
-    let nearbyTodos: [NearbyTodoDTO]
-    let candidateTodos: [CandidateTodoDTO]
+// MARK: - 5. 장소 수정 시 일정 추천 Response (NEW)
+struct RecommendSchedulesResponseDTO: Codable {
+    let nearbySchedules: [ScheduleItemDTO]
+    let candidateSchedules: [ScheduleItemDTO]
     let isFavoriteRecommendation: Bool
     
-    struct NearbyTodoDTO: Codable {
-        let todoId: Int
+    struct ScheduleItemDTO: Codable {
+        let scheduleId: Int
         let title: String
         let placeName: String?
     }
+}
+
+// MARK: - 6. 할일 목록 조회 Response
+struct TodoListResponseDTO: Codable {
+    let dailyTodos: [TodoItemDTO]
+    let backlogTodos: [TodoItemDTO]
     
-    struct CandidateTodoDTO: Codable {
+    struct TodoItemDTO: Codable {
         let todoId: Int
         let title: String
-        let placeName: String?
+        let categoryName: String
+        let categoryColor: String
+        let isChecked: Bool
     }
 }
 
@@ -140,44 +141,23 @@ struct TodoCompletionRequestDTO: Codable {
     let isChecked: Bool
 }
 
-// MARK: - DTO → Model 변환 Extension
+// MARK: - DTO → Model 변환
 
-extension MyPlaceDTO {
-    /// Todo에서 사용하는 MyLocation으로 변환
+extension MyPlacesDTO {
     func toTodoMyLocation() -> TodoMyLocation {
-        TodoMyLocation(
-            icon: "mappin.circle.fill",
-            name: name,
-            address: address,
-            latitude: latitude,
-            longitude: longitude,
-            color: .blue
-        )
-    }
-}
-
-extension FrequentPlaceDTO {
-    func toTodoMyLocation() -> TodoMyLocation {
-        let icon: String
-        let color: Color
-        
-        switch weeklyVisitCount {
-        case 6...:
-            icon = "star.fill"
-            color = .yellow
-        case 4..<6:
-            icon = "house.fill"
-            color = .blue
-        case 2..<4:
-            icon = "building.2.fill"
-            color = .green
-        default:
-            icon = "mappin.circle.fill"
-            color = .gray
-        }
+        // ID 기반 색상 부여
+        let color: Color = {
+            switch id % 5 {
+            case 0: return .blue
+            case 1: return .green
+            case 2: return .orange
+            case 3: return .purple
+            default: return .pink
+            }
+        }()
         
         return TodoMyLocation(
-            icon: icon,
+            id: id,
             name: name,
             address: address,
             latitude: latitude,
@@ -196,6 +176,32 @@ extension TodoAIInferenceResponseDTO.TodoInfoDTO {
             latitude: latitude,
             longitude: longitude,
             duration: duration
+        )
+    }
+}
+
+extension RecommendSchedulesResponseDTO.ScheduleItemDTO {
+    func toTodoRelatedScheduleItem() -> TodoRelatedScheduleItem {
+        TodoRelatedScheduleItem(
+            title: title,
+            location: placeName ?? "",
+            isSelected: false,
+            scheduleId: scheduleId
+        )
+    }
+}
+
+extension TodoListResponseDTO.TodoItemDTO {
+    func toTodoItem() -> TodoItem {
+        let categoryColorEnum = CategoryColor(rawValue: categoryColor) ?? .mint
+        
+        return TodoItem(
+            id: todoId,
+            title: title,
+            category: categoryName,
+            categoryColor: categoryColorEnum,
+            isCompleted: isChecked,
+            date: nil
         )
     }
 }
@@ -222,13 +228,22 @@ extension TodoDetailResponseDTO {
         
         let allSchedules = linkedSchedules + candidateScheduleItems
         
+        let categoryColorEnum: CategoryColor = {
+            switch category {
+            case "일상": return .mint
+            case "생활": return .lightMint
+            case "업무": return .peach
+            default: return .mint
+            }
+        }()
+        
         return TodoItem(
             id: todoId,
             title: title,
             category: category,
-            categoryColor: TodoItem.CategoryColor.from(category: category),
+            categoryColor: categoryColorEnum,
             isCompleted: false,
-            date: targetDate?.toDate(),
+            date: targetDate?.toDates(),
             placeName: placeName,
             address: address,
             latitude: latitude,
@@ -238,13 +253,13 @@ extension TodoDetailResponseDTO {
             linkedScheduleId: linkedSchedule.first?.scheduleId,
             isRoutineEnabled: repeatType != "NONE",
             routineType: TodoRoutineType.from(apiString: repeatType),
-            routineEndDate: repeatEndDate?.toDate(),
+            routineEndDate: repeatEndDate?.toDates(),
             aiSource: nil
         )
     }
 }
 
-// MARK: - Model → DTO 변환 Extension
+// MARK: - Model → DTO 변환
 
 extension TodoItem {
     func toCreateRequestDTO(todoCategoryId: Int) -> TodoCreateRequestDTO {
@@ -289,7 +304,8 @@ extension TodoItem {
     }
 }
 
-// MARK: - Helper Extensions (날짜 변환)
+// MARK: - Helper Extensions
+
 extension Date {
     func toAPIDateString() -> String {
         let formatter = DateFormatter()
@@ -300,20 +316,27 @@ extension Date {
     }
 }
 
-// MARK: - Todo 전용 모델 (Schedule과 구분)
+extension String {
+    func toDates() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter.date(from: self)
+    }
+}
 
-/// Todo에서 사용하는 장소 모델 (Schedule의 것과 구분)
+// MARK: - Todo 전용 모델
+
 struct TodoMyLocation: Identifiable {
-    let id = UUID()
-    let icon: String
+    let id: Int  // 서버 ID 추가
     let name: String
     let address: String
     let latitude: Double
     let longitude: Double
-    let color: Color
+    let color: Color  // ID 기반 색상
 }
 
-/// Todo에서 사용하는 관련 일정 아이템 (Schedule과 구분)
 struct TodoRelatedScheduleItem: Identifiable {
     let id = UUID()
     var title: String
@@ -322,7 +345,6 @@ struct TodoRelatedScheduleItem: Identifiable {
     var scheduleId: Int?
 }
 
-/// Todo 전용 루틴 타입 (Schedule의 RepeatType과 구분)
 enum TodoRoutineType: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     case daily = "매일"

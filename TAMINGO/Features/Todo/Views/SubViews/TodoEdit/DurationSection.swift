@@ -3,6 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
+//  Updated: 2/8/26 - TimePicker 표시 수정
 //
 
 import SwiftUI
@@ -34,7 +35,7 @@ struct DurationSection: View {
         }
     }
     
-    // MARK: - Duration Row (표시 + 수정/삭제 버튼)
+    // MARK: - Duration Row
     private var durationRow: some View {
         HStack(spacing: 8) {
             Text(viewModel.duration.isEmpty ? "시간을 설정하세요" : viewModel.duration)
@@ -45,11 +46,14 @@ struct DurationSection: View {
             
             EditButton(action: {
                 withAnimation(.smooth(duration: 0.4)) {
+                    viewModel.showingDurationPicker.toggle()
+                    
+                    // Picker가 열릴 때 duration 파싱
                     if viewModel.showingDurationPicker {
-                        updateDuration()
-                        viewModel.showingDurationPicker = false
+                        viewModel.parseDuration()
                     } else {
-                        viewModel.showingDurationPicker = true
+                        // Picker가 닫힐 때 duration 업데이트
+                        updateDuration()
                     }
                 }
             })
@@ -63,7 +67,7 @@ struct DurationSection: View {
         }
     }
     
-    // MARK: - Wheel Picker (LiquidGlass)
+    // MARK: - Wheel Picker
     private var durationPicker: some View {
         VStack(spacing: 0) {
             HStack(spacing: 2) {

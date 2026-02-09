@@ -1,3 +1,10 @@
+//
+//  TodoTarget.swift
+//  TAMINGO
+//
+//  Created by 엄지용 on 2/5/26.
+//  Updated: 2/8/26 - deleteTodo 추가
+//
 
 import Foundation
 import Moya
@@ -16,94 +23,102 @@ enum TodoTarget {
     // 4. AI 추론
     case aiInference(title: String)
     
-    // 5. 자주 가는 장소 목록 조회
-    case getFrequentPlaces
+    // 5. 사용자 장소 수정 시 일정 추천
+    case recommendSchedules(body: RecommendSchedulesRequestDTO)
     
-    // 6. 장소 선택 시 관련 할일 조회
-    case getRelatedTodos(body: RelatedTodosRequestDTO)
+    // 6. 할일 목록 조회
+    case getTodoList(date: String)
     
     // 7. 할일 상세 조회
     case getTodoDetail(id: Int)
     
     // 8. 할일 완료 체크
     case updateTodoCompletion(id: Int, body: TodoCompletionRequestDTO)
+    
+    // 9. 할일 삭제 - (미정)
+    case deleteTodo(id: Int)
 }
 
-// MARK: - TargetType 구현
+// MARK: - APITargetType 구현
 extension TodoTarget: APITargetType {
     
-    // MARK: - Path
     var path: String {
         switch self {
         case .getMyPlaces:
-            return "/api/todos/places/my"
+            return "/api/favorite-places/simple"
         case .createTodo:
             return "/api/todos"
         case .updateTodo(let id, _):
             return "/api/todos/\(id)"
         case .aiInference:
             return "/api/todos/ai-inference"
-        case .getFrequentPlaces:
-            return "/api/todos/places/frequent"
-        case .getRelatedTodos:
-            return "/api/todos/related"
+        case .recommendSchedules:
+            return "/api/todos/recommend-schedules"
+        case .getTodoList:
+            return "/api/todos"
         case .getTodoDetail(let id):
             return "/api/todos/\(id)"
         case .updateTodoCompletion(let id, _):
-            return "/api/todos/\(id)/completion"
+            return "/api/todos/\(id)/check"
+        case .deleteTodo(let id):
+            return "/api/todos/\(id)"
         }
     }
     
-    // MARK: - Method
     var method: Moya.Method {
         switch self {
-        case .createTodo, .aiInference, .getRelatedTodos:
+        case .createTodo, .aiInference, .recommendSchedules:
             return .post
-        case .updateTodo, .updateTodoCompletion:
+        case .updateTodo:
             return .put
-        case .getMyPlaces, .getFrequentPlaces, .getTodoDetail:
+        case .updateTodoCompletion:
+            return .patch
+        case .deleteTodo:
+            return .delete // DELETE 메서드
+        case .getMyPlaces, .getTodoList, .getTodoDetail:
             return .get
         }
     }
     
-    // MARK: - Task
     var task: Moya.Task {
         switch self {
         case .createTodo(let body):
             return .requestJSONEncodable(body)
             
         case .aiInference(let title):
-            return .requestParameters(
-                parameters: ["title": title],
-                encoding: JSONEncoding.default
-            )
+            let body = ["title": title]
+            return .requestJSONEncodable(body)
             
         case .updateTodo(_, let body):
             return .requestJSONEncodable(body)
             
-        case .getRelatedTodos(let body):
+        case .recommendSchedules(let body):
             return .requestJSONEncodable(body)
+            
+        case .getTodoList(let date):
+            return .requestParameters(
+                parameters: ["date": date],
+                encoding: URLEncoding.queryString
+            )
             
         case .updateTodoCompletion(_, let body):
             return .requestJSONEncodable(body)
             
-        case .getMyPlaces, .getFrequentPlaces, .getTodoDetail:
+        case .getMyPlaces, .getTodoDetail, .deleteTodo:
             return .requestPlain
         }
     }
     
-    // MARK: - Headers
-    var headers: [String : String]? {
+    var headers: [String: String]? {
         return ["Content-Type": "application/json"]
     }
     
-    // MARK: - Sample Data (Mock Response for Testing)
+    // MARK: - Sample Data
     var sampleData: Data {
         switch self {
             
-        // 1. 내장소 가져오기
         case .getMyPlaces:
-            let json = """
+            return """
             {
               "isSuccess": true,
               "code": "SUCCESS-200",
@@ -115,22 +130,13 @@ extension TodoTarget: APITargetType {
                   "address": "서울 중랑구 신내로15길 197",
                   "latitude": 37.61524044821545,
                   "longitude": 127.0869527012108
-                },
-                {
-                  "id": 3,
-                  "name": "광운대학교",
-                  "address": "서울 노원구 광운로 20",
-                  "latitude": 37.6192404638865,
-                  "longitude": 127.058270608867
                 }
               ]
             }
-            """
-            return Data(json.utf8)
+            """.data(using: .utf8)!
             
-        // 2. 할 일 생성
         case .createTodo:
-            let json = """
+            return """
             {
               "isSuccess": true,
               "code": "SUCCESS-200",
@@ -139,24 +145,20 @@ extension TodoTarget: APITargetType {
                 "todoId": 1
               }
             }
-            """
-            return Data(json.utf8)
+            """.data(using: .utf8)!
             
-        // 3. 할 일 수정
         case .updateTodo:
-            let json = """
+            return """
             {
               "isSuccess": true,
               "code": "SUCCESS-200",
               "message": "요청에 성공했습니다.",
               "result": "할 일이 성공적으로 수정되었습니다."
             }
-            """
-            return Data(json.utf8)
+            """.data(using: .utf8)!
             
-        // 4. AI 추론
         case .aiInference:
-            let json = """
+            return """
             {
               "isSuccess": true,
               "code": "SUCCESS-200",
@@ -172,76 +174,65 @@ extension TodoTarget: APITargetType {
                 }
               }
             }
-            """
-            return Data(json.utf8)
+            """.data(using: .utf8)!
             
-        // 5. 자주 가는 장소 목록 조회
-        case .getFrequentPlaces:
-            let json = """
+        case .recommendSchedules:
+            return """
             {
               "isSuccess": true,
               "code": "SUCCESS-200",
               "message": "요청에 성공했습니다.",
               "result": {
-                "places": [
+                "nearbySchedules": [
                   {
-                    "placeId": 1,
-                    "name": "집",
-                    "address": "서울시 노원구 광운로 21",
-                    "latitude": 37.61972,
-                    "longitude": 127.05981,
-                    "weeklyVisitCount": 6
-                  },
-                  {
-                    "placeId": 2,
-                    "name": "학교",
-                    "address": "서울시 노원구 광운로 20",
-                    "latitude": 37.61980,
-                    "longitude": 127.05990,
-                    "weeklyVisitCount": 6
-                  }
-                ]
-              }
-            }
-            """
-            return Data(json.utf8)
-            
-        // 6. 장소 선택 시 관련 할일 조회
-        case .getRelatedTodos:
-            let json = """
-            {
-              "isSuccess": true,
-              "code": "SUCCESS-200",
-              "message": "요청에 성공했습니다.",
-              "result": {
-                "nearbyTodos": [
-                  {
-                    "todoId": 1,
-                    "title": "도서 반납",
-                    "placeName": "중앙도서관"
+                    "scheduleId": 22,
+                    "title": "도서관 가기",
+                    "placeName": "중랑구립정보도서관"
                   }
                 ],
-                "candidateTodos": [
+                "candidateSchedules": [
                   {
-                    "todoId": 2,
-                    "title": "동아리 회비 입금",
-                    "placeName": null
-                  },
-                  {
-                    "todoId": 3,
-                    "title": "전공 책 구매",
-                    "placeName": "교보문고"
+                    "scheduleId": 25,
+                    "title": "새빛관 빅데이터 강의",
+                    "placeName": "광운대학교 새빛관"
                   }
                 ],
                 "isFavoriteRecommendation": true
               }
             }
-            """
-            return Data(json.utf8)
+            """.data(using: .utf8)!
             
-        // 7. 할일 상세 조회
+        case .getTodoList:
+            return """
+            {
+              "isSuccess": true,
+              "code": "SUCCESS-200",
+              "message": "요청에 성공했습니다.",
+              "result": {
+                "dailyTodos": [
+                  {
+                    "todoId": 35,
+                    "title": "번장 대면 거래",
+                    "categoryName": "일상",
+                    "categoryColor": "#22C7A9",
+                    "isChecked": true
+                  }
+                ],
+                "backlogTodos": [
+                  {
+                    "todoId": 34,
+                    "title": "api 구현",
+                    "categoryName": "업무",
+                    "categoryColor": "#FFC576",
+                    "isChecked": false
+                  }
+                ]
+              }
+            }
+            """.data(using: .utf8)!
+            
         case .getTodoDetail:
-            let json = """
+            return """
             {
               "isSuccess": true,
               "code": "SUCCESS-200",
@@ -270,30 +261,32 @@ extension TodoTarget: APITargetType {
                     "scheduleId": 25,
                     "title": "새빛관 빅데이터 강의",
                     "placeName": "광운대학교 새빛관"
-                  },
-                  {
-                    "scheduleId": 26,
-                    "title": "타밍고 qa",
-                    "placeName": "교대역 2호선 3번출구"
                   }
                 ],
                 "isFavoriteRecommendation": false
               }
             }
-            """
-            return Data(json.utf8)
+            """.data(using: .utf8)!
             
-        // 8. 할일 완료 체크
         case .updateTodoCompletion:
-            let json = """
+            return """
             {
               "isSuccess": true,
               "code": "SUCCESS-200",
               "message": "요청에 성공했습니다.",
               "result": "상태가 변경되었습니다."
             }
-            """
-            return Data(json.utf8)
+            """.data(using: .utf8)!
+            
+        case .deleteTodo:
+            return """
+            {
+              "isSuccess": true,
+              "code": "SUCCESS-200",
+              "message": "삭제에 성공했습니다.",
+              "result": "삭제됨"
+            }
+            """.data(using: .utf8)!
         }
     }
 }

@@ -1,45 +1,53 @@
 //
-//  TransportViewModel.swift
+//  FrequentPlacesViewModel.swift
 //  TAMINGO
 //
-//  Created by 권예원 on 1/28/26.
+//  Created by 권예원 on 2/4/26.
 //
 
 import Foundation
+import Observation
 
-// Mock 데이터
-enum FavoritePlaceMock {
+extension PlaceUIModel {
 
-    static let `default`: [FavoritePlace] = [
-        FavoritePlace(
+    static let mock: [PlaceUIModel] = [
+        .init(
             id: 1,
             name: "집",
             address: "서울시 노원구 광운로 21",
-            latitude: 37.61972,
-            longitude: 127.05981,
-            weeklyVisitCount: 6
+            weeklyVisitCount: 6,
+            isAISuggested: false
         ),
-        FavoritePlace(
+        .init(
             id: 2,
-            name: "학교",
-            address: "서울시 노원구 광운로 20",
-            latitude: 37.61980,
-            longitude: 127.05990,
-            weeklyVisitCount: 6
+            name: "중앙도서관",
+            address: "서울시 노원구 광운로 21",
+            weeklyVisitCount: 6,
+            isAISuggested: true
         )
     ]
-
-    static let empty: [FavoritePlace] = []
 }
 
-
 @Observable
-final class FavoritePlaceViewModel {
+final class FavoritePlacesViewModel {
 
-    var places: [FavoritePlace]
+    var places: [PlaceUIModel]
 
-    init(places: [FavoritePlace] = FavoritePlaceMock.default) {
+    init(places: [PlaceUIModel] = PlaceUIModel.mock) {
         self.places = places
+    }
+
+    func deletePlace(_ place: PlaceUIModel) {
+        places.removeAll { $0.id == place.id }
+    }
+
+    func editPlace(_ place: PlaceUIModel) {
+        // TODO: 수정 화면 연결
+    }
+
+    func addPlace(_ place: Place) {
+        let uiModel = PlaceUIModel(place: place)
+        places.append(uiModel)
     }
 }
 

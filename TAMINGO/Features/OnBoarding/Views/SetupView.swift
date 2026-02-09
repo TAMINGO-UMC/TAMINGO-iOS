@@ -8,10 +8,17 @@
 import SwiftUI
 import UIKit
 
-enum ActivePicker : Equatable {
+enum SetUpActivePicker: Equatable {
+
     case transport(rank: Int)
     case arrivalTime
+    case activityTime(ActivityTimePicker)
+    enum ActivityTimePicker: Equatable {
+        case start
+        case end
+    }
 }
+
 
 struct SetupView: View {
     
@@ -21,7 +28,7 @@ struct SetupView: View {
     @State private var isStartActive: Bool = false
     @State private var isEndActive: Bool = false
     @State private var isPlaceSearchPresented = false
-    @State private var activePicker: ActivePicker? = nil
+    @State private var activePicker: SetUpActivePicker? = nil
 
 
 
@@ -32,7 +39,8 @@ struct SetupView: View {
                     startTime: $vm.startTime,
                     endTime: $vm.endTime,
                     didSelectStartTime: $vm.didSelectStartTime,
-                    didSelectEndTime: $vm.didSelectEndTime
+                    didSelectEndTime: $vm.didSelectEndTime,
+                    activePicker: $activePicker
                 )
 
                 PlacesSectionView(
@@ -74,30 +82,25 @@ struct TimeSectionView: View {
     @Binding var didSelectStartTime: Bool
     @Binding var didSelectEndTime: Bool
 
-    @State private var activeTimePicker: TimePickerType? = nil
+    @Binding var activePicker: SetUpActivePicker?
 
-
-    enum TimePickerType {
-        case start
-        case end
-    }
 
     var body: some View {
         VStack(spacing: 12) {
 
             TimeRow(
                 title: "주요 활동 시작 시각",
-                isHighlighted: activeTimePicker == .start,   // 카드 보더
+                isHighlighted: activePicker == .activityTime(.start),   // 카드 보더
                 isFilled: didSelectStartTime,                // 캡슐 색상
                 backgroundColor: .subMint,
                 highlightColor: .mainMint,
                 date: $startTime,
                 onActivate: {
-                    activeTimePicker = .start
+                    activePicker = .activityTime(.start)
                 },
                 onDismiss: {
-                    if activeTimePicker == .start {
-                        activeTimePicker = nil
+                    if activePicker == .activityTime(.start) {
+                        activePicker = nil
                     }
                 },
                 onTimeChanged: {
@@ -107,17 +110,17 @@ struct TimeSectionView: View {
 
             TimeRow(
                 title: "주요 활동 종료 시각",
-                isHighlighted: activeTimePicker == .end,
+                isHighlighted: activePicker == .activityTime(.end),
                 isFilled: didSelectEndTime,
                 backgroundColor: .subPink,
                 highlightColor: .mainPink,
                 date: $endTime,
                 onActivate: {
-                    activeTimePicker = .end
+                    activePicker = .activityTime(.end)
                 },
                 onDismiss: {
-                    if activeTimePicker == .end {
-                        activeTimePicker = nil
+                    if activePicker == .activityTime(.end) {
+                        activePicker = nil
                     }
                 },
                 onTimeChanged: {
@@ -250,7 +253,7 @@ struct PlacesSectionView: View {
 
 struct TrafficSectionView: View {
     @Binding var vm: SetupViewModel
-    @Binding var activePicker: ActivePicker?
+    @Binding var activePicker: SetUpActivePicker?
     @State private var labelFrames: [Int: CGRect] = [:]
     
     var body: some View {
@@ -327,7 +330,7 @@ struct RankWheelPicker: View {
         SelectList(
             items: TransportType.allCases,
             selected: selection,
-            rowHeight: 20,
+            width: 86,
             isDisabled: isDisabled
         ) { selected in
             selection = selected             
@@ -342,7 +345,7 @@ struct RankWheelPicker: View {
 
 struct TrafficTimeSectionView: View {
     @Binding var buffer: ArrivalBufferType
-    @Binding var activePicker: ActivePicker?
+    @Binding var activePicker: SetUpActivePicker?
     @State private var buttonFrame: CGRect = .zero
 
     var body: some View {
@@ -394,7 +397,7 @@ struct TrafficTimeSectionView: View {
                 SelectList(
                     items: ArrivalBufferType.allCases,
                     selected: buffer,
-                    rowHeight: 20,
+                    width: 86,
                     isDisabled: { _ in false }
                 ) { selected in
                     buffer = selected

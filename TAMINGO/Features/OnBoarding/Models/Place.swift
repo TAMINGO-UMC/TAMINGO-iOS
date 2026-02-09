@@ -7,13 +7,15 @@
 
 import Foundation
 
-struct Place : Identifiable{
-    let id: UUID = UUID()
+// 마이페이지에서도 사용
 
+struct Place: Identifiable {
+    let id: Int
     let name: String
     let address: String
     let latitude: Double
     let longitude: Double
 }
+
 
 

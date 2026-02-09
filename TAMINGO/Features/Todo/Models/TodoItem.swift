@@ -3,16 +3,17 @@
 //  TAMINGO
 //
 //  Created by Claude on 2/5/26.
+//  Updated: 2/8/26 - CategoryColor enum 사용
 //
 
 import Foundation
 
 struct TodoItem: Identifiable {
-    let id: Int?  // API에서 받은 todoId (생성 전에는 nil)
-    let localId = UUID()  // 로컬 식별용
+    let id: Int?
+    let localId = UUID()
     var title: String
     var category: String
-    var categoryColor: CategoryColor
+    var categoryColor: CategoryColor  // CategoryColor enum 사용
     var isCompleted: Bool
     var date: Date?
     
@@ -25,52 +26,21 @@ struct TodoItem: Identifiable {
     // 예상 소요시간 (단위: 분)
     var estimatedMinutes: Int?
     
-    // Sheet "일정 연결"에서 체크한 관련 일정 (TodoRelatedScheduleItem 사용)
+    // 관련 일정
     var relatedSchedules: [TodoRelatedScheduleItem] = []
-    var linkedScheduleId: Int?  // API 연동용 단일 일정 ID
+    var linkedScheduleId: Int?
     
-    // MARK: - 루틴 (TodoRoutineType 사용)
+    // 루틴
     var isRoutineEnabled: Bool = false
     var routineType: TodoRoutineType = .daily
     var routineEndDate: Date? = nil
     
-    // MARK: - AI 추론 원본 정보 (서버 전송용)
+    // AI 추론 원본 정보
     var aiSource: AISourceInfo?
     
     struct AISourceInfo {
         let aiSuggestedCategoryName: String
         let aiSuggestedPlaceName: String?
         let aiSuggestedDuration: Int
-    }
-    
-    // MARK: - 카테고리 색상
-    enum CategoryColor {
-        case daily  // 일상 - 파란색
-        case life   // 생활 - 초록색
-        case work   // 업무 - 주황색
-        
-        var textColor: (r: Double, g: Double, b: Double, a: Double) {
-            switch self {
-            case .daily: return (103, 126, 197, 1)
-            case .life: return (85, 181, 111, 1)
-            case .work: return (255, 149, 0, 1)
-            }
-        }
-        
-        var backgroundColor: (r: Double, g: Double, b: Double, a: Double) {
-            switch self {
-            case .daily: return (231, 238, 251, 1)
-            case .life: return (234, 251, 231, 1)
-            case .work: return (255, 245, 230, 1)
-            }
-        }
-        
-        static func from(category: String) -> CategoryColor {
-            switch category {
-            case "생활": return .life
-            case "업무": return .work
-            default: return .daily
-            }
-        }
     }
 }

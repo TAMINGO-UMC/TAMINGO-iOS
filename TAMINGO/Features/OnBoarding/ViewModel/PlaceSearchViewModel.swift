@@ -13,7 +13,7 @@ import Foundation
 final class PlaceSearchViewModel {
 
     // MARK: - Step
-    var step: PlaceSearchStep = .webSearch
+    var step: PlaceSearchStep = .addressSearch
 
     // MARK: - 검색
     var query: String = ""
@@ -87,6 +87,7 @@ final class PlaceSearchViewModel {
         else { return nil }
 
         return Place(
+            id: TempPlaceIdGenerator.next(),
             name: placeName,
             address: address,
             latitude: latitude,
@@ -105,6 +106,6 @@ final class PlaceSearchViewModel {
         latitude = nil
         longitude = nil
         placeName = ""
-        step = .webSearch
+        step = .addressSearch
     }
 }

@@ -3,15 +3,16 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
+//
 
 import SwiftUI
 
 struct TodoInputBox: View {
     @Binding var todoTitle: String
-    @Binding var selectedDate: Date
+    @Binding var selectedDate: Date? // Optional로 변경
     @Binding var showingDatePicker: Bool
     @Binding var showingCalendar: Bool
-    /// AI 결과를 함께 올림 (nil 가능 — 추론 완료 전에는 추가 불가하지만 안전장치)
+    
     let onAddTodo: (AIInferenceResult?) -> Void
     
     @StateObject private var aiViewModel = AIInferenceViewModel()
@@ -19,7 +20,6 @@ struct TodoInputBox: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // 제목과 설명을 HStack으로
             HStack(alignment: .top, spacing: 8) {
                 Text("할 일 입력")
                     .font(.medium12)
@@ -33,7 +33,6 @@ struct TodoInputBox: View {
                 Spacer()
             }
             
-            // TextField와 추가 버튼
             HStack(spacing: 8) {
                 TextField("할 일 제목을 입력하세요", text: $todoTitle)
                     .font(.medium14)
@@ -56,18 +55,17 @@ struct TodoInputBox: View {
                         }
                     }
                 
-                // 추가 버튼 — AI 결과를 콜백으로 올림
                 Button(action: {
                     let result: AIInferenceResult? = {
                         if case .success(let r) = aiViewModel.state { return r }
                         return nil
                     }()
-                    onAddTodo(result)       // ① 부모에 전달
-                    aiViewModel.reset()     // ② 입력 후 AI 상태 초기화
+                    onAddTodo(result)
+                    aiViewModel.reset()
                 }) {
                     Text("추가")
                         .font(.medium14)
-                        .foregroundColor(.gray2)
+                        .foregroundColor(isAddButtonEnabled ? Color.white : Color.gray2 )
                         .frame(width: 55, height: 36)
                         .background(isAddButtonEnabled ? Color.mainMint : Color.gray1)
                         .cornerRadius(4)
@@ -75,11 +73,11 @@ struct TodoInputBox: View {
                 .disabled(!isAddButtonEnabled)
             }
             
-            // 날짜 선택 프레임
+            // 날짜 표시
             HStack {
                 Text(formattedDate(selectedDate))
                     .font(.medium12)
-                    .foregroundColor(.black)
+                    .foregroundColor(selectedDate == nil ? .gray2 : .black)
                 
                 Spacer()
                 
@@ -100,7 +98,6 @@ struct TodoInputBox: View {
                     .stroke(Color.gray1, lineWidth: 0.5)
             )
             
-            // AI 추론 결과 표시 영역
             if case .loading = aiViewModel.state {
                 AIInferenceLoadingView()
             } else if case .success(let result) = aiViewModel.state {
@@ -116,28 +113,18 @@ struct TodoInputBox: View {
         )
     }
     
-    // 추가 버튼 활성화 조건: AI 추론 완료 && 제목이 비어있지 않음
     private var isAddButtonEnabled: Bool {
         if case .success = aiViewModel.state {
             return !todoTitle.isEmpty
         }
-        return false
+        return false // 제목만 있어도 추가 가능하게 하려면 !todoTitle.isEmpty 로 변경
     }
     
-    private func formattedDate(_ date: Date) -> String {
+    private func formattedDate(_ date: Date?) -> String {
+        guard let date = date else { return "- - - -, - -, - -" }
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy년 M월 d일"
         formatter.locale = Locale(identifier: "ko_KR")
         return formatter.string(from: date)
     }
-}
-
-#Preview {
-    TodoInputBox(
-        todoTitle: .constant(""),
-        selectedDate: .constant(Date()),
-        showingDatePicker: .constant(false),
-        showingCalendar: .constant(false),
-        onAddTodo: { _ in }
-    )
 }
