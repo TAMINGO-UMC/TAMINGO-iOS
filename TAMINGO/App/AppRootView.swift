@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct AppRootView: View {
 
     @State private var isLoggedIn = false

@@ -22,6 +22,10 @@ final class OnboardingViewModel {
     var isSubmitting = false
     var didFinishOnboarding: Bool = false
     
+    // 에러 관리
+    var showErrorAlert :Bool = false
+    var errorMessage: String?
+    
     // intro, setup, done
     var step: OnboardingStep = .intro
     // intro 1~4
@@ -146,18 +150,23 @@ final class OnboardingViewModel {
 
 extension OnboardingViewModel {
     
+
+    
     private func handleAPIError(_ error: APIError) {
         switch error.statusCode {
         case 409:
             didFinishOnboarding = true
 
         case 401:
-            print(error.errorDescription ?? "인증 오류")
+            errorMessage = "인증이 만료되었습니다. 다시 로그인해주세요."
+            showErrorAlert = true
 
         default:
-            print(error.errorDescription ?? "알 수 없는 오류")
+            errorMessage = error.localizedDescription
+            showErrorAlert = true
         }
     }
+
 
     @MainActor
     func completeOnboarding() async {

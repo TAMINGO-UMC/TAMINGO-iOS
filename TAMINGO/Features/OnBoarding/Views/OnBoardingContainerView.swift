@@ -45,6 +45,12 @@ struct OnBoardingContainerView: View {
                 onFinished()
             }
         }
+        .alert("오류", isPresented: $vm.showErrorAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text(vm.errorMessage ?? "")
+        }
+
     }
 
 

@@ -21,7 +21,7 @@ enum AuthConstants {
 extension OnboardingAPI: APITargetType {
 
     var path: String {
-        "api/onboarding"
+        "/api/onboarding"
     }
 
     var method: Moya.Method {
