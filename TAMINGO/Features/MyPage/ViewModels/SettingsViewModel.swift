@@ -77,6 +77,8 @@ class SettingsViewModel {
                     print("회원 탈퇴 성공")
                     performLocalLogout()
                     isLoading = false
+                    
+                    NotificationCenter.default.post(name: .userDidLogout, object: nil)
                 }
             } catch {
                 print("회원 탈퇴 실패: \(error)")
@@ -96,5 +98,6 @@ class SettingsViewModel {
         
         // View에 신호를 보냄
         self.isLoggedOut = true
+        NotificationCenter.default.post(name: .userDidLogout, object: nil)
     }
 }
