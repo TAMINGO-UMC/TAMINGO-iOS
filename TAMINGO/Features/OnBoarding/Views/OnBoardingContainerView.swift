@@ -42,7 +42,8 @@ struct OnBoardingContainerView: View {
         }
         .onChange(of: vm.step) { oldValue, newValue in
             if newValue == .done {
-                dismiss()
+               // dismiss()
+                NotificationCenter.default.post(name: .userDidLogin, object: nil)
             }
         }
     }

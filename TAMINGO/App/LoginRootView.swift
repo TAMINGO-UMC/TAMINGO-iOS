@@ -33,7 +33,7 @@ struct LoginRootView: View {
                     case .loginSuccess(let userId, let onboardingCompleted):
                         print("로그인 성공: \(userId)")
                         if onboardingCompleted {
-                            goHome = true           // 기존 사용자 → HomeView
+                            NotificationCenter.default.post(name: .userDidLogin, object: nil)       // 기존 사용자 → HomeView
                         } else {
                             goOnboarding = true     // 신규 사용자 → OnboardingView
                         }
