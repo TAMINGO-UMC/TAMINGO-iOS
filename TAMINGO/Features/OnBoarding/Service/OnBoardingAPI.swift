@@ -14,7 +14,7 @@ enum OnboardingAPI {
 }
 
 enum AuthConstants {
-    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwNDkxNzI1LCJleHAiOjE3NzA0OTUzMjV9.XLoz3cHJed2d4k-uhvCfp55QCYMSdPA0Mb_BUi6c6eI"
+    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwNzA1NDk2LCJleHAiOjE3NzA3MDkwOTZ9.HK9g2n4k4Wc0MUWYrqmR2rzH3IznZPQTUwGED_6IgwE"
     static let userId = 6
 }
 
