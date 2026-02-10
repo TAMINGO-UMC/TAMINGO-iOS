@@ -6,14 +6,26 @@
 //
 
 import SwiftUI
+import KakaoSDKCommon  // ⭐️ 추가
 
 @main
 struct TAMINGOApp: App {
+    // AppDelegate 연결
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @State private var signupProgressStore = SignupProgressStore()
     @State private var signupSessionStore = SignupSessionStore()
 
     @State private var isLoggedIn = false
     @State private var isLoading = true
+
+    // 카카오 SDK 초기화 (dev 수정사항)
+    init() {
+        let kakaoAppKey = Config.kakaoLoginKey
+        print("[TAMINGOApp.init] 카카오 앱 키: \(kakaoAppKey)")
+        KakaoSDK.initSDK(appKey: kakaoAppKey)
+        print("[TAMINGOApp.init] 카카오 SDK 초기화 완료")
+    }
 
     var body: some Scene {
         WindowGroup {
