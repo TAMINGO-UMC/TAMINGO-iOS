@@ -38,7 +38,7 @@ struct TAMINGOApp: App {
                     MainTabContainerView()
                 } else {
                     // 비로그인 상태 → 로그인 화면
-                    LoginRootView()
+                    LoginRootView(){}
                         .environment(signupProgressStore)
                         .environment(signupSessionStore)
                 }

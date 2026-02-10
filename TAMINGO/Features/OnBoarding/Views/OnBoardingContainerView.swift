@@ -9,7 +9,7 @@ import SwiftUI
 
 struct OnBoardingContainerView: View {
     
-    @Environment(\.dismiss) private var dismiss
+    let onFinished: () -> Void
     @State private var vm = OnboardingViewModel()
 
     var body: some View {
@@ -40,12 +40,17 @@ struct OnBoardingContainerView: View {
 
             buttons
         }
-        .onChange(of: vm.step) { oldValue, newValue in
-            if newValue == .done {
-               // dismiss()
-                NotificationCenter.default.post(name: .userDidLogin, object: nil)
+        .onChange(of: vm.didFinishOnboarding) {
+            if vm.didFinishOnboarding {
+                onFinished()
             }
         }
+        .alert("오류", isPresented: $vm.showErrorAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text(vm.errorMessage ?? "")
+        }
+
     }
 
 
@@ -64,7 +69,10 @@ struct OnBoardingContainerView: View {
                 y: 2.069
             )
         case .setup:
-            SetupView(isCompleted: $vm.isSetupCompleted)
+            SetupView(
+                vm: vm.setupViewModel,
+                isCompleted: $vm.isSetupCompleted
+            )
         case .done:
             Spacer()
         }
@@ -93,7 +101,18 @@ struct OnBoardingContainerView: View {
             }
             
             Button {
-                vm.goNext()
+                switch vm.step {
+                case .intro:
+                    vm.goNext()
+
+                case .setup:
+                    Task {
+                        await vm.completeOnboarding()
+                    }
+
+                case .done:
+                    break
+                }
             } label: {
                 Text("다음")
                     .frame(maxWidth: .infinity)
@@ -113,5 +132,5 @@ struct OnBoardingContainerView: View {
 
 
 #Preview {
-    OnBoardingContainerView()
+    OnBoardingContainerView(onFinished: { print("Finished")})
 }

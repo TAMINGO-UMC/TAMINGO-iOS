@@ -100,15 +100,10 @@ final class SetupViewModel {
         )
     }
 
-    func makeNotification() -> NotificationSetting {
-        NotificationSetting(
+    func makeNotification() -> OnboardingNotificationSetting {
+        OnboardingNotificationSetting(
             departAlertEnabled: true,
-            departAlertMinutes: arrivalBuffer,
-            lateRiskAlertEnabled: false,
-            realtimeTransitEnabled: false,
-            todoRecommendEnabled: false,
-            locationMoveCheckEnabled: false,
-            routineAlertEnabled: false
+            departAlertMinutes: arrivalBuffer
         )
     }
 
