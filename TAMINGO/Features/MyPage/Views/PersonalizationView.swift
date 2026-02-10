@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PersonalizationView: View {
     @State private var viewModel = PersonalizationViewModel()
+    @State private var showResetAlert = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -54,7 +55,7 @@ struct PersonalizationView: View {
                         
                         SectionContainerView(title: "최근 학습 내역") {
                             if viewModel.recentPersonalized.isEmpty {
-                                Text("아직 학습 내역이 없아요")
+                                Text("아직 학습 내역이 없어요")
                                     .font(.regular12)
                                     .foregroundStyle(.gray2)
                                     .padding(.top)
@@ -91,6 +92,14 @@ struct PersonalizationView: View {
                 await viewModel.updateSetting()
             }
         }
+        .alert("개인화 데이터를 리셋하시겠습니까?", isPresented: $showResetAlert) {
+            Button("취소", role: .cancel) { }
+            Button("리셋", role: .destructive) {
+                Task { await viewModel.resetData() }
+            }
+        } message: {
+            Text("리셋된 데이터는 복구할 수 없습니다.")
+        }
     }
     
     var dataManageButton: some View {
@@ -100,9 +109,7 @@ struct PersonalizationView: View {
                 .foregroundStyle(.gray2)
             
             Button {
-                Task {
-                    await viewModel.resetData()
-                }
+                showResetAlert = true
             } label: {
                 Text("개인화 학습 데이터 리셋")
                     .font(.medium12)

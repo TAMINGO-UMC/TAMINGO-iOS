@@ -22,7 +22,7 @@ struct SettingsView: View {
             ScrollView {
                 // 앱 정보
                 SectionContainerView(title: "앱 정보") {
-                    SettingCard(title: "버전 정보", sub: "v1.0.0") {
+                    SettingCard(title: "버전 정보", sub: viewModel.appVersion) {
                         print("버전 정보 탭")
                     }
                     SettingCard(title: "업데이트 확인", sub: "최신 버전", subColor: .mainMint) {
@@ -66,6 +66,9 @@ struct SettingsView: View {
                 .padding(.bottom, 80)
             }
         }
+        .task {
+            viewModel.loadAppVersion()
+        }
         // 로그아웃 알림
         .alert("로그아웃 하시겠습니까?", isPresented: $showLogoutAlert) {
             Button("취소", role: .cancel) { }
@@ -84,6 +87,7 @@ struct SettingsView: View {
         } message: {
             Text("탈퇴 시 계정 정보는 복구할 수 없습니다.")
         }
+        
     }
 }
 
