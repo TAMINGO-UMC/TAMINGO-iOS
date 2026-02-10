@@ -63,6 +63,9 @@ final class ScheduleCategoryViewModel: CategoryViewModel {
     var canSaveCategory: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
+    var isEmpty: Bool {
+        categories.isEmpty
+    }
 
 
     // MARK: - Add

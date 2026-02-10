@@ -7,6 +7,6 @@
 
 
 enum AuthConstants {
-    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwNjUwOTM3LCJleHAiOjE3NzA2NTQ1Mzd9.SBTr4EGqhpDLJUZcjgnIrP66Q7PnTRAvq60WIviC-hw"
+    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwNzA1NDk2LCJleHAiOjE3NzA3MDkwOTZ9.HK9g2n4k4Wc0MUWYrqmR2rzH3IznZPQTUwGED_6IgwE"
     static let userId = 6
 }

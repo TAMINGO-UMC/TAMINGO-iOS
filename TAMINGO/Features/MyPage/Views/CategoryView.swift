@@ -23,7 +23,7 @@ VM.CategoryType: CategoryItem {
         onBack: @escaping () -> Void
     ) {
         self.type = type
-        self.onBack = onBack          // ✅ 초기화
+        self.onBack = onBack          
         _vm = State(wrappedValue: vm)
     }
     var body: some View {
@@ -36,25 +36,29 @@ VM.CategoryType: CategoryItem {
                 VStack(alignment: .leading, spacing: 16) {
                     introText
 
-                    ForEach(vm.categories) { category in
-                        VStack(spacing: 8) {
-                            CategoryRowView(
-                                category: category,
-                                onEdit: { vm.didTapEdit(category) },
-                                onDelete: { vm.deleteCategory(category) }
-                            )
-
-                            if vm.editingCategoryId == category.id {
-                                CategoryEditView(
-                                    vm: vm,
-                                    category: category
+                    if (vm.isEmpty){
+                        
+                    } else {
+                        ForEach(vm.categories) { category in
+                            VStack(spacing: 8) {
+                                CategoryRowView(
+                                    category: category,
+                                    onEdit: { vm.didTapEdit(category) },
+                                    onDelete: { vm.deleteCategory(category) }
                                 )
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+
+                                if vm.editingCategoryId == category.id {
+                                    CategoryEditView(
+                                        vm: vm,
+                                        category: category
+                                    )
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
                             }
                         }
+
                     }
-
-
+                    
                     AIInfoView()
 
                 }
@@ -105,6 +109,20 @@ private extension CategoryView {
     }
 }
 
+
+struct CategoryEmptyView: View {
+    var body: some View {
+        VStack(spacing:0){
+            Image("MyPage_monoCal")
+                .resizable()
+                .frame(width: 134, height: 134)
+            Text("할 일 카테고리를 추가해보세요!")
+                .font(.medium12)
+                .foregroundStyle(Color(hex: "#BEBEBE"))
+        }
+        .frame(height: 193)
+    }
+}
 
 //// 프리뷰용
 //extension CategoryView {

@@ -62,6 +62,10 @@ final class TodoCategoryViewModel:CategoryViewModel {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    var isEmpty: Bool {
+        categories.isEmpty
+    }
+    
     // MARK: - Add
     func didTapAdd() {
         editingCategoryId = nil
