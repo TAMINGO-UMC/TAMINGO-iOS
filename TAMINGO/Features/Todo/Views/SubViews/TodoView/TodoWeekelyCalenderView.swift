@@ -51,75 +51,83 @@ struct TodoWeeklyCalendarView: View {
             
             // 주간 캘린더 (확장 시)
             if isExpanded {
-                ZStack {
-                    // 고정된 배경 박스
-                    VStack(spacing: 0) {
-                        HStack(spacing: 7) {
-                            ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { day in
-                                Text(day)
-                                    .font(.regular13)
-                                    .foregroundColor(.gray2)
-                                    .frame(width: 40)
+                VStack(spacing: 12) {
+                    ZStack {
+                        // 고정된 배경 박스
+                        VStack(spacing: 0) {
+                            HStack(spacing: 7) {
+                                ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { day in
+                                    Text(day)
+                                        .font(.regular13)
+                                        .foregroundColor(.gray2)
+                                        .frame(width: 40)
+                                }
                             }
+                            .padding(.top, 12)
+                            .padding(.bottom, 8)
+                            
+                            Spacer().frame(height: 48)
                         }
-                        .padding(.top, 12)
-                        .padding(.bottom, 8)
+                        .frame(width: 333, height: 107.46)
+                        .background(Color.white)
+                        .cornerRadius(13)
+                        .shadow(color: Color.black.opacity(0.08), radius: 4.75, x: 2, y: 3)
                         
-                        Spacer().frame(height: 48)
-                    }
-                    .frame(width: 333, height: 107.46)
-                    .background(Color.white)
-                    .cornerRadius(13)
-                    .shadow(color: Color.black.opacity(0.08), radius: 4.75, x: 2, y: 3)
-                    
-                    // 스크롤되는 날짜
-                    GeometryReader { geometry in
-                        ScrollViewReader { proxy in
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                LazyHStack(spacing: 0) {
-                                    ForEach(-52...52, id: \.self) { weekOffset in
-                                        TodoWeekDatesRow(
-                                            viewModel: viewModel,
-                                            baseDate: baseDate,
-                                            weekOffset: weekOffset,
-                                            onDateSelected: { date in
-                                                onDateSelected?(date)
-                                            }
-                                        )
-                                        .frame(width: 333)
-                                        .id(weekOffset)
-                                    }
-                                }
-                                .background(
-                                    GeometryReader { contentGeometry in
-                                        Color.clear
-                                            .preference(
-                                                key: ScrollOffsetPreferenceKey.self,
-                                                value: contentGeometry.frame(in: .named("scroll")).origin.x
+                        // 스크롤되는 날짜
+                        GeometryReader { geometry in
+                            ScrollViewReader { proxy in
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    LazyHStack(spacing: 0) {
+                                        ForEach(-52...52, id: \.self) { weekOffset in
+                                            TodoWeekDatesRow(
+                                                viewModel: viewModel,
+                                                baseDate: baseDate,
+                                                weekOffset: weekOffset,
+                                                onDateSelected: { date in
+                                                    onDateSelected?(date)
+                                                }
                                             )
+                                            .frame(width: 333)
+                                            .id(weekOffset)
+                                        }
                                     }
-                                )
-                            }
-                            .coordinateSpace(name: "scroll")
-                            .scrollTargetBehavior(.paging)
-                            .padding(.top, 32)
-                            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
-                                let pageWidth: CGFloat = 333
-                                let newOffset = Int(round(-offset / pageWidth))
-                                if newOffset != currentWeekOffset {
-                                    currentWeekOffset = newOffset
+                                    .background(
+                                        GeometryReader { contentGeometry in
+                                            Color.clear
+                                                .preference(
+                                                    key: ScrollOffsetPreferenceKey.self,
+                                                    value: contentGeometry.frame(in: .named("scroll")).origin.x
+                                                )
+                                        }
+                                    )
                                 }
-                            }
-                            .onAppear {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                    proxy.scrollTo(0, anchor: .center)
+                                .coordinateSpace(name: "scroll")
+                                .scrollTargetBehavior(.paging)
+                                .padding(.top, 32)
+                                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
+                                    let pageWidth: CGFloat = 333
+                                    let newOffset = Int(round(-offset / pageWidth))
+                                    if newOffset != currentWeekOffset {
+                                        currentWeekOffset = newOffset
+                                    }
+                                }
+                                .onAppear {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                        proxy.scrollTo(0, anchor: .center)
+                                    }
                                 }
                             }
                         }
+                        .frame(width: 333, height: 107.46)
                     }
-                    .frame(width: 333, height: 107.46)
+                    .padding(.top, 12)
+                    
+                    // ✅ 카테고리 범례
+                    if !viewModel.visibleCategories.isEmpty {
+                        CategoryLegend(categories: viewModel.visibleCategories)
+                            .padding(.horizontal, 21)
+                    }
                 }
-                .padding(.top, 12)
                 .padding(.bottom, 16)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -228,6 +236,33 @@ struct TodoWeekDayCell: View {
                 }
                 .frame(height: 4) // 마커 영역 고정 높이
             }
+        }
+    }
+}
+
+// MARK: - 카테고리 범례
+struct CategoryLegend: View {
+    let categories: [(category: String, color: Color)]
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("카테고리")
+                .font(.regular12)
+                .foregroundColor(.gray2)
+            
+            ForEach(categories, id: \.category) { item in
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(item.color)
+                        .frame(width: 8, height: 8)
+                    
+                    Text(item.category)
+                        .font(.regular12)
+                        .foregroundColor(.black)
+                }
+            }
+            
+            Spacer()
         }
     }
 }

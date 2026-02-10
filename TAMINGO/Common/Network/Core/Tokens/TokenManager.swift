@@ -138,30 +138,35 @@ class TokenInterceptor: RequestInterceptor {
             return
         }
         
-        //  수정--> 무한 루프 방지: 최대 재시도 횟수 제한 (예: 3회)
+        // 무한 루프 방지: 최대 재시도 횟수 제한 (3회)
         if request.retryCount >= 3 {
-            print("재시도 횟수 초과. 로그아웃 처리")
+            print("재시도 횟수 초과 (3회). Refresh Token도 만료됨. 로그아웃 처리")
             TokenManager.shared.clearAll()
-            NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            }
             completion(.doNotRetryWithError(error))
             return
         }
+        
+        print(" 401 에러 발생. 토큰 갱신 시도 중... (재시도 횟수: \(request.retryCount + 1)/3)")
         
         // Refresh Token으로 Access Token 갱신
         Task {
             do {
                 let newAccessToken = try await refreshAccessToken()
                 await TokenManager.shared.saveAccessToken(newAccessToken)
-                print("토큰 갱신 성공, 재시도 수행")
-                completion(.retry)
+                print("✅ 토큰 갱신 성공! 원래 요청 자동 재시도")
+                completion(.retry)  // ✅ 갱신 성공 → 원래 요청 재시도 (사용자는 아무것도 모름)
             } catch {
-                print("토큰 갱신 실패: \(error)")
-                // Refresh Token도 만료된 경우 모든 토큰 삭제 후 로그인 화면으로
-                await TokenManager.shared.clearAll()
+                print("❌ 토큰 갱신 실패: \(error)")
+                print("   → Refresh Token 만료됨. 로그아웃 처리")
                 
-                // 로그인 화면으로 이동하는 Notification 발생
-                await NotificationCenter.default.post(name: .userDidLogout, object: nil)
-                
+                // ✅ Refresh Token도 만료된 경우 → 로그인 화면으로
+                TokenManager.shared.clearAll()
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                }
                 completion(.doNotRetryWithError(error))
             }
         }
@@ -173,7 +178,6 @@ class TokenInterceptor: RequestInterceptor {
             throw APIError.transport("Refresh Token이 없습니다.")
         }
         
-        // [수정됨] Force Unwrap 제거 및 URL 생성 안전하게 변경
         guard let url = URL(string: "\(await Config.baseURL)/api/auth/refresh") else {
             throw APIError.transport("잘못된 URL입니다.")
         }

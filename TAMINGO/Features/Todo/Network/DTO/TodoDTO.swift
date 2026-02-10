@@ -21,7 +21,7 @@ struct MyPlacesDTO: Codable {
 // MARK: - 2. 할 일 생성 Request
 struct TodoCreateRequestDTO: Codable {
     let title: String
-    let targetDate: String
+    let targetDate: String?  // ✅ Optional로 변경 (null 허용)
     let todoCategoryId: Int
     let placeName: String?
     let address: String?
@@ -287,9 +287,15 @@ extension TodoDetailResponseDTO {
 
 extension TodoItem {
     func toCreateRequestDTO(todoCategoryId: Int) -> TodoCreateRequestDTO {
-        TodoCreateRequestDTO(
+        // ✅ 날짜 변환 로그 추가
+        let targetDateString = date?.toAPIDateString()
+        print("📤 toCreateRequestDTO 생성")
+        print("  - item.date: \(date?.toAPIDateString() ?? "nil")")
+        print("  - targetDate (전송값): \(targetDateString ?? "nil")")
+        
+        return TodoCreateRequestDTO(
             title: title,
-            targetDate: date?.toAPIDateString() ?? Date().toAPIDateString(),
+            targetDate: targetDateString,  // ✅ nil 전송 가능
             todoCategoryId: todoCategoryId,
             placeName: placeName,
             address: address,

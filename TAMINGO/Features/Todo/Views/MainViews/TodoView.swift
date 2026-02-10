@@ -127,10 +127,13 @@ struct ToDoView: View {
         
         for item in viewModel.todoItems {
             guard let date = item.date else { continue }
-            weeklyCalendarViewModel.addMarker(for: date, color: item.categoryColor)
+            weeklyCalendarViewModel.addMarker(
+                for: date,
+                color: item.categoryColor,
+                category: item.category
+            )
         }
     }
-    
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MM/dd"
