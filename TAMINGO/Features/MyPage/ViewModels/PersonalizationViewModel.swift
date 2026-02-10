@@ -10,6 +10,7 @@ import Moya
 import Alamofire
 
 @Observable
+@MainActor
 class PersonalizationViewModel {
     let provider = MoyaProvider<PersonalizationTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
     
@@ -25,19 +26,21 @@ class PersonalizationViewModel {
     
     func loadSetting() async {
         isFetching = true
+        defer {
+            _Concurrency.Task {
+                try? await _Concurrency.Task.sleep(nanoseconds: 500_000_000)
+                self.isFetching = false
+            }
+        }
         
         do {
             let response: BaseResponse<PersonalizationSettings> = try await provider.request(.getSettings)
             
             if let settings = response.result?.isErrorLogEnabled {
                 self.personalizationSetting = settings
-                
-                try? await _Concurrency.Task.sleep(nanoseconds: 500_000_000)
-                self.isFetching = false
             }
         } catch {
             print("로드 실패: \(error)")
-            self.isFetching = false
         }
     }
 
