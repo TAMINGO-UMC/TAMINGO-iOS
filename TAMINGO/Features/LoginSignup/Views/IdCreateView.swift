@@ -1,3 +1,10 @@
+//
+//  IdCreateView.swift
+//  TAMINGO
+//
+//  Created by 엄지용 on 2/7/26.
+//
+
 import SwiftUI
 import Combine
 
@@ -24,7 +31,7 @@ struct IdCreateView: View {
                 title: "아이디 생성",
                 onBack: {
                     Task { @MainActor in
-                        progressStore.set(2.0/3.0, animated: true)
+                        progressStore.set(1.0/3.0, animated: true)
                     }
                     dismiss()
                 }
@@ -52,8 +59,7 @@ struct IdCreateView: View {
                 .focused($focus, equals: .nickname)
                 .submitLabel(.next)
 
-                //Vstack으로 묶어서 밑줄이랑 출력문구 간격 조절
-                VStack(alignment: .leading, spacing: 3) { 
+                VStack(alignment: .leading, spacing: 3) {
                     FieldRow(
                         title: "비밀번호",
                         binding: $vm.password,
@@ -69,7 +75,7 @@ struct IdCreateView: View {
                         Text("8~16자의 영문 대소문자, 숫자, 특수문자만 가능합니다.")
                             .font(.regular10)
                             .foregroundStyle(Color("Gray2"))
-                            .padding(.top, -2) // <- 더 붙이고 싶으면 유지, 아니면 제거
+                            .padding(.top, -2)
                     }
                 }
 
@@ -93,6 +99,13 @@ struct IdCreateView: View {
                     }
                 }
 
+                if let errorMsg = vm.errorMessage {
+                    Text(errorMsg)
+                        .font(.regular12)
+                        .foregroundStyle(.red)
+                        .padding(.top, 8)
+                }
+
                 Spacer()
             }
             .padding(.horizontal, 28)
@@ -101,13 +114,18 @@ struct IdCreateView: View {
             Spacer()
 
             PrimaryActionButton(title: "다음", isEnabled: vm.canNext) {
-                sessionStore.nickname = vm.nickname
-                sessionStore.password = vm.password
-
-                Task { @MainActor in
-                    progressStore.set(1.0, animated: true)
+                Task {
+                    await vm.signup(sessionId: sessionStore.signupSessionId) { response in
+                        // 회원가입 성공
+                        sessionStore.nickname = vm.nickname
+                        sessionStore.password = vm.password
+                        
+                        Task { @MainActor in
+                            progressStore.set(1.0, animated: true)
+                        }
+                        goToComplete = true
+                    }
                 }
-                goToComplete = true
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 20)

@@ -11,8 +11,7 @@ struct ScheduleView: View {
     @State private var calendarVM = CalendarViewModel()
     
     @State private var showAddSheet = false
-    @State private var showEditSheet: Bool = false
-    @State private var selectedId: Int? = nil
+    @State private var selectedSchedule: ScheduleListDTO? = nil
     
     var body: some View {
         VStack {
@@ -52,8 +51,7 @@ struct ScheduleView: View {
                         let color = calendarVM.categoryMap[schedule.category] ?? .gray
                         
                         Button {
-                            self.showEditSheet.toggle()
-                            self.selectedId = schedule.scheduleId
+                            self.selectedSchedule = schedule
                         } label: {
                             ScheduleCard(schedule: schedule, color: color)
                         }
@@ -69,6 +67,13 @@ struct ScheduleView: View {
         }
         .sheet(isPresented: $showAddSheet) {
             AddScheduleView() {
+                Task {
+                    await calendarVM.fetchData()
+                }
+            }
+        }
+        .sheet(item: $selectedSchedule) { schedule in
+            EditScheduleView(scheduleId: schedule.scheduleId) {
                 Task {
                     await calendarVM.fetchData()
                 }
