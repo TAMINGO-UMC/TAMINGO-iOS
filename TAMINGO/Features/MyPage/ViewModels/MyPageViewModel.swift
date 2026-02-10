@@ -32,17 +32,24 @@ enum FavoritePlaceMock {
 
 @Observable
 final class MyPageViewModel {
-
+    
     // MARK: - Stored Domain Models (조회 대상)
     var activityTime: ActivityTime
-    var notificationSetting: NotificationSetting
+    var notificationSetting: NotificationSettingResult
     var favoritePlaces : [FavoritePlace]
     var errorLogSetting : ErrorLogSetting
     
     // MARK: - Init (Mock 기준)
     init(
         activityTime: ActivityTime = ActivityTimeMock.weekdayDefault,
-        notificationSetting: NotificationSetting = NotificationSettingMock.allDisabled,
+        notificationSetting: NotificationSettingResult = .init(
+            departureAlertEnabled: false,
+            departureLeadMinutes: 0,
+            latenessRiskAlertEnabled: false,
+            realtimeTransitEnabled: false,
+            todoProposalEnabled: false,
+            locationMoveCheckEnabled: false
+        ),
         favoritePlaces: [FavoritePlace] = FavoritePlaceMock.default,
         errorLogSetting: ErrorLogSetting = ErrorLogSettingMock.enabled
     ) {
@@ -69,7 +76,7 @@ final class MyPageViewModel {
     }
     // 알림 상태 텍스트
     var notificationStatusText: String {
-        notificationSetting.departAlertEnabled ? "출발 알림 켜짐" : "출발 알림 꺼짐"
+        notificationSetting.departureAlertEnabled ? "출발 알림 켜짐" : "출발 알림 꺼짐"
     }
     
     // 오차 로그 수집

@@ -12,21 +12,22 @@ struct MyPageView: View {
     @State private var vm: MyPageViewModel = MyPageViewModel()
     
     var body: some View {
-        ScrollView{
-            VStack(alignment:.leading){
-                Text("마이페이지")
-                    .font(.semiBold18)
-                profile
-                WeeklyReportSection(metrics: weeklyMetricMocks)
-                CategorySection()
-                SyncSection()
-                PlaceTimeSection(vm:vm)
-                NotificationSection(vm:vm)
-                AppInfoSection()
+        NavigationStack {
+            ScrollView{
+                VStack(alignment:.leading){
+                    Text("마이페이지")
+                        .font(.semiBold18)
+                    profile
+                    WeeklyReportSection(metrics: weeklyMetricMocks)
+                    CategorySection()
+                    SyncSection()
+                    PlaceTimeSection(vm:vm)
+                    NotificationSection(vm:vm)
+                    AppInfoSection()
+                }
+                .padding(.horizontal, 30)
             }
-            .padding(.horizontal, 30)
         }
-        .scrollIndicators(.hidden)
     }
     
     var profile: some View {
@@ -199,18 +200,25 @@ struct NotificationSection: View {
     let vm: MyPageViewModel
     var body: some View {
         SectionContainerView(title: "알림 & 데이터"){
-            VStack(spacing: 0) {
+            NavigationLink {
+                NotificationView()
+                    .navigationBarBackButtonHidden(true)
+            } label: {
                 CategorySettingRowView(
                     title: "알림 설정",
                     sub: vm.notificationStatusText, textColor: .mainMint
                 ) {
                     print("알림 설정 이동")
                 }
+                .disabled(true)
             }
             
             Divider()
             
-            VStack(spacing: 0) {
+            NavigationLink {
+                PersonalizationView()
+                    .navigationBarBackButtonHidden(true)
+            } label: {
                 CategorySettingRowView(
                     title: "개인화 학습 데이터",
                     sub: vm.errorLogSettingText,
@@ -218,16 +226,19 @@ struct NotificationSection: View {
                 ) {
                     print("개인화 학습 데이터 이동")
                 }
+                .disabled(true)
             }
-        
         }
     }
 }
 
 struct AppInfoSection: View {
     var body: some View {
-        SectionContainerView(title: "앱 정보"){
-            VStack(spacing: 0) {
+        NavigationLink {
+            SettingsView()
+                .navigationBarBackButtonHidden(true)
+        } label: {
+            SectionContainerView(title: "앱 정보"){
                 CategorySettingRowView(
                     title: "설정",
                     sub: "앱 설정 및 정보",
@@ -235,7 +246,9 @@ struct AppInfoSection: View {
                 ) {
                     print("설정 이동")
                 }
+                .disabled(true)
             }
+            .padding(.bottom, 80)
         }
     }
 }
