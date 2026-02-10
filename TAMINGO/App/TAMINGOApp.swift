@@ -9,6 +9,7 @@ import SwiftUI
 
 @main
 struct TAMINGOApp: App {
+    //TODO: - 로그아웃 이후 토큰이 없는 경우 LoginView로 Navigation
     @State private var signupProgressStore = SignupProgressStore()
     @State private var signupSessionStore = SignupSessionStore()
     
