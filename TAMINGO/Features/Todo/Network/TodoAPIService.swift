@@ -3,11 +3,12 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 2/8/26.
-//  Updated: Test Mode (Stub) 적용 - deleteTodo 추가
+//  Updated: TokenInterceptor 연결 및 Alamofire Session 적용
 //
 
 import Foundation
 import Moya
+import Alamofire // ✅ Session 사용을 위해 추가
 
 class TodoAPIService {
     static let shared = TodoAPIService()
@@ -18,12 +19,23 @@ class TodoAPIService {
     private init() {
         let logger = NetworkLoggerPlugin(configuration: .init(logOptions: [.verbose]))
         
-        // MARK: - ⚠️ 테스트 모드 (Stub 활성화)
+        // ✅ Interceptor를 포함한 Session 생성
+        // TokenInterceptor가 요청 전 토큰 주입(adapt) 및 401 에러 시 갱신(retry)을 담당합니다.
+        let session = Session(interceptor: TokenInterceptor())
+        
+        // MARK: - ✅ 실제 서버 연결 (Stub 비활성화)
+        // 생성한 session을 Provider에 주입합니다.
         self.provider = MoyaProvider<TodoTarget>(
-            stubClosure: MoyaProvider.immediatelyStub,
+            session: session,
             plugins: [logger]
         )
-        // self.provider = MoyaProvider<TodoTarget>(plugins: [logger])
+        
+        // MARK: - ⚠️ 테스트 모드 (Stub 활성화) - 테스트 시에만 사용
+        // self.provider = MoyaProvider<TodoTarget>(
+        //     stubClosure: MoyaProvider.immediatelyStub,
+        //     session: session, // Stub 모드에서도 인터셉터 동작을 테스트하려면 session 주입 필요
+        //     plugins: [logger]
+        // )
     }
     
     // MARK: - 1. 내장소 가져오기
@@ -39,9 +51,9 @@ class TodoAPIService {
     }
     
     // MARK: - 3. 할 일 수정
-    func updateTodo(id: Int, body: TodoUpdateRequestDTO) async throws {
+    func updateTodo(id: Int, body: TodoUpdateRequestDTO) async throws -> TodoUpdateResponseDTO {
         let response = try await provider.requestAsync(.updateTodo(id: id, body: body))
-        _ = try decodeOrThrow(response, as: String.self)
+        return try decodeOrThrow(response, as: TodoUpdateResponseDTO.self)
     }
     
     // MARK: - 4. AI 추론
@@ -50,7 +62,7 @@ class TodoAPIService {
         return try decodeOrThrow(response, as: TodoAIInferenceResponseDTO.self)
     }
     
-    // MARK: - 5. 장소 수정 시 일정 추천 (NEW)
+    // MARK: - 5. 장소 수정 시 일정 추천
     func recommendSchedules(body: RecommendSchedulesRequestDTO) async throws -> RecommendSchedulesResponseDTO {
         let response = try await provider.requestAsync(.recommendSchedules(body: body))
         return try decodeOrThrow(response, as: RecommendSchedulesResponseDTO.self)
@@ -100,6 +112,7 @@ class TodoAPIService {
             print("[TodoAPIService] 서버 에러 응답 Body: \(errorBody)")
             
             if let errorResponse = try? decoder.decode(APIErrorResponseDTO.self, from: response.data) {
+                // Interceptor가 재시도(Retry)를 했음에도 실패하면 이쪽으로 오게 됩니다.
                 throw APIError.server(status: errorResponse.status, message: errorResponse.message)
             } else {
                 throw APIError.server(status: response.statusCode, message: "서버 오류: \(errorBody)")

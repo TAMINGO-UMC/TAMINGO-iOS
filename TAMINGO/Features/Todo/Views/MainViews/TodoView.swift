@@ -3,20 +3,19 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 2/8/26.
-//  Updated: 입력창/캘린더 날짜 분리
+//  Updated: 2/9/26 - TodoWeeklyCalendarView 사용 (마커 지원)
 //
 
 import SwiftUI
 
 struct ToDoView: View {
     @State private var viewModel = TodoViewModel()
-    @State private var calendarViewModel = CalendarViewModel()
+    @State private var weeklyCalendarViewModel = TodoWeeklyCalendarViewModel()
     
     @State private var showingCalendar = false
     @State private var isWeeklyCalendarExpanded = false
     
     // 입력창 캘린더용 (Optional Date 바인딩을 위한 중간 매개체)
-    // 보여줄때는 inputDate ?? Date(), 선택하면 inputDate 업데이트
     var inputBoxDateBinding: Binding<Date> {
         Binding(
             get: { viewModel.inputDate ?? Date() },
@@ -27,9 +26,9 @@ struct ToDoView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                // Weekly Calendar (조회용 날짜)
-                WeeklyCalendarView(
-                    calendarViewModel: calendarViewModel,
+                // ✅ Todo 전용 Weekly Calendar (마커 지원)
+                TodoWeeklyCalendarView(
+                    viewModel: weeklyCalendarViewModel,
                     isExpanded: $isWeeklyCalendarExpanded,
                     onDateSelected: { selectedDate in
                         viewModel.selectedDate = selectedDate
@@ -73,23 +72,62 @@ struct ToDoView: View {
         }
         .task {
             await viewModel.loadTodos(for: Date())
+            updateCalendarMarkers()
         }
+        // MARK: - ✅ [수정됨] 저장/삭제 핸들러 연결
         .sheet(isPresented: $viewModel.showingEditSheet) {
             if let editingItem = viewModel.editingItem,
-               let index = viewModel.todoItems.firstIndex(where: { $0.localId == editingItem.localId }) {
+               let index = viewModel.todoItems.firstIndex(where: { $0.id == editingItem.id }) {
+                
                 TodoEditSheet(
                     isPresented: $viewModel.showingEditSheet,
-                    item: $viewModel.todoItems[index]
+                    item: $viewModel.todoItems[index],
+                    // 1. 저장 버튼 클릭 시 -> ViewModel 업데이트 함수 호출 (서버 통신)
+                    onSave: { updatedItem in
+                        viewModel.updateItem(updatedItem)
+                        
+                        // ✅ 저장 후 캘린더를 할 일의 날짜로 이동
+                        if let itemDate = updatedItem.date {
+                            viewModel.selectedDate = itemDate
+                            weeklyCalendarViewModel.selectDate = itemDate
+                        }
+                        
+                        // ✅ 마커 업데이트
+                        updateCalendarMarkers()
+                    },
+                    // 2. 삭제 버튼 클릭 시 -> ViewModel 삭제 함수 호출 (서버 통신)
+                    onDelete: { deletedItem in
+                        viewModel.deleteItem(deletedItem)
+                        updateCalendarMarkers()
+                    }
                 )
             }
         }
         .sheet(isPresented: $showingCalendar) {
-            // 입력창 달력 시트
-            CalendarSheetView(
-                calendarViewModel: CalendarViewModel(), // 별도 인스턴스
-                isPresented: $showingCalendar,
-                selectedDate: inputBoxDateBinding
+            WheelDatePickerSheet(
+                selectedDate: inputBoxDateBinding,
+                isPresented: $showingCalendar
             )
+        }
+        // ✅ showingDatePicker 시트 (WheelDatePicker)
+        .sheet(isPresented: $viewModel.showingDatePicker) {
+            WheelDatePickerSheet(
+                selectedDate: inputBoxDateBinding,
+                isPresented: $viewModel.showingDatePicker
+            )
+        }
+        .onChange(of: viewModel.todoItems) {
+            updateCalendarMarkers()
+        }
+    }
+    
+    // MARK: - 캘린더 마커 업데이트
+    private func updateCalendarMarkers() {
+        weeklyCalendarViewModel.clearAllMarkers()
+        
+        for item in viewModel.todoItems {
+            guard let date = item.date else { continue }
+            weeklyCalendarViewModel.addMarker(for: date, color: item.categoryColor)
         }
     }
     

@@ -3,6 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
+//  Updated: 2/9/26 - 저장/삭제 콜백 추가
 //
 
 import SwiftUI
@@ -12,11 +13,16 @@ struct BottomButtons: View {
     @Binding var item: TodoItem
     @Binding var isPresented: Bool
     
+    // ✅ 저장/삭제 콜백 추가
+    var onSave: ((TodoItem) -> Void)?
+    var onDelete: ((TodoItem) -> Void)?
+    
     var body: some View {
         VStack(spacing: 12) {
             // 할일 삭제 버튼
             Button(action: {
-                // 삭제 로직
+                // ✅ 삭제 콜백 호출
+                onDelete?(item)
                 isPresented = false
             }) {
                 HStack {
@@ -55,7 +61,12 @@ struct BottomButtons: View {
                 
                 // 저장 버튼
                 Button(action: {
+                    // ✅ 1. ViewModel → Item 반영
                     viewModel.saveChanges(to: &item)
+                    
+                    // ✅ 2. 저장 콜백 호출 (서버 업데이트)
+                    onSave?(item)
+                    
                     isPresented = false
                 }) {
                     Text("저장")

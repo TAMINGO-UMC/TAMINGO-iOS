@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 2/8/26.
-//  Updated: ID 불일치 문제 해결 (Stub 대응)
+//  Updated: 2/9/26 - categoryIdMap 확장 및 디버깅 로그 추가
 //
 
 import SwiftUI
@@ -18,7 +18,6 @@ class TodoViewModel {
     var selectedDate: Date = Date()
     
     // 2. 입력창용 날짜 (기본값 nil -> 미지정)
-    // 캘린더 날짜와 독립적으로 동작
     var inputDate: Date? = nil
     
     var showingDatePicker: Bool = false
@@ -27,9 +26,10 @@ class TodoViewModel {
     
     private let apiService = TodoAPIService.shared
     
-    private let categoryIdMap: [String: Int] = [
-        "일상": 1, "생활": 2, "업무": 3
-    ]
+    //  카테고리 이름 → Color 변환 (CategoryHelper 사용)
+    private func categoryColor(for categoryName: String) -> Color {
+        return CategoryHelper.color(for: categoryName)
+    }
     
     // MARK: - 할일 목록 조회
     func loadTodos(for date: Date) async {
@@ -74,17 +74,16 @@ class TodoViewModel {
         guard !newTodoTitle.isEmpty else { return }
         
         let category = aiResult?.category ?? "미지정"
-        let categoryColor = CategoryColor(rawValue: category) ?? .mint
-        let todoCategoryId = categoryIdMap[category] ?? 1
+        let color = categoryColor(for: category)
+        let todoCategoryId = CategoryHelper.id(for: category)  // ✅ CategoryHelper 사용
         
-        // inputDate 사용 (nil이면 미지정)
         var newItem = TodoItem(
             id: nil,
             title: newTodoTitle,
             category: category,
-            categoryColor: categoryColor,
+            categoryColor: color,
             isCompleted: false,
-            date: inputDate, // ✅ 입력창 날짜 사용
+            date: inputDate,
             placeName: aiResult?.placeName,
             address: aiResult?.address,
             latitude: aiResult?.latitude,
@@ -121,7 +120,6 @@ class TodoViewModel {
                     )
                     todoItems.append(newItem)
                     newTodoTitle = ""
-                    // 필요 시 inputDate = nil 초기화 가능
                 }
             } catch {
                 await MainActor.run { print("할 일 생성 실패: \(error.localizedDescription)") }
@@ -149,9 +147,8 @@ class TodoViewModel {
         }
     }
     
-    // MARK: - 할 일 편집 (ID 불일치 해결 로직 적용)
+    // MARK: - 할 일 편집
     func editItem(_ item: TodoItem) {
-        // 1. 아직 서버에 저장되지 않은(로컬) 아이템인 경우 바로 수정 모드 진입
         guard let itemId = item.id else {
             editingItem = item
             showingEditSheet = true
@@ -160,24 +157,16 @@ class TodoViewModel {
         
         Task {
             do {
-                // 2. 서버에서 최신 상세 정보 가져오기 (Stub 사용 시 ID 18 반환됨)
                 let detailDTO = try await apiService.getTodoDetail(id: itemId)
                 let fetchedItem = detailDTO.toTodoItem()
                 
                 await MainActor.run {
-                    // 3. 리스트에서 '수정 버튼을 누른 원본 아이템' 찾기 (localId 이용)
                     if let index = todoItems.firstIndex(where: { $0.localId == item.localId }) {
-                        
-                        // 4. [핵심] ID는 원본(리스트에 있는 것)을 유지하고, 내용만 서버 데이터로 업데이트
-                        // 이렇게 해야 View에서 ID로 매칭할 때 실패하지 않음
-                        
                         var targetItem = todoItems[index]
                         
-                        // 내용 덮어쓰기 (ID 제외한 var 프로퍼티들)
                         targetItem.title = fetchedItem.title
                         targetItem.category = fetchedItem.category
-                        targetItem.categoryColor = fetchedItem.categoryColor
-                        // targetItem.isCompleted = fetchedItem.isCompleted // 상세조회엔 완료여부가 없는 경우가 많음
+                        targetItem.categoryColor = fetchedItem.categoryColor  // ✅ 서버 색상 사용
                         targetItem.date = fetchedItem.date
                         
                         targetItem.placeName = fetchedItem.placeName
@@ -186,6 +175,8 @@ class TodoViewModel {
                         targetItem.longitude = fetchedItem.longitude
                         
                         targetItem.estimatedMinutes = fetchedItem.estimatedMinutes
+                        
+                        // ✅ relatedSchedules 및 linkedScheduleId 복원
                         targetItem.relatedSchedules = fetchedItem.relatedSchedules
                         targetItem.linkedScheduleId = fetchedItem.linkedScheduleId
                         
@@ -193,13 +184,16 @@ class TodoViewModel {
                         targetItem.routineType = fetchedItem.routineType
                         targetItem.routineEndDate = fetchedItem.routineEndDate
                         
-                        // 5. 리스트 업데이트 및 시트 활성화
+                        print("✅ editItem - 서버 데이터 복원 완료")
+                        print("  - date: \(targetItem.date?.toAPIDateString() ?? "nil")")
+                        print("  - linkedScheduleId: \(targetItem.linkedScheduleId ?? -1)")
+                        print("  - relatedSchedules 수: \(targetItem.relatedSchedules.count)")
+                        print("  - 선택된 스케줄 수: \(targetItem.relatedSchedules.filter { $0.isSelected }.count)")
+                        
                         todoItems[index] = targetItem
                         editingItem = targetItem
                         showingEditSheet = true
-                        
                     } else {
-                        // 만약 리스트에서 못 찾았다면(거의 없겠지만), 그냥 받아온거라도 띄움
                         editingItem = fetchedItem
                         showingEditSheet = true
                     }
@@ -207,7 +201,6 @@ class TodoViewModel {
             } catch {
                 await MainActor.run {
                     print("할 일 상세 조회 실패: \(error.localizedDescription)")
-                    // 에러나면 기존 정보로라도 띄움
                     editingItem = item
                     showingEditSheet = true
                 }
@@ -218,12 +211,10 @@ class TodoViewModel {
     // MARK: - 할 일 삭제
     func deleteItem(_ item: TodoItem) {
         guard let itemId = item.id else {
-            // 로컬 아이템은 바로 삭제
             todoItems.removeAll { $0.localId == item.localId }
             return
         }
         
-        // Optimistic Update
         if let index = todoItems.firstIndex(where: { $0.localId == item.localId }) {
             todoItems.remove(at: index)
         }
@@ -233,7 +224,6 @@ class TodoViewModel {
                 try await apiService.deleteTodo(id: itemId)
             } catch {
                 print("삭제 실패: \(error)")
-                // 실패 시 목록 다시 불러오기 (롤백)
                 await loadTodos(for: selectedDate)
             }
         }
@@ -241,25 +231,63 @@ class TodoViewModel {
     
     // MARK: - 할 일 업데이트
     func updateItem(_ item: TodoItem) {
-        guard let itemId = item.id,
-              let todoCategoryId = categoryIdMap[item.category] else {
+        // ✅ 디버깅 로그 추가
+        print("🔵 updateItem 호출됨")
+        print("  - item.id: \(item.id ?? -1)")
+        print("  - item.title: \(item.title)")
+        print("  - item.category: \(item.category)")
+        print("  - item.date: \(item.date?.toAPIDateString() ?? "nil (backlog)")")
+        print("  - linkedScheduleId: \(item.linkedScheduleId ?? -1)")
+        
+        guard let itemId = item.id else {
+            print("❌ item.id가 nil - 서버 업데이트 건너뜀")
             if let index = todoItems.firstIndex(where: { $0.localId == item.localId }) {
                 todoItems[index] = item
             }
             return
         }
         
+        // ✅ CategoryHelper 사용
+        let todoCategoryId = CategoryHelper.id(for: item.category)
+        print("✅ todoCategoryId: \(todoCategoryId)")
+        
+        // 로컬 업데이트 (임시)
         if let index = todoItems.firstIndex(where: { $0.localId == item.localId }) {
             todoItems[index] = item
+            print("✅ 로컬 todoItems 업데이트 완료 (index: \(index))")
         }
         
+        // 서버 업데이트
         Task {
             do {
                 let requestDTO = item.toUpdateRequestDTO(todoCategoryId: todoCategoryId)
-                _ = try await apiService.updateTodo(id: itemId, body: requestDTO)
-                await loadTodos(for: selectedDate)
+                print("🔵 PUT 요청 시작 - /api/todos/\(itemId)")
+                print("  - Request DTO: \(requestDTO)")
+                
+                let response = try await apiService.updateTodo(id: itemId, body: requestDTO)
+                
+                print("✅ PUT 요청 성공")
+                print("  - actualTargetDate: \(response.actualTargetDate ?? "nil")")
+                
+                // ✅ 서버가 반환한 실제 날짜로 동기화
+                await MainActor.run {
+                    if let index = todoItems.firstIndex(where: { $0.localId == item.localId }) {
+                        if let actualDateString = response.actualTargetDate,
+                           let actualDate = actualDateString.toDates() {
+                            todoItems[index].date = actualDate
+                            selectedDate = actualDate
+                            print("📅 날짜 동기화 완료: \(actualDateString)")
+                        }
+                    }
+                }
+                
+                // ✅ 동기화된 날짜로 목록 재조회
+                let targetDate = response.actualTargetDate?.toDates() ?? item.date ?? selectedDate
+                print("📅 목록 재조회 날짜: \(targetDate.toAPIDateString())")
+                
+                await loadTodos(for: targetDate)
             } catch {
-                print("할 일 업데이트 실패: \(error)")
+                print("❌ 할 일 업데이트 실패: \(error)")
             }
         }
     }

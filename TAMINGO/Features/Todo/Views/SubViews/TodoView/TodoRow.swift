@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
-//  Updated: 2/8/26 - 카테고리 색상 체크박스, 완료 시 스타일 제거
+//  Updated: 2/9/26 - 관련 스케줄 표시 추가
 //
 
 import SwiftUI
@@ -21,7 +21,7 @@ struct TodoRow: View {
                     if item.isCompleted {
                         // 완료 시: 카테고리 색상으로 채워진 박스 + 흰색 체크마크
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(item.categoryColor.color)
+                            .fill(item.categoryColor)
                             .frame(width: 20, height: 20)
                         
                         Image(systemName: "checkmark")
@@ -51,7 +51,8 @@ struct TodoRow: View {
                     .foregroundColor(.gray2)
             }
         }
-        .frame(width: 333, height: 41.03)
+        .frame(width: 333)
         .padding(.horizontal, 12)
+        .padding(.vertical, 8)
     }
 }

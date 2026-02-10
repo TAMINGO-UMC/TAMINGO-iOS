@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct AIInferenceResultView: View {
@@ -16,7 +15,7 @@ struct AIInferenceResultView: View {
                 Spacer()
             }
             
-            // 카테고리
+            // 카테고리 - CategoryTag 사용
             HStack {
                 Text("카테고리")
                     .font(.regular12)
@@ -24,9 +23,10 @@ struct AIInferenceResultView: View {
                 
                 Spacer()
                 
-                Text(result.category)
-                    .font(.regular10)
-                    .foregroundColor(.black)
+                CategoryTag(
+                    category: result.category,
+                    categoryColor: CategoryHelper.color(for: result.category)
+                )
             }
             
             // 추론 장소

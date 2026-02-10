@@ -28,9 +28,8 @@ struct LocationSection: View {
             
             if !viewModel.isLocationExpanded {
                 collapsedView
-            }
-            
-            if viewModel.isLocationExpanded {
+            }else
+            {
                 expandedView
             }
         }
@@ -62,8 +61,12 @@ struct LocationSection: View {
             Spacer()
             
             EditButton(action: {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    viewModel.isLocationExpanded = true
+                // ✅ 확장 시 내 장소 조회
+                Task {
+                    await viewModel.loadMyPlaces()
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        viewModel.isLocationExpanded = true
+                    }
                 }
             })
             
@@ -78,8 +81,12 @@ struct LocationSection: View {
             }
         }
         .onTapGesture {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                viewModel.isLocationExpanded = true
+            // ✅ 탭 시에도 내 장소 조회
+            Task {
+                await viewModel.loadMyPlaces()
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    viewModel.isLocationExpanded = true
+                }
             }
         }
     }

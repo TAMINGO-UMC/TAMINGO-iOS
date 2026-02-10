@@ -38,6 +38,8 @@ struct RelatedScheduleRow: View {
                     .foregroundColor(.gray2) // 가이드: "팀플 미팅".color(.gray2)
                     .lineLimit(1)
                 
+                Spacer()
+                
                 // MARK: - Location Tag (Radius 10)
                 if !schedule.location.isEmpty {
                     Text(schedule.location)
@@ -52,7 +54,7 @@ struct RelatedScheduleRow: View {
                         )
                 }
                 
-                Spacer()
+            
             }
             .contentShape(Rectangle()) // 터치 영역 확장
         }

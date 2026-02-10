@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
-//  Updated: CalendarSheetView 적용 및 날짜 동기화
+//  Updated: 2/9/26 - 저장 시 서버 업데이트 호출
 //
 
 import SwiftUI
@@ -12,19 +12,24 @@ struct TodoEditSheet: View {
     @Binding var isPresented: Bool
     @Binding var item: TodoItem
     @State private var viewModel: TodoEditViewModel
-    @State private var calendarViewModel = CalendarViewModel()
-    @State private var showingCalendar = false
     
-    // 캘린더 시트용 임시 날짜 상태
-    @State private var calendarSelectedDate: Date = Date()
+    // TodoViewModel 전달 추가
+    var onSave: ((TodoItem) -> Void)?
+    var onDelete: ((TodoItem) -> Void)?
     
-    init(isPresented: Binding<Bool>, item: Binding<TodoItem>) {
+    init(
+        isPresented: Binding<Bool>,
+        item: Binding<TodoItem>,
+        onSave: ((TodoItem) -> Void)? = nil,
+        onDelete: ((TodoItem) -> Void)? = nil
+    ) {
         self._isPresented = isPresented
         self._item = item
+        self.onSave = onSave
+        self.onDelete = onDelete
+        
         let viewModel = TodoEditViewModel(item: item.wrappedValue)
         self._viewModel = State(initialValue: viewModel)
-        // ViewModel의 selectedDate를 사용하여 초기화 (이미 item.date로 설정됨)
-        self._calendarSelectedDate = State(initialValue: viewModel.selectedDate ?? Date())
     }
     
     var body: some View {
@@ -33,26 +38,18 @@ struct TodoEditSheet: View {
                 LazyVGrid(columns: [GridItem(.flexible())], spacing: 20) {
                     Header(isPresented: $isPresented)
                     
-                    // 제목 변경 시 ViewModel 호출
                     TitleSection(title: Binding(
                         get: { viewModel.title },
                         set: { viewModel.onTitleChanged($0) }
                     ))
                     
-                    DateSection(
-                        formattedDate: viewModel.formattedDate,
-                        isUndated: viewModel.selectedDate == nil,
-                        showingCalendar: $showingCalendar
-                    )
+                    DateSection(viewModel: $viewModel)
                     
                     LocationSection(viewModel: $viewModel)
                     
                     DurationSection(viewModel: $viewModel)
                     
-                    CategorySections(
-                        isCategoryAIGenerated: viewModel.isCategoryAIGenerated,
-                        isInferring: viewModel.isInferringCategory
-                    )
+                    CategorySections(viewModel: $viewModel)
                     
                     RelateSchedule(viewModel: $viewModel)
                     
@@ -61,7 +58,15 @@ struct TodoEditSheet: View {
                     BottomButtons(
                         viewModel: $viewModel,
                         item: $item,
-                        isPresented: $isPresented
+                        isPresented: $isPresented,
+                        onSave: { updatedItem in
+                            // ✅ 저장 시 서버 업데이트 호출
+                            onSave?(updatedItem)
+                        },
+                        onDelete: { deletedItem in
+                            // ✅ 삭제 시 서버 삭제 호출
+                            onDelete?(deletedItem)
+                        }
                     )
                 }
                 .padding(.horizontal, 21)
@@ -69,21 +74,6 @@ struct TodoEditSheet: View {
             }
             .task {
                 await viewModel.loadMyPlaces()
-            }
-            .sheet(isPresented: $showingCalendar) {
-                CalendarSheetView(
-                    calendarViewModel: calendarViewModel,
-                    isPresented: $showingCalendar,
-                    selectedDate: $calendarSelectedDate,
-                    onConfirm: {
-                        // 확인 버튼을 눌렀을 때만 ViewModel 날짜 업데이트
-                        viewModel.selectedDate = calendarSelectedDate
-                    }
-                )
-                .onAppear {
-                    // 시트가 열릴 때 현재 설정된 날짜로 초기화 (취소 후 재진입 시 동기화)
-                    calendarSelectedDate = viewModel.selectedDate ?? Date()
-                }
             }
         }
     }

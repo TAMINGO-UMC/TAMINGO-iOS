@@ -151,16 +151,16 @@ class TokenInterceptor: RequestInterceptor {
         Task {
             do {
                 let newAccessToken = try await refreshAccessToken()
-                TokenManager.shared.saveAccessToken(newAccessToken)
+                await TokenManager.shared.saveAccessToken(newAccessToken)
                 print("토큰 갱신 성공, 재시도 수행")
                 completion(.retry)
             } catch {
                 print("토큰 갱신 실패: \(error)")
                 // Refresh Token도 만료된 경우 모든 토큰 삭제 후 로그인 화면으로
-                TokenManager.shared.clearAll()
+                await TokenManager.shared.clearAll()
                 
                 // 로그인 화면으로 이동하는 Notification 발생
-                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                await NotificationCenter.default.post(name: .userDidLogout, object: nil)
                 
                 completion(.doNotRetryWithError(error))
             }
@@ -169,12 +169,12 @@ class TokenInterceptor: RequestInterceptor {
     
     // MARK: - Private: Refresh Token API 호출
     private func refreshAccessToken() async throws -> String {
-        guard let refreshToken = TokenManager.shared.getRefreshToken() else {
+        guard let refreshToken = await TokenManager.shared.getRefreshToken() else {
             throw APIError.transport("Refresh Token이 없습니다.")
         }
         
         // [수정됨] Force Unwrap 제거 및 URL 생성 안전하게 변경
-        guard let url = URL(string: "\(Config.baseURL)/api/auth/refresh") else {
+        guard let url = URL(string: "\(await Config.baseURL)/api/auth/refresh") else {
             throw APIError.transport("잘못된 URL입니다.")
         }
         
@@ -193,7 +193,7 @@ class TokenInterceptor: RequestInterceptor {
         let decoder = JSONDecoder()
         let baseResponse = try decoder.decode(BaseResponse<RefreshTokenResponseDTO>.self, from: data)
         
-        guard let accessToken = baseResponse.result?.accessToken else {
+        guard let accessToken = await baseResponse.result?.accessToken else {
             throw APIError.transport("새로운 Access Token을 받지 못했습니다.")
         }
         

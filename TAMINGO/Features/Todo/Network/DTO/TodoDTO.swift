@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 2/5/26.
-//  Updated: 2/8/26 - recommend-schedules DTO 추가
+//  Updated: linkedSchedule 타입 불일치 수정 (Array -> Single Object)
 //
 
 import Foundation
@@ -57,12 +57,19 @@ struct TodoUpdateRequestDTO: Codable {
     let linkedScheduleId: Int?
 }
 
+// MARK: - 3. 할 일 수정 Response
+struct TodoUpdateResponseDTO: Codable {
+    let todoId: Int
+    let actualTargetDate: String?  // ✅ 서버가 강제 변환한 실제 날짜
+}
+
+
 // MARK: - 4. AI 추론 Response
 struct TodoAIInferenceResponseDTO: Codable {
     let todoInfo: TodoInfoDTO
     
     struct TodoInfoDTO: Codable {
-        let category: String
+        let category: String?
         let placeName: String?
         let address: String?
         let latitude: Double?
@@ -71,7 +78,7 @@ struct TodoAIInferenceResponseDTO: Codable {
     }
 }
 
-// MARK: - 5. 장소 수정 시 일정 추천 Request (NEW)
+// MARK: - 5. 장소 수정 시 일정 추천 Request
 struct RecommendSchedulesRequestDTO: Codable {
     let placeName: String
     let address: String
@@ -79,10 +86,10 @@ struct RecommendSchedulesRequestDTO: Codable {
     let longitude: Double
 }
 
-// MARK: - 5. 장소 수정 시 일정 추천 Response (NEW)
+// MARK: - 5. 장소 수정 시 일정 추천 Response
 struct RecommendSchedulesResponseDTO: Codable {
-    let nearbySchedules: [ScheduleItemDTO]
-    let candidateSchedules: [ScheduleItemDTO]
+    let nearbyTodos: [ScheduleItemDTO]
+    let candidateTodos: [ScheduleItemDTO]
     let isFavoriteRecommendation: Bool
     
     struct ScheduleItemDTO: Codable {
@@ -117,9 +124,13 @@ struct TodoDetailResponseDTO: Codable {
     let longitude: Double?
     let duration: Int
     let category: String
+    let categoryColor: String?  // ✅ 서버가 제공할 수도 있는 색상 필드 추가
     let repeatType: String
     let repeatEndDate: String?
-    let linkedSchedule: [LinkedScheduleDTO]
+    
+    // 🚨 수정됨: 배열([LinkedScheduleDTO]?)이 아니라 단일 객체(LinkedScheduleDTO?)로 변경
+    let linkedSchedule: LinkedScheduleDTO?
+    
     let candidateSchedules: [CandidateScheduleDTO]
     let isFavoriteRecommendation: Bool
     
@@ -145,7 +156,6 @@ struct TodoCompletionRequestDTO: Codable {
 
 extension MyPlacesDTO {
     func toTodoMyLocation() -> TodoMyLocation {
-        // ID 기반 색상 부여
         let color: Color = {
             switch id % 5 {
             case 0: return .blue
@@ -170,7 +180,7 @@ extension MyPlacesDTO {
 extension TodoAIInferenceResponseDTO.TodoInfoDTO {
     func toAIInferenceResult() -> AIInferenceResult {
         AIInferenceResult(
-            category: category,
+            category: category ?? "미지정",
             placeName: placeName,
             address: address,
             latitude: latitude,
@@ -193,13 +203,14 @@ extension RecommendSchedulesResponseDTO.ScheduleItemDTO {
 
 extension TodoListResponseDTO.TodoItemDTO {
     func toTodoItem() -> TodoItem {
-        let categoryColorEnum = CategoryColor(rawValue: categoryColor) ?? .mint
+        // ✅ 서버가 제공하는 categoryColor를 최우선으로 사용
+        let color = Color(hex: categoryColor)
         
         return TodoItem(
             id: todoId,
             title: title,
             category: categoryName,
-            categoryColor: categoryColorEnum,
+            categoryColor: color,  // ✅ 서버 Hex 색상 사용
             isCompleted: isChecked,
             date: nil
         )
@@ -208,40 +219,53 @@ extension TodoListResponseDTO.TodoItemDTO {
 
 extension TodoDetailResponseDTO {
     func toTodoItem() -> TodoItem {
-        let linkedSchedules = linkedSchedule.map { schedule in
-            TodoRelatedScheduleItem(
-                title: schedule.title,
-                location: schedule.placeName ?? "",
-                isSelected: true,
-                scheduleId: schedule.scheduleId
+        // ✅ linkedSchedule을 relatedSchedules 배열로 변환 (isSelected = true)
+        var linkedSchedules: [TodoRelatedScheduleItem] = []
+        
+        if let schedule = linkedSchedule {
+            linkedSchedules.append(
+                TodoRelatedScheduleItem(
+                    title: schedule.title,
+                    location: schedule.placeName ?? "",
+                    isSelected: true,  // ✅ 연결된 스케줄은 선택된 상태
+                    scheduleId: schedule.scheduleId
+                )
             )
         }
         
+        // ✅ candidateSchedules를 미선택 상태로 추가
         let candidateScheduleItems = candidateSchedules.map { schedule in
             TodoRelatedScheduleItem(
                 title: schedule.title,
                 location: schedule.placeName ?? "",
-                isSelected: false,
+                isSelected: false,  // ✅ 후보 스케줄은 미선택 상태
                 scheduleId: schedule.scheduleId
             )
         }
         
+        // ✅ 연결된 스케줄 + 후보 스케줄 합치기
         let allSchedules = linkedSchedules + candidateScheduleItems
         
-        let categoryColorEnum: CategoryColor = {
-            switch category {
-            case "일상": return .mint
-            case "생활": return .lightMint
-            case "업무": return .peach
-            default: return .mint
-            }
-        }()
+        print("🔄 toTodoItem 변환")
+        print("  - linkedSchedule: \(linkedSchedule?.scheduleId ?? -1)")
+        print("  - 전체 스케줄 수: \(allSchedules.count)")
+        print("  - 선택된 스케줄 수: \(allSchedules.filter { $0.isSelected }.count)")
+        
+        // ✅ 서버 색상이 있으면 사용, 없으면 클라이언트 매핑 사용
+        let color: Color
+        if let serverColor = categoryColor {
+            color = Color(hex: serverColor)
+            print("  - 서버 색상 사용: \(serverColor)")
+        } else {
+            color = CategoryHelper.color(for: category)
+            print("  - 클라이언트 매핑 색상 사용")
+        }
         
         return TodoItem(
             id: todoId,
             title: title,
             category: category,
-            categoryColor: categoryColorEnum,
+            categoryColor: color,
             isCompleted: false,
             date: targetDate?.toDates(),
             placeName: placeName,
@@ -250,7 +274,7 @@ extension TodoDetailResponseDTO {
             longitude: longitude,
             estimatedMinutes: duration,
             relatedSchedules: allSchedules,
-            linkedScheduleId: linkedSchedule.first?.scheduleId,
+            linkedScheduleId: linkedSchedule?.scheduleId,
             isRoutineEnabled: repeatType != "NONE",
             routineType: TodoRoutineType.from(apiString: repeatType),
             routineEndDate: repeatEndDate?.toDates(),
@@ -288,9 +312,16 @@ extension TodoItem {
             repeatType = "NONE"
         }
         
+        // ✅ 날짜 변환 로그 추가
+        let targetDateString = date?.toAPIDateString()
+        print("📤 toUpdateRequestDTO 생성")
+        print("  - item.date: \(date?.toAPIDateString() ?? "nil")")
+        print("  - targetDate (전송값): \(targetDateString ?? "nil")")
+        print("  - linkedScheduleId: \(linkedScheduleId ?? -1)")
+        
         return TodoUpdateRequestDTO(
             title: title,
-            targetDate: date?.toAPIDateString(),
+            targetDate: targetDateString,
             placeName: placeName,
             address: address,
             latitude: latitude,
@@ -329,12 +360,12 @@ extension String {
 // MARK: - Todo 전용 모델
 
 struct TodoMyLocation: Identifiable {
-    let id: Int  // 서버 ID 추가
+    let id: Int
     let name: String
     let address: String
     let latitude: Double
     let longitude: Double
-    let color: Color  // ID 기반 색상
+    let color: Color
 }
 
 struct TodoRelatedScheduleItem: Identifiable {

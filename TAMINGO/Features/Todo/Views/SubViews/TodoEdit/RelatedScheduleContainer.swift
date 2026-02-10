@@ -30,7 +30,7 @@ struct RelatedScheduleContainer: View {
                     Spacer()
                     
                     // 하단 "일정 전체보기" 버튼
-                    commonButton(title: "일정 전체보기", icon: "chevron.down") {
+                    commonButton(title: "일정 전체보기", icon: "chevron.down"){
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             isExpanded = true
                         }
@@ -54,7 +54,7 @@ struct RelatedScheduleContainer: View {
                     // 높이 제한 없이 내용만큼 늘어남
                     
                     // "접기" 버튼 (디자인 통일)
-                    commonButton(title: "접기", icon: "chevron.up") {
+                    commonButton(title: "접기", icon: "chevron.up"){
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             isExpanded = false
                         }

@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 2/8/26.
-//  Updated: AI 로딩 상태, 제목 변경 감지
+//  Updated: 2/9/26 - 날짜 미지정 처리 및 AI category null 처리
 //
 
 import SwiftUI
@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 class TodoEditViewModel {
     var title: String
-    var selectedDate: Date?
+    var selectedDate: Date? // ✅ 날짜 미지정 시 nil 유지
     var placeName: String
     var address: String?
     var latitude: Double?
@@ -29,7 +29,8 @@ class TodoEditViewModel {
     var isCategoryAIGenerated: Bool
     var isScheduleAIGenerated: Bool
     
-    // ✅ 로딩 상태
+    var originalAISource: TodoItem.AISourceInfo?
+    
     var isInferringCategory: Bool = false
     var isRecommendingSchedules: Bool = false
     
@@ -38,6 +39,7 @@ class TodoEditViewModel {
     var locationSearchText: String = ""
     var showingDurationPicker: Bool = false
     var isScheduleExpanded: Bool = false
+    var isCategoryExpanded: Bool = false
     
     var selectedHour: Int = 1
     var selectedMinute: Int = 0
@@ -45,10 +47,27 @@ class TodoEditViewModel {
     
     var myLocations: [TodoMyLocation] = []
     var isFavoriteRecommendation: Bool = false
+    var availableCategories: [String] = []
+    
+    var aiInferenceDisplay: AIInferenceResult? {
+        guard !isCategoryAIGenerated || !isLocationAIGenerated || !isDurationAIGenerated else {
+            return nil
+        }
+        
+        return AIInferenceResult(
+            category: category,
+            placeName: placeName.isEmpty ? nil : placeName,
+            address: address,
+            latitude: latitude,
+            longitude: longitude,
+            duration: parsedTotalMinutes
+        )
+    }
     
     private let apiService = TodoAPIService.shared
-    private var aiInferenceTask: Task<Void, Never>? // 디바운스용
+    private var aiInferenceTask: Task<Void, Never>?
     
+    // ✅ 날짜 미지정 시 플레이스홀더 텍스트 반환
     var formattedDate: String {
         guard let date = selectedDate else {
             return "- - - -, - -, - -"
@@ -61,7 +80,10 @@ class TodoEditViewModel {
     
     init(item: TodoItem) {
         self.title = item.title
+        
+        // ✅ [중요] item.date가 nil이면 selectedDate도 nil로 초기화 (자동으로 오늘 날짜 설정 금지)
         self.selectedDate = item.date
+        
         self.placeName = item.placeName ?? ""
         self.address = item.address
         self.latitude = item.latitude
@@ -75,6 +97,7 @@ class TodoEditViewModel {
         self.isCategoryAIGenerated = item.category.isEmpty
         
         self.relatedSchedules = item.relatedSchedules
+        self.originalAISource = item.aiSource
         
         self.isRoutineEnabled = item.isRoutineEnabled
         self.selectedRoutine = item.routineType
@@ -94,14 +117,16 @@ class TodoEditViewModel {
         self.durationDate = Calendar.current.date(from: components) ?? Date()
     }
     
-    // MARK: - 제목 변경 시 AI 추론 (Debounce)
+    // MARK: - 제목 변경 시 AI 추론
     func onTitleChanged(_ newTitle: String) {
+        guard newTitle != self.title else { return }
+        
         self.title = newTitle
         guard !newTitle.isEmpty else { return }
         
         aiInferenceTask?.cancel()
         aiInferenceTask = Task {
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5s
+            try? await Task.sleep(nanoseconds: 500_000_000)
             if Task.isCancelled { return }
             
             await performAIInference(title: newTitle)
@@ -113,9 +138,12 @@ class TodoEditViewModel {
         isInferringCategory = true
         do {
             let response = try await apiService.aiInference(title: title)
-            self.category = response.todoInfo.category
-            // 추론 성공 시 안내 텍스트 제거
-            self.isCategoryAIGenerated = false
+            let result = response.todoInfo.toAIInferenceResult()
+            self.category = result.category
+            
+            if result.category != "미지정" {
+                self.isCategoryAIGenerated = false
+            }
         } catch {
             print("AI 추론 실패: \(error)")
         }
@@ -140,7 +168,7 @@ class TodoEditViewModel {
         self.longitude = longitude
         self.isLocationAIGenerated = false
         
-        self.isRecommendingSchedules = true // 로딩 시작
+        self.isRecommendingSchedules = true
         
         let requestDTO = RecommendSchedulesRequestDTO(
             placeName: name, address: address, latitude: latitude, longitude: longitude
@@ -149,18 +177,17 @@ class TodoEditViewModel {
         do {
             let response = try await apiService.recommendSchedules(body: requestDTO)
             let existingSelected = self.relatedSchedules.filter { $0.isSelected }
-            let nearbySchedules = response.nearbySchedules.map { $0.toTodoRelatedScheduleItem() }
-            let candidateSchedules = response.candidateSchedules.map { $0.toTodoRelatedScheduleItem() }
+            let nearbySchedules = response.nearbyTodos.map { $0.toTodoRelatedScheduleItem() }
+            let candidateSchedules = response.candidateTodos.map { $0.toTodoRelatedScheduleItem() }
             
             self.relatedSchedules = existingSelected + nearbySchedules + candidateSchedules
             self.isFavoriteRecommendation = response.isFavoriteRecommendation
             
-            // 추론 완료 시 안내 텍스트 제거
             self.isScheduleAIGenerated = false
         } catch {
             print("일정 추천 조회 실패: \(error)")
         }
-        self.isRecommendingSchedules = false // 로딩 종료
+        self.isRecommendingSchedules = false
     }
     
     func parseDuration() {
@@ -176,6 +203,12 @@ class TodoEditViewModel {
         }
     }
     
+    func loadCategories() async {
+        await MainActor.run {
+            self.availableCategories = ["일상", "생활", "업무", "먹기"]
+        }
+    }
+    
     func saveChanges(to item: inout TodoItem) {
         item.title = title
         item.date = selectedDate
@@ -185,8 +218,11 @@ class TodoEditViewModel {
         item.longitude = longitude
         item.category = category
         item.estimatedMinutes = parsedTotalMinutes
-        item.relatedSchedules = relatedSchedules.filter { $0.isSelected }
-        item.linkedScheduleId = relatedSchedules.first(where: { $0.isSelected })?.scheduleId
+        
+        let selectedSchedules = relatedSchedules.filter { $0.isSelected }
+        item.relatedSchedules = selectedSchedules
+        item.linkedScheduleId = selectedSchedules.first?.scheduleId
+        
         item.isRoutineEnabled = isRoutineEnabled
         item.routineType = selectedRoutine
         item.routineEndDate = hasEndDate ? routineEndDate : nil

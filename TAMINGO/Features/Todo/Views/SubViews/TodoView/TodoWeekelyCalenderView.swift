@@ -1,17 +1,28 @@
 //
-//  WeeklyCalendarView.swift
+//  TodoWeeklyCalendarView.swift
 //  TAMINGO
 //
-//  Created by 엄지용 on 2/2/26.
+//  Created by Claude on 2/9/26.
+//  Todo 전용 주간 캘린더 (마커 표시 지원)
 //
 
 import SwiftUI
 
-struct WeeklyCalendarView: View {
-    @Bindable var calendarViewModel: CalendarViewModel
+// MARK: - ScrollOffsetPreferenceKey
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+// MARK: - TodoWeeklyCalendarView
+struct TodoWeeklyCalendarView: View {
+    @Bindable var viewModel: TodoWeeklyCalendarViewModel
     @Binding var isExpanded: Bool
     var onDateSelected: ((Date) -> Void)?
-
+    
     @State private var baseDate: Date = Date()
     @State private var currentWeekOffset: Int = 0
     
@@ -67,8 +78,8 @@ struct WeeklyCalendarView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 LazyHStack(spacing: 0) {
                                     ForEach(-52...52, id: \.self) { weekOffset in
-                                        WeekDatesRow(
-                                            calendarViewModel: calendarViewModel,
+                                        TodoWeekDatesRow(
+                                            viewModel: viewModel,
                                             baseDate: baseDate,
                                             weekOffset: weekOffset,
                                             onDateSelected: { date in
@@ -93,7 +104,6 @@ struct WeeklyCalendarView: View {
                             .scrollTargetBehavior(.paging)
                             .padding(.top, 32)
                             .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
-                                // 페이지 단위(333)로 오프셋 계산하여 현재 주차 업데이트
                                 let pageWidth: CGFloat = 333
                                 let newOffset = Int(round(-offset / pageWidth))
                                 if newOffset != currentWeekOffset {
@@ -115,7 +125,7 @@ struct WeeklyCalendarView: View {
             }
         }
         .onAppear {
-            baseDate = calendarViewModel.selectDate
+            baseDate = viewModel.selectDate
         }
     }
     
@@ -147,16 +157,9 @@ struct WeeklyCalendarView: View {
     }
 }
 
-// PreferenceKey & Components 생략 없이 포함
-struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-struct WeekDatesRow: View {
-    @Bindable var calendarViewModel: CalendarViewModel
+// MARK: - 주간 날짜 행
+struct TodoWeekDatesRow: View {
+    @Bindable var viewModel: TodoWeeklyCalendarViewModel
     let baseDate: Date
     let weekOffset: Int
     var onDateSelected: ((Date) -> Void)?
@@ -180,13 +183,13 @@ struct WeekDatesRow: View {
     var body: some View {
         HStack(spacing: 7) {
             ForEach(weekDates) { dateValue in
-                WeekDayCell(
+                TodoWeekDayCell(
                     dateValue: dateValue,
                     isToday: dateValue.date.isToday,
-                    isSelected: dateValue.date.isSameDay(as: calendarViewModel.selectDate),
-                    markers: calendarViewModel.dateMarkers[dateValue.date.startOfDay] ?? [],
+                    isSelected: dateValue.date.isSameDay(as: viewModel.selectDate),
+                    markers: viewModel.dateMarkers[dateValue.date.startOfDay] ?? [],
                     onSelect: {
-                        calendarViewModel.selectDate = dateValue.date.startOfDay
+                        viewModel.selectDate = dateValue.date.startOfDay
                         onDateSelected?(dateValue.date)
                     }
                 )
@@ -195,11 +198,12 @@ struct WeekDatesRow: View {
     }
 }
 
-struct WeekDayCell: View {
+// MARK: - 주간 날짜 셀 (마커 표시)
+struct TodoWeekDayCell: View {
     let dateValue: DateValue
     let isToday: Bool
     let isSelected: Bool
-    let markers: [Marker]
+    let markers: [TodoMarker]
     let onSelect: () -> Void
     
     var body: some View {
@@ -209,13 +213,20 @@ struct WeekDayCell: View {
                     .font(.regular13)
                     .foregroundColor(isSelected ? .mainMint : (dateValue.isCurrentMonth ? .black : .gray2))
                     .frame(width: 40, height: 40)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(isSelected ? Color.subMint : Color.clear))
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(isSelected ? Color.subMint : Color.clear)
+                    )
                 
+                // ✅ 마커 표시 (최대 3개)
                 HStack(spacing: 1) {
                     ForEach(markers.prefix(3), id: \.self) { marker in
-                        Circle().fill(marker.color).frame(width: 4, height: 4)
+                        Circle()
+                            .fill(marker.color)
+                            .frame(width: 4, height: 4)
                     }
                 }
+                .frame(height: 4) // 마커 영역 고정 높이
             }
         }
     }

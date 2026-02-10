@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 2/5/26.
-//  Updated: 2/8/26 - deleteTodo 추가
+//  Updated: 2/8/26 - headers 오버라이드 제거 (Authorization 헤더 복원)
 //
 
 import Foundation
@@ -35,7 +35,7 @@ enum TodoTarget {
     // 8. 할일 완료 체크
     case updateTodoCompletion(id: Int, body: TodoCompletionRequestDTO)
     
-    // 9. 할일 삭제 - (미정)
+    // 9. 할일 삭제
     case deleteTodo(id: Int)
 }
 
@@ -45,7 +45,7 @@ extension TodoTarget: APITargetType {
     var path: String {
         switch self {
         case .getMyPlaces:
-            return "/api/favorite-places/simple"
+            return "/api/favorite-places"
         case .createTodo:
             return "/api/todos"
         case .updateTodo(let id, _):
@@ -74,7 +74,7 @@ extension TodoTarget: APITargetType {
         case .updateTodoCompletion:
             return .patch
         case .deleteTodo:
-            return .delete // DELETE 메서드
+            return .delete
         case .getMyPlaces, .getTodoList, .getTodoDetail:
             return .get
         }
@@ -109,11 +109,11 @@ extension TodoTarget: APITargetType {
         }
     }
     
-    var headers: [String: String]? {
-        return ["Content-Type": "application/json"]
-    }
+    // ✅ headers 오버라이드 제거!
+    // APITargetType의 기본 구현이 자동으로 Authorization 헤더 추가
+    // var headers: [String: String]? { ... }  // ❌ 삭제됨
     
-    // MARK: - Sample Data
+    // MARK: - Sample Data (Stub용)
     var sampleData: Data {
         switch self {
             
@@ -153,7 +153,10 @@ extension TodoTarget: APITargetType {
               "isSuccess": true,
               "code": "SUCCESS-200",
               "message": "요청에 성공했습니다.",
-              "result": "할 일이 성공적으로 수정되었습니다."
+              "result": {
+                "todoId": 17,
+                "actualTargetDate": "2026-02-09"
+              }
             }
             """.data(using: .utf8)!
             

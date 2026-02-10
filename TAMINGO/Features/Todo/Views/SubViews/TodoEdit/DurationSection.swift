@@ -89,7 +89,7 @@ struct DurationSection: View {
                 
                 // 분 Picker
                 Picker("분", selection: $viewModel.selectedMinute) {
-                    ForEach([0, 10, 20, 30, 40, 50], id: \.self) { minute in
+                    ForEach([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], id: \.self) { minute in
                         Text(String(format: "%02d", minute))
                             .font(.system(size: 16))
                             .tag(minute)
