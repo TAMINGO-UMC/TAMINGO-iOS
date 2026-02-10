@@ -13,3 +13,14 @@ struct NotificationSettingResult: Encodable, Decodable {
     let todoProposalEnabled: Bool
     let locationMoveCheckEnabled: Bool
 }
+
+extension NotificationSettingResult: Equatable {
+    static func == (lhs: NotificationSettingResult, rhs: NotificationSettingResult) -> Bool {
+        return lhs.departureAlertEnabled == rhs.departureAlertEnabled &&
+               lhs.departureLeadMinutes == rhs.departureLeadMinutes &&
+               lhs.latenessRiskAlertEnabled == rhs.latenessRiskAlertEnabled &&
+               lhs.realtimeTransitEnabled == rhs.realtimeTransitEnabled &&
+               lhs.todoProposalEnabled == rhs.todoProposalEnabled &&
+               lhs.locationMoveCheckEnabled == rhs.locationMoveCheckEnabled
+    }
+}
