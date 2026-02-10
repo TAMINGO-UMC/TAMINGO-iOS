@@ -10,9 +10,10 @@ import Foundation
 import Security
 import Alamofire
 
-// 로그인 성공 알림 이름 추가
+// 로그인/로그아웃 알림 이름 추가
 extension Notification.Name {
     static let userDidLogin = Notification.Name("userDidLogin")
+    static let userDidLogout = Notification.Name("userDidLogout")
 }
 
 // MARK: - Keychain Token Storage
@@ -116,7 +117,7 @@ final class TokenManager {
 }
 
 // MARK: - Token Auto Refresh Interceptor
-class TokenInterceptor: RequestInterceptor {
+final class TokenInterceptor: RequestInterceptor {
     
     // MARK: - Adapt (요청 전 토큰 추가)
     func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
@@ -155,7 +156,7 @@ class TokenInterceptor: RequestInterceptor {
         Task {
             do {
                 let newAccessToken = try await refreshAccessToken()
-                await TokenManager.shared.saveAccessToken(newAccessToken)
+                TokenManager.shared.saveAccessToken(newAccessToken)
                 print("✅ 토큰 갱신 성공! 원래 요청 자동 재시도")
                 completion(.retry)  // ✅ 갱신 성공 → 원래 요청 재시도 (사용자는 아무것도 모름)
             } catch {
@@ -174,11 +175,11 @@ class TokenInterceptor: RequestInterceptor {
     
     // MARK: - Private: Refresh Token API 호출
     private func refreshAccessToken() async throws -> String {
-        guard let refreshToken = await TokenManager.shared.getRefreshToken() else {
+        guard let refreshToken = TokenManager.shared.getRefreshToken() else {
             throw APIError.transport("Refresh Token이 없습니다.")
         }
         
-        guard let url = URL(string: "\(await Config.baseURL)/api/auth/refresh") else {
+        guard let url = URL(string: "\(Config.baseURL)/api/auth/refresh") else {
             throw APIError.transport("잘못된 URL입니다.")
         }
         
@@ -197,16 +198,10 @@ class TokenInterceptor: RequestInterceptor {
         let decoder = JSONDecoder()
         let baseResponse = try decoder.decode(BaseResponse<RefreshTokenResponseDTO>.self, from: data)
         
-        guard let accessToken = await baseResponse.result?.accessToken else {
+        guard let accessToken = baseResponse.result?.accessToken else {
             throw APIError.transport("새로운 Access Token을 받지 못했습니다.")
         }
         
         return accessToken
     }
-}
-
-
-// MARK: - Logout Notification
-extension Notification.Name {
-    static let userDidLogout = Notification.Name("userDidLogout")
 }
