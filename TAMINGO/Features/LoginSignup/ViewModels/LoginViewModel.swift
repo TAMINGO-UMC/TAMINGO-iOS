@@ -64,9 +64,70 @@ final class LoginViewModel: ObservableObject {
         actionSubject.send(.goSignup)
     }
     
+    // MARK: - 카카오 로그인
     func kakaoLoginTapped() {
-        actionSubject.send(.kakaoLogin)
-        // TODO: 카카오 SDK 연동
+        Task {
+            await handleKakaoLogin()
+        }
+    }
+    
+    @MainActor
+    private func handleKakaoLogin() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            print("🚀 카카오 로그인 시작")
+            
+            // 1. 카카오 SDK로 로그인 (카카오 액세스 토큰 획득)
+            let kakaoAccessToken = try await KakaoAuthManager.shared.login()
+            print("✅ 카카오 액세스 토큰 획득 성공")
+            
+            // 2. 백엔드에 카카오 토큰 전송 (우리 서비스 토큰 발급)
+            print("📤 백엔드에 카카오 토큰 전송 중...")
+            let response = try await repo.kakaoLogin(kakaoToken: kakaoAccessToken)
+            print("✅ 백엔드 로그인 성공")
+            
+            // 3. 토큰 저장
+            TokenManager.shared.saveAccessToken(response.accessToken)
+            TokenManager.shared.saveRefreshToken(response.refreshToken)
+            TokenManager.shared.saveUserId(response.userId)
+            print("✅ 토큰 저장 완료")
+            
+            print("👤 userId: \(response.userId)")
+            print("🎯 onboardingCompleted: \(response.onboardingCompleted)")
+            
+            // 4. 로그인 성공 알림
+            NotificationCenter.default.post(name: .userDidLogin, object: nil)
+            
+            // 5. 화면 전환
+            isLoginFailed = false
+            actionSubject.send(.loginSuccess(
+                userId: response.userId,
+                onboardingCompleted: response.onboardingCompleted
+            ))
+            
+        } catch let apiError as APIError {
+            print("❌ API 에러 발생: \(apiError)")
+            handleAPIError(apiError)
+        } catch {
+            print("❌ 카카오 로그인 실패: \(error)")
+            isLoginFailed = true
+        }
+    }
+    
+    // MARK: - API 에러 처리
+    private func handleAPIError(_ error: APIError) {
+        switch error {
+        case .server(let status, let message):
+            print("🔴 서버 에러 - Status: \(status), Message: \(message)")
+            // 카카오 로그인은 일반 로그인과 다른 에러 처리
+            isLoginFailed = true
+            
+        case .transport(let message):
+            print("🔴 네트워크 에러: \(message)")
+            isLoginFailed = true
+        }
     }
     
     // MARK: - API: 로그인
@@ -87,6 +148,9 @@ final class LoginViewModel: ObservableObject {
             TokenManager.shared.saveAccessToken(response.accessToken)
             TokenManager.shared.saveRefreshToken(response.refreshToken)
             TokenManager.shared.saveUserId(response.userId)
+            
+            // 로그인 성공 알림
+            NotificationCenter.default.post(name: .userDidLogin, object: nil)
             
             isLoginFailed = false
             actionSubject.send(.loginSuccess(
