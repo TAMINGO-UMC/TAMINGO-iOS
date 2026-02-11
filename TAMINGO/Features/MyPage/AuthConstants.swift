@@ -1,0 +1,14 @@
+//
+//  File.swift
+//  TAMINGO
+//
+//  Created by 권예원 on 2/9/26.
+//
+
+// 토큰 하드 코딩 용
+// 개발 완료 후 삭제 예정
+
+enum AuthConstants {
+    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwNzk5OTk2LCJleHAiOjE3NzA4MDM1OTZ9.2-vh7xCoBSinB4WzTlZomlJK_3Y1QAV4x2S8h-1xbzw"
+    static let userId = 6
+}
