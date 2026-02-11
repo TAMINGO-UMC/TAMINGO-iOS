@@ -13,7 +13,7 @@ struct RouteResultModel {
     let arriveTime: Date
     let startPlaceName: String
     let arrivePlaceName: String
-    let wayPoints: [String]
+    let wayPoints: [WayPointModel]
     let legs: [RouteLegModel]
     
     
@@ -40,3 +40,4 @@ extension Date {
         return formatter.string(from: self)
     }
 }
+
