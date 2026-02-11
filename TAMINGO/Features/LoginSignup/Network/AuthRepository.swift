@@ -19,7 +19,7 @@ protocol AuthRepositoryProtocol {
     func refreshToken(refreshToken: String) async throws -> RefreshTokenResponseDTO
 }
 
-final class AuthRepository: AuthRepositoryProtocol {
+final class AuthRepository: AuthRepositoryProtocol, Sendable{
     
     private let provider: MoyaProvider<AuthTarget>
     private let decoder = JSONDecoder()

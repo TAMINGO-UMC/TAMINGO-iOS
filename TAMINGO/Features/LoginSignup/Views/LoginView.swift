@@ -28,7 +28,7 @@ struct LoginView: View {
                 case .goSignup:
                     break
                     
-                case .loginSuccess(let userId, let onboardingCompleted):
+                case .loginSuccess(let userId, _):
                     print("로그인 성공:", userId)
                     // TODO: onboardingCompleted에 따라 OnboardingView 또는 HomeView로 이동
                     

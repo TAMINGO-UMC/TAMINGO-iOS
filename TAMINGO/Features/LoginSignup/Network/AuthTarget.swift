@@ -38,7 +38,7 @@ enum AuthTarget {
 // MARK: - APITargetType 구현
 extension AuthTarget: APITargetType {
     
-    var path: String {
+    nonisolated var path: String {
         switch self {
         case .getTerms:
             return "/api/terms"
@@ -59,7 +59,7 @@ extension AuthTarget: APITargetType {
         }
     }
     
-    var method: Moya.Method {
+    nonisolated var method: Moya.Method {
         switch self {
         case .getTerms:
             return .get
@@ -96,7 +96,7 @@ extension AuthTarget: APITargetType {
         }
     }
     
-    var headers: [String: String]? {
+    nonisolated var headers: [String: String]? {
         var baseHeaders = [
             "Content-Type": "application/json"
         ]
@@ -118,7 +118,7 @@ extension AuthTarget: APITargetType {
         return baseHeaders
     }
     
-    var sampleData: Data {
+    nonisolated var sampleData: Data {
         switch self {
         case .getTerms:
             return """
