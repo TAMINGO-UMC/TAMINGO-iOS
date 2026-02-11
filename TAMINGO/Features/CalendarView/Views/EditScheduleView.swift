@@ -42,7 +42,8 @@ struct EditScheduleView: View {
                     EditPlace(
                         placeName: viewModel.placeName,
                         myPlaces: viewModel.myPlaces,
-                        onSelectPlace: { viewModel.selectPlace($0) }
+                        onSelectPlace: { viewModel.selectPlace($0) },
+                        onDeletePlace: { viewModel.removePlace() }
                     )
                     
                     // 할 일 수정
@@ -59,9 +60,8 @@ struct EditScheduleView: View {
                     EditCategory(
                         categoryName: viewModel.categoryName,
                         categories: viewModel.categories,
-                        onSelectCategory: {
-                            viewModel.selectCategory($0)
-                        }
+                        onSelectCategory: { viewModel.selectCategory($0) },
+                        onDeleteCategory: { viewModel.removeCategory() }
                     )
                     
                     // 일정 반복 수정

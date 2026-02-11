@@ -16,6 +16,7 @@ struct EditPlace: View {
     
     // Action
     var onSelectPlace: (MyPlaceDTO) -> Void
+    var onDeletePlace: () -> Void
     
     // Local State
     @State private var isEditing: Bool = false
@@ -30,11 +31,15 @@ struct EditPlace: View {
                 //TODO: 장소 검색 추가
                 placeListScroll
             } else {
-                SelectedItemRow(title: placeName) {
-                    withAnimation {
-                        isEditing = true
+                SelectedItemRow(
+                    title: placeName,
+                    onEdit: {
+                        withAnimation { isEditing = true }
+                    },
+                    onDelete: {
+                        onDeletePlace()
                     }
-                }
+                )
             }
         }
     }
