@@ -38,7 +38,7 @@ struct ActivityTimeSettingView: View {
                                 let saved = try await vm.save()
                                 onSave(saved)
                             } catch {
-                                print("❌ save failed:", error)
+                                print("save failed:", error)
                             }
                         }
                     }

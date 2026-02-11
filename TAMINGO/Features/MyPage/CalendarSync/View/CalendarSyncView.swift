@@ -91,10 +91,10 @@ private extension CalendarSyncView {
                 .padding(.bottom, 13)
             
             VStack(spacing: 8) {
-                toggleRow(
-                    title: "TAMINGO! → Apple 캘린더",
-                    isOn: $vm.syncToApple
-                )
+//                toggleRow(
+//                    title: "TAMINGO! → Apple 캘린더",
+//                    isOn: $vm.syncToApple
+//                )
 
                 toggleRow(
                     title: "Apple 캘린더 → TAMINGO!",
@@ -103,7 +103,6 @@ private extension CalendarSyncView {
             }
             .padding(.bottom, 23)
 
-            disconnectButton
         }
         .padding(16)
         .cardStyle()
@@ -150,25 +149,6 @@ private extension CalendarSyncView {
     }
 }
 
-private extension CalendarSyncView {
-
-    var disconnectButton: some View {
-        Button {
-            vm.disconnect()
-        } label: {
-            Text("연동 해제")
-                .font(.medium12)
-                .foregroundColor(.mainPink)
-                .frame(maxWidth: .infinity)
-                .frame(height: 32)
-                .background(.subPink)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(.mainPink, lineWidth: 0.5)
-                )
-        }
-    }
-}
 
 
 

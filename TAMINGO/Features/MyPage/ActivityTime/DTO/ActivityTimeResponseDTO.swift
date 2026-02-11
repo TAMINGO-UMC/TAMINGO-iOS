@@ -16,7 +16,19 @@ struct ActivityTimeResponseDTO: Decodable {
     let thuEnabled: Bool
     let friEnabled: Bool
     let weekendEnabled: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case startTime
+        case endTime
+        case monEnabled = "mon"
+        case tueEnabled = "tue"
+        case wedEnabled = "wed"
+        case thuEnabled = "thu"
+        case friEnabled = "fri"
+        case weekendEnabled = "weekend"
+    }
 }
+
 
 
 extension ActivityTimeResponseDTO {

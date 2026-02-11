@@ -28,7 +28,7 @@ final class FavoritePlacesService: FavoritePlacesServiceProtocol {
     // MARK: - 조회
     func fetchPlaces() async throws -> [FavoritePlace] {
 
-        let response = try await request(.fetchPlaces)
+        let response = try await provider.requestAsync(.fetchPlaces)
 
         let decoded = try JSONDecoder().decode(
             BaseResponse<[FavoritePlaceDTO]>.self,
@@ -41,7 +41,7 @@ final class FavoritePlacesService: FavoritePlacesServiceProtocol {
 
     // MARK: - 등록
     func createPlace(_ dto: PlaceRequestDTO) async throws -> Int {
-        let response = try await request(.createPlace(dto))
+        let response = try await provider.requestAsync(.createPlace(dto))
 
         let decoded = try JSONDecoder().decode(
             BaseResponse<Int>.self,
@@ -62,7 +62,7 @@ final class FavoritePlacesService: FavoritePlacesServiceProtocol {
 
     // MARK: - 수정
     func updatePlace(placeId: Int, dto: PlaceRequestDTO) async throws -> Int {
-        let response = try await request(.updatePlace(placeId: placeId, dto: dto))
+        let response = try await provider.requestAsync(.updatePlace(placeId: placeId, dto: dto))
 
         let decoded = try JSONDecoder().decode(
             BaseResponse<Int>.self,
@@ -82,7 +82,7 @@ final class FavoritePlacesService: FavoritePlacesServiceProtocol {
 
     // MARK: - 삭제
     func deletePlace(placeId: Int) async throws {
-        let response = try await request(.deletePlace(placeId: placeId))
+        let response = try await provider.requestAsync(.deletePlace(placeId: placeId))
         
         guard (200..<300).contains(response.statusCode) else {
             throw APIError.server(
@@ -94,44 +94,3 @@ final class FavoritePlacesService: FavoritePlacesServiceProtocol {
 
 }
 
-private extension FavoritePlacesService {
-
-    func request(_ target: FavoritePlaceAPI) async throws -> Response {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.request(target) { result in
-                switch result {
-                case .success(let response):
-                    continuation.resume(returning: response)
-
-                case .failure(let error):
-                    if let response = error.response,
-                       let apiErrorDTO = try? JSONDecoder().decode(
-                            APIErrorResponseDTO.self,
-                            from: response.data
-                       ) {
-                        continuation.resume(
-                            throwing: APIError.server(
-                                status: apiErrorDTO.status,
-                                message: apiErrorDTO.message
-                            )
-                        )
-                    }
-                    else {
-                        continuation.resume(
-                            throwing: APIError.transport(
-                                error.localizedDescription
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-
-    func decodePlaceId(from response: Response) throws -> Int {
-        try JSONDecoder()
-            .decode(PlaceIdResponseDTO.self, from: response.data)
-            .placeId
-    }
-}

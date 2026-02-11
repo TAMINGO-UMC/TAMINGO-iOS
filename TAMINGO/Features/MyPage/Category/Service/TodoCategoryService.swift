@@ -26,7 +26,7 @@ final class TodoCategoryService: TodoCategoryServiceProtocol {
     )
     
     func fetchCategories() async throws -> [TodoCategory] {
-        let response = try await request(.fetchCategories)
+        let response = try await provider.requestAsync(.fetchCategories)
 
         let decoded = try JSONDecoder().decode(
             BaseResponse<[TodoCategoryResponseDTO]>.self,
@@ -46,8 +46,10 @@ final class TodoCategoryService: TodoCategoryServiceProtocol {
             name: name,
             colorCode: colorCode
         )
-        
-        let response = try await request(.createCategory)
+
+        let response = try await provider.requestAsync(
+            .createCategory(request: requestDTO)
+        )
         
         let decoded = try JSONDecoder().decode(
             BaseResponse<TodoCategoryResponseDTO>.self,
@@ -64,7 +66,14 @@ final class TodoCategoryService: TodoCategoryServiceProtocol {
     
     func updateCategory(id: Int, name: String, colorCode: String) async throws -> TodoCategory {
 
-        let response = try await request(.updateCategory(id: id))
+        let requestDTO = TodoCategoryRequestDTO(
+            name: name,
+            colorCode: colorCode
+        )
+
+        let response = try await provider.requestAsync(
+            .updateCategory(id: id, request: requestDTO)
+        )
         
         let decoded = try JSONDecoder().decode(
             BaseResponse<TodoCategoryResponseDTO>.self,
@@ -80,73 +89,9 @@ final class TodoCategoryService: TodoCategoryServiceProtocol {
 
     
     func deleteCategory(id: Int) async throws {
-        _ = try await request(.deleteCategory(id: id))
+        _ = try await provider.requestAsync(.deleteCategory(id: id))
     }
     
     
 }
 
-private extension TodoCategoryService {
-
-    func request(_ target: TodoCategoryAPI) async throws -> Response {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.request(target) { result in
-                switch result {
-                case .success(let response):
-
-                    if (200..<300).contains(response.statusCode) {
-                        continuation.resume(returning: response)
-                    } else {
-
-                        if let apiErrorDTO = try? JSONDecoder().decode(
-                            CategoryAPIErrorResponseDTO.self,
-                            from: response.data
-                        ) {
-                            continuation.resume(
-                                throwing: APIError.server(
-                                    status: response.statusCode,
-                                    message: apiErrorDTO.message
-                                )
-                            )
-                        } else {
-                            continuation.resume(
-                                throwing: APIError.transport(
-                                    "서버 오류 (\(response.statusCode))"
-                                )
-                            )
-                        }
-                    }
-
-
-                case .failure(let error):
-                    if let response = error.response,
-                       let apiErrorDTO = try? JSONDecoder().decode(
-                        CategoryAPIErrorResponseDTO.self,
-                            from: response.data
-                       ) {
-                        continuation.resume(
-                            throwing: APIError.server(
-                                status: response.statusCode,
-                                message: apiErrorDTO.message
-                            )
-                        )
-                    }
-                    else {
-                        continuation.resume(
-                            throwing: APIError.transport(
-                                error.localizedDescription
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-
-    func decodePlaceId(from response: Response) throws -> Int {
-        try JSONDecoder()
-            .decode(PlaceIdResponseDTO.self, from: response.data)
-            .placeId
-    }
-}

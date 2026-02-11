@@ -11,8 +11,8 @@ import Alamofire
 
 enum ScheduleCategoryAPI {
     case fetchCategories
-    case createCategory
-    case updateCategory(id: Int)
+    case createCategory(request: ScheduleCategoryRequestDTO)
+    case updateCategory(id: Int, request: ScheduleCategoryRequestDTO)
     case deleteCategory(id: Int)
 }
 
@@ -21,9 +21,11 @@ extension ScheduleCategoryAPI : APITargetType {
         switch self {
         case .fetchCategories, .createCategory:
             return "/api/schedule-categories"
-        case .updateCategory(let id), .deleteCategory(let id):
+        case .updateCategory(let id, _),
+             .deleteCategory(let id):
             return "/api/schedule-categories/\(id)"
         }
+
     }
     
     var method: Moya.Method {
@@ -41,11 +43,17 @@ extension ScheduleCategoryAPI : APITargetType {
     
     var task: Task {
         switch self {
-        case .fetchCategories, .createCategory:
+        case .fetchCategories:
             return .requestPlain
 
-        case .updateCategory(let id),.deleteCategory(let id):
-            return .requestJSONEncodable(id)
+        case .createCategory(let request):
+            return .requestJSONEncodable(request)
+
+        case .updateCategory(_, let request):
+            return .requestJSONEncodable(request)
+            
+        case .deleteCategory:
+            return .requestPlain
         }
     }
     

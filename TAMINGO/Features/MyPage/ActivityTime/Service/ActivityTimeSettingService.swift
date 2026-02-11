@@ -25,28 +25,29 @@ final class ActivityTimeSettingService: ActivityTimeServiceProtocol {
 
     // MARK: - 조회
     func fetchActivityTime() async throws -> ActivityTime {
-        let response = try await request(.fetchActivityTime)
+        let response = try await provider.requestAsync(.fetchActivityTime)
 
-        print("🟢 [ActivityTime] raw response:", String(data: response.data, encoding: .utf8) ?? "nil")
-
-        let dto = try JSONDecoder().decode(
-            ActivityTimeResponseDTO.self,
+        let decoded = try JSONDecoder().decode(
+            BaseResponse<ActivityTimeResponseDTO>.self,
             from: response.data
         )
 
-        print("🟢 [ActivityTime] decoded DTO:", dto)
+        guard let result = decoded.result else {
+            throw APIError.server(
+                status: 500,
+                message: "조회 결과가 없습니다."
+            )
+        }
 
-        let domain = dto.toDomain()
-        print("🟢 [ActivityTime] domain after toDomain:", domain)
-
-        return domain
+        return result.toDomain()
     }
+
 
 
 
     // MARK: - 저장
     func saveActivityTime(_ dto: ActivityTimeRequestDTO) async throws -> ActivityTime {
-        let response = try await request(.saveActivityTime(dto))
+        let response = try await provider.requestAsync(.saveActivityTime(dto))
 
         let decoded = try JSONDecoder().decode(
             BaseResponse<ActivityTimeResponseDTO>.self,
@@ -65,39 +66,3 @@ final class ActivityTimeSettingService: ActivityTimeServiceProtocol {
 
 }
 
-
-private extension ActivityTimeSettingService {
-
-    func request(_ target: ActivityTimeSettingAPI) async throws -> Response {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.request(target) { result in
-                switch result {
-                case .success(let response):
-                    continuation.resume(returning: response)
-
-                case .failure(let error):
-                    print("🔴 [API] request failed:", error)
-                    if let response = error.response,
-                       let apiErrorDTO = try? JSONDecoder().decode(
-                            APIErrorResponseDTO.self,
-                            from: response.data
-                       ) {
-                        print("🔴 [API] status code:", response.statusCode)
-                        continuation.resume(
-                            throwing: APIError.server(
-                                status: apiErrorDTO.status,
-                                message: apiErrorDTO.message
-                            )
-                        )
-                    } else {
-                        continuation.resume(
-                            throwing: APIError.transport(
-                                error.localizedDescription
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-}

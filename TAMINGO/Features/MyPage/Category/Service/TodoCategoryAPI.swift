@@ -11,8 +11,8 @@ import Alamofire
 
 enum TodoCategoryAPI {
     case fetchCategories
-    case createCategory
-    case updateCategory(id: Int)
+    case createCategory(request: TodoCategoryRequestDTO)
+    case updateCategory(id: Int, request: TodoCategoryRequestDTO)
     case deleteCategory(id: Int)
 }
 
@@ -20,9 +20,10 @@ extension TodoCategoryAPI : APITargetType {
     var path: String {
         switch self {
         case .fetchCategories, .createCategory:
-            return "/api/schedule-categories"
-        case .updateCategory(let id), .deleteCategory(let id):
-            return "/api/schedule-categories/\(id)"
+            return "/api/todo-categories"
+        case .updateCategory(let id, _),
+             .deleteCategory(let id):
+            return "/api/todo-categories/\(id)"
         }
     }
     
@@ -41,11 +42,17 @@ extension TodoCategoryAPI : APITargetType {
     
     var task: Task {
         switch self {
-        case .fetchCategories, .createCategory:
+        case .fetchCategories:
             return .requestPlain
 
-        case .updateCategory(let id),.deleteCategory(let id):
-            return .requestJSONEncodable(id)
+        case .createCategory(let request):
+            return .requestJSONEncodable(request)
+
+        case .updateCategory(_, let request):
+            return .requestJSONEncodable(request)
+            
+        case .deleteCategory(let id):
+            return .requestPlain
         }
     }
     

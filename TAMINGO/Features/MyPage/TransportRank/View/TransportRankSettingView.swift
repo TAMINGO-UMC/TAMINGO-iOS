@@ -18,29 +18,7 @@ struct TransportRankSettingView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
 
-            VStack(alignment: .leading, spacing: 0) {
-                header
-
-                VStack(spacing: 12) {
-                    TrafficSection(
-                        vm: vm,
-                        activePicker: $activePicker,
-                        labelFrames: $labelFrames
-                    )
-
-                    GuideBoxView(
-                        title: "목표 도착시간 & 이동수단 설정 안내",
-                        description: """
-• 선호 순위가 높은 이동수단을 우선 추천합니다
-• 실시간 교통 상황에 따라 다른 경로를 제안할 수 있습니다
-"""
-                    )
-                }
-                .padding(16)
-
-                Spacer()
-            }
-            .padding(.horizontal, 16)
+            content
             
             if case let .transport(rank) = activePicker,
                let frame = labelFrames[rank] {
@@ -72,18 +50,59 @@ struct TransportRankSettingView: View {
         }
         .coordinateSpace(name: "TransportRankSpace")
         .navigationBarBackButtonHidden(true)
+        .task {
+            await vm.fetch()
+        }
+        .alert("오류", isPresented: Binding(
+            get: { vm.errorMessage != nil },
+            set: { _ in vm.errorMessage = nil }
+        )) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(vm.errorMessage ?? "")
+        }
 
     }
+}
+
+private extension TransportRankSettingView {
+
+    var content: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            header
+
+            VStack(spacing: 12) {
+                TrafficSection(
+                    vm: vm,
+                    activePicker: $activePicker,
+                    labelFrames: $labelFrames
+                )
+
+                GuideBoxView(
+                    title: "목표 도착시간 & 이동수단 설정 안내",
+                    description: """
+• 선호 순위가 높은 이동수단을 우선 추천합니다
+• 실시간 교통 상황에 따라 다른 경로를 제안할 수 있습니다
+"""
+                )
+            }
+            .padding(16)
+
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+    }
+
     var header: some View {
-        HStack(spacing: 14){
-            Button(action: {
-                onBack()
-            }, label: {
+        HStack(spacing: 14) {
+
+            Button(action: onBack) {
                 Image("Previous_Chevron")
                     .resizable()
                     .frame(width: 5, height: 10)
-            })
-            
+            }
+
             Text("이동 수단 설정")
                 .font(.semiBold16)
                 .foregroundStyle(.black00)
@@ -91,6 +110,9 @@ struct TransportRankSettingView: View {
         .padding(16)
     }
 }
+
+
+
 
 
 struct TrafficSection: View {
@@ -135,6 +157,19 @@ struct TrafficSection: View {
         }
         .padding(16)
         .cardStyle()
+    }
+}
+
+private extension TransportRankSettingView {
+
+    @ViewBuilder
+    var loadingOverlay: some View {
+        if vm.isLoading {
+            Color.black.opacity(0.2)
+                .ignoresSafeArea()
+
+            ProgressView()
+        }
     }
 }
 

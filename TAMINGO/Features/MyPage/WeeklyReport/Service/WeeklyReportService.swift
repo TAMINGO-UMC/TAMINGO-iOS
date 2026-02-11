@@ -42,7 +42,7 @@ private extension WeeklyReportService {
     
     // 공통 fetch 로직
     func fetch(_ target: WeeklyReportAPI) async throws -> WeeklyReportDetail {
-        let response = try await request(target)
+        let response = try await provider.requestAsync(target)
         
         let decoded = try decoder.decode(
             BaseResponse<WeeklyReportDetailResponseDTO>.self,
@@ -66,38 +66,5 @@ private extension WeeklyReportService {
         return result.toDomain()
     }
     
-    
-    func request(_ target: WeeklyReportAPI) async throws -> Response {
-        try await withCheckedThrowingContinuation { continuation in
-            provider.request(target) { result in
-                switch result {
-                    
-                case .success(let response):
-                    continuation.resume(returning: response)
-                    
-                case .failure(let error):
-                    
-                    // 서버에서 내려준 에러 메시지 처리
-                    if let response = error.response,
-                       let apiErrorDTO = try? JSONDecoder().decode(
-                            APIErrorResponseDTO.self,
-                            from: response.data
-                       ) {
-                        continuation.resume(
-                            throwing: APIError.server(
-                                status: apiErrorDTO.status,
-                                message: apiErrorDTO.message
-                            )
-                        )
-                    } else {
-                        continuation.resume(
-                            throwing: APIError.transport(
-                                error.localizedDescription
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
+
 }

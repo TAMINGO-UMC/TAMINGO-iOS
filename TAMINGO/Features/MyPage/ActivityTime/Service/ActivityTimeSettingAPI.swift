@@ -21,7 +21,7 @@ extension ActivityTimeSettingAPI: APITargetType {
         switch self {
         case .fetchActivityTime,
              .saveActivityTime:
-            return "/api/activity-time"
+            return "/api/active-time"
         }
     }
 
@@ -43,5 +43,11 @@ extension ActivityTimeSettingAPI: APITargetType {
             return .requestJSONEncodable(dto)
         }
     }
-
+    
+    var headers: [String : String]? {
+        [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(AuthConstants.accessToken)",
+        ]
+    }
 }
