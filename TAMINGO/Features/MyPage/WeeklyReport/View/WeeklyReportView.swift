@@ -37,6 +37,7 @@ struct WeeklyReportView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .padding(.horizontal,16)
         .task {
             await vm.fetchReport()
         }
@@ -152,6 +153,7 @@ struct WeeklyInsightSection: View {
             }else{
                 ForEach(insights) { insight in
                     InsightCardView(
+                        emoji: insight.emoji,
                         title: insight.title,
                         description: insight.description,
                         borderColor: insight.borderColor,

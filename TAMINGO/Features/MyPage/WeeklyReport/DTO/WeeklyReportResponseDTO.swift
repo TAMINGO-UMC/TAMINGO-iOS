@@ -88,13 +88,15 @@ struct WeeklyInsightDTO: Decodable {
     let title: String
     let content: String
     let modelVersion: String
+    let emoji: String
 }
 extension WeeklyInsightDTO {
     func toDomain() -> WeeklyInsightDomain {
         WeeklyInsightDomain(
             type: InsightType(rawValue: type) ?? .unknown,
             title: title,
-            content: content
+            content: content,
+            emoji: emoji
         )
     }
 }

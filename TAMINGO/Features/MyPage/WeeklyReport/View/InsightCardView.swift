@@ -9,21 +9,24 @@ import SwiftUI
 
 let weeklyInsightMocks: [WeeklyInsight] = [
     WeeklyInsight(
-        title: "🎉 우수한 시간 관리",
+        title: "우수한 시간 관리",
+        emoji: "🎉",
         description: "이번 주 정시 도착률이 지난 주 대비 5% 상승했습니다",
         borderColor: .green,
         backgroundColor: Color.green.opacity(0.1),
         titleColor: .green
     ),
     WeeklyInsight(
-        title: "⚠️ 화요일 주의",
+        title: "화요일 주의",
+        emoji: "⚠️",
         description: "화요일에 지각이 자주 발생합니다.\n출발 시간을 10분 앞당겨보세요",
         borderColor: .yellow,
         backgroundColor: Color.yellow.opacity(0.15),
         titleColor: .orange
     ),
     WeeklyInsight(
-        title: "📊 가장 효율적인 요일",
+        title: "가장 효율적인 요일",
+        emoji: "📊",
         description: "목요일에 할일 완료율이 가장 높습니다 (100%)",
         borderColor: .blue,
         backgroundColor: Color.blue.opacity(0.1),
@@ -32,6 +35,7 @@ let weeklyInsightMocks: [WeeklyInsight] = [
 ]
 
 struct InsightCardView: View {
+    let emoji: String
     let title: String
     let description: String
 
@@ -41,7 +45,7 @@ struct InsightCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
+            Text(emojiTitle)
                 .font(.regular12)
                 .foregroundStyle(titleColor)
 
@@ -59,29 +63,34 @@ struct InsightCardView: View {
         )
         .cornerRadius(10)
     }
+    
+    var emojiTitle: AttributedString {
+        let first = AttributedString(emoji)
+        let second = AttributedString(title)
+
+        return first + " " + second
+    }
 }
 
 
 #Preview {
     VStack(spacing: 16) {
         InsightCardView(
-            title: "🎉 우수한 시간 관리",
+            emoji: "🎉", title: "우수한 시간 관리",
             description: "이번 주 정시 도착률이 지난 주 대비 5% 상승했습니다",
             borderColor: .green,
             backgroundColor: Color.green.opacity(0.1),
             titleColor: .green
         )
-
         InsightCardView(
-            title: "⚠️ 화요일 주의",
+            emoji: "⚠️", title: "화요일 주의",
             description: "화요일에 지각이 자주 발생합니다.\n출발 시간을 10분 앞당겨보세요",
             borderColor: .yellow,
             backgroundColor: Color.yellow.opacity(0.15),
             titleColor: .orange
         )
-
         InsightCardView(
-            title: "📊 가장 효율적인 요일",
+            emoji: "📊", title: "가장 효율적인 요일",
             description: "목요일에 할일 완료율이 가장 높습니다 (100%)",
             borderColor: .blue,
             backgroundColor: Color.blue.opacity(0.1),

@@ -10,6 +10,7 @@ import SwiftUI
 struct WeeklyInsight: Identifiable {
     let id = UUID()
     let title: String
+    let emoji: String
     let description: String
     let borderColor: Color
     let backgroundColor: Color

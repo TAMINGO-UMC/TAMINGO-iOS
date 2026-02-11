@@ -81,6 +81,7 @@ struct WeeklyInsightDomain {
     let type: InsightType
     let title: String
     let content: String
+    let emoji: String
 }
 
 

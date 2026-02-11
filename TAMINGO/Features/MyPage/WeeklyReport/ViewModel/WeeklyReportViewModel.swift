@@ -152,6 +152,7 @@ final class WeeklyReportViewModel {
         (report?.insights ?? []).map { domain in
             WeeklyInsight(
                 title: domain.title,
+                emoji: domain.emoji,
                 description: domain.content,
                 borderColor: domain.type.borderColor,
                 backgroundColor: domain.type.backgroundColor,
