@@ -129,9 +129,9 @@ final class TokenManager {
             print(" Refresh Token 저장 완료")
             print(" - 만료 시간: \(formatDateTime(expiryDate))")
             print(" - 유효 시간: \(formatTimeInterval(expiresIn))")
-            
         }
     }
+    
     func getRefreshToken() -> String? {
         return get(forKey: refreshTokenKey)
     }
@@ -248,18 +248,16 @@ final class TokenManager {
 }
 
 // MARK: - Token Auto Refresh Interceptor
-class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
+final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     
     // MARK: - Adapt (요청 전 토큰 추가 + 만료 체크)
     func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
         var request = urlRequest
         
-        // Authorization 헤더에 Access Token 추가
         if let token = TokenManager.shared.getAccessToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        // 요청 시 토큰 상태 출력 (디버깅)
         if let timeLeft = TokenManager.shared.getTimeUntilExpiry() {
             if timeLeft > 0 {
                 print("토큰 상태: \(TokenManager.shared.getFormattedTimeUntilExpiry()) 남음")
@@ -268,7 +266,6 @@ class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
             }
         }
         
-        // 토큰이 곧 만료되면 미리 갱신 시도
         if TokenManager.shared.isTokenExpiringSoon() {
             print("미리 갱신 시도")
             Task {
@@ -298,11 +295,8 @@ class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
         print("- URL: \(request.request?.url?.absoluteString ?? "unknown")")
         print("- 재시도 횟수: \(request.retryCount + 1)/3")
         
-        // 무한 루프 방지: 최대 재시도 횟수 제한 (3회)
         if request.retryCount >= 3 {
-            print("재시도 횟수 초과 (3회)")
-            print("→ Refresh Token도 만료된 것으로 판단")
-            print("→ 로그아웃 처리")
+            print("재시도 횟수 초과 (3회) → 로그아웃 처리")
             TokenManager.shared.clearAll()
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: .userDidLogout, object: nil)
@@ -311,20 +305,15 @@ class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
             return
         }
         
-        // Refresh Token으로 Access Token 갱신
         Task {
             do {
                 print("토큰 갱신 시작...")
                 let newAccessToken = try await refreshAccessToken()
                 await TokenManager.shared.saveAccessToken(newAccessToken)
-                print("토큰 갱신 성공!")
-                print(" → 원래 요청 재시도")
+                print("✅ 토큰 갱신 성공! 원래 요청 자동 재시도")
                 completion(.retry)
             } catch {
-                print(" 토큰 갱신 실패: \(error)")
-                print(" → Refresh Token 만료됨")
-                print(" → 로그아웃 처리")
-                
+                print(" 토큰 갱신 실패: \(error) → 로그아웃 처리")
                 await TokenManager.shared.clearAll()
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .userDidLogout, object: nil)
@@ -340,21 +329,19 @@ class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
             throw APIError.transport("Refresh Token이 없습니다.")
         }
         
+        // Config.baseURL은 최신 브랜치 사양(non-await)에 맞춰 적용
         guard let url = URL(string: "\(await Config.baseURL)/api/auth/token/refresh") else {
             throw APIError.transport("잘못된 URL입니다.")
         }
         
-        print("Refresh Token API 호출")
-        print("- URL: \(url)")
+        print("Refresh Token API 호출 - URL: \(url)")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        
-       
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(refreshToken, forHTTPHeaderField: "X-Refresh-Token")
         
-        // Body는 비워둠
+        // 403 Forbidden 방지를 위해 필요한 경우 빈 Body 추가
         request.httpBody = try? JSONSerialization.data(withJSONObject: [:])
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -363,7 +350,6 @@ class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
             throw APIError.transport("응답이 없습니다.")
         }
         
-        // 상태 코드 확인
         if !(200..<300).contains(httpResponse.statusCode) {
             let errorBody = String(data: data, encoding: .utf8) ?? "알 수 없음"
             print("토큰 갱신 실패 (Status: \(httpResponse.statusCode))")
@@ -371,10 +357,9 @@ class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
             throw APIError.server(status: httpResponse.statusCode, message: "토큰 갱신 실패")
         }
         
-        print("서버 응답: \(httpResponse.statusCode)")
-        
         let decoder = JSONDecoder()
         let baseResponse = try decoder.decode(BaseResponse<RefreshTokenResponseDTO>.self, from: data)
+        
         guard let accessToken = await baseResponse.result?.accessToken else {
             throw APIError.transport("새로운 Access Token을 받지 못했습니다.")
         }
@@ -400,7 +385,6 @@ extension TokenManager {
         }
         
         var base64String = segments[1]
-        // Base64 패딩 추가
         let remainder = base64String.count % 4
         if remainder > 0 {
             base64String.append(String(repeating: "=", count: 4 - remainder))
@@ -431,7 +415,7 @@ extension TokenManager {
     /// JWT 토큰 자동 파싱 저장 (편의 메서드)
     func saveAccessTokenWithJWT(_ token: String) {
         if let expiresIn = parseJWTExpiry(token: token) {
-            saveAccessToken(token, expiresIn: max(expiresIn, 60)) // 최소 60초
+            saveAccessToken(token, expiresIn: max(expiresIn, 60))
         } else {
             print("JWT 파싱 실패, 기본값(1시간) 사용")
             saveAccessToken(token, expiresIn: 3600)
