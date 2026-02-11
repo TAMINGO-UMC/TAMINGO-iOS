@@ -9,8 +9,9 @@
 struct OnboardingRequestDTO: Encodable {
     let activityTime: ActivityTimeRequestDTO
     let favoritePlaces: [PlaceRequestDTO]
+
     let transportPreferences: [TransportPreferenceDTO]
-    let notificationSetting: NotificationSettingDTO
+    let notificationSetting: OnboardingNotificationSettingDTO
 }
 
 extension OnboardingRequestDTO {
@@ -23,6 +24,7 @@ extension OnboardingRequestDTO {
             startTime: viewModel.startTime,
             endTime: viewModel.endTime,
             activeDays: Set(Weekday.allCases)  
+
         ).toDTO()
 
         // 자주 가는 장소

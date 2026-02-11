@@ -173,8 +173,22 @@ struct LoginView: View {
                 .background(Color(red: 1.0, green: 0.93, blue: 0.33))
                 .cornerRadius(5)
             }
+            .disabled(vm.isLoading)
+            .opacity(vm.isLoading ? 0.6 : 1.0)
             .padding(.horizontal, 30)
             .padding(.top, 6)
+            
+            // 로딩 인디케이터 (카카오 로그인 중)
+            if vm.isLoading && vm.id.isEmpty {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("카카오 로그인 중...")
+                        .font(.custom("Pretendard-Medium", size: 12))
+                        .foregroundStyle(Color("Gray2"))
+                }
+                .padding(.top, 12)
+            }
         }
     }
     
