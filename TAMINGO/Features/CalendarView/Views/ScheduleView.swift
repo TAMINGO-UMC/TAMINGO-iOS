@@ -47,6 +47,8 @@ struct ScheduleView: View {
                         .foregroundStyle(.gray2)
                         .padding(.top, 20)
                 } else {
+                    Spacer()
+                        .frame(height: 8)
                     ForEach(calendarVM.selectedDateSchedules, id: \.scheduleId) { schedule in
                         let color = calendarVM.categoryMap[schedule.category] ?? .gray
                         
@@ -57,8 +59,11 @@ struct ScheduleView: View {
                         }
                     }
                     .padding(.horizontal)
+                    Spacer()
+                        .frame(height: 8)
                 }
             }
+            .padding(.bottom, 88)
             
             Spacer()
         }

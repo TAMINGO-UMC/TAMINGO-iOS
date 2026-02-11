@@ -40,9 +40,10 @@ struct ScheduleCard: View {
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(.white)
                     .shadow(color: .black.opacity(0.08), radius: 4.75, x: 2, y: 3)
+                    .frame(height: 60)
             )
         }
         .frame(height: 60)
