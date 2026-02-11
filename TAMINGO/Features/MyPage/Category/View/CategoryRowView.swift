@@ -22,10 +22,10 @@ struct CategoryRowView<Category: CategoryItem>: View {
 
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(category.color)
+                        .fill(category.color.color)
                         .frame(width: 12, height: 12)
 
-                    Text(category.colorName)
+                    Text(category.color.displayName)
                         .font(.regular12)
                         .foregroundColor(.gray2)
                 }
@@ -46,7 +46,7 @@ struct CategoryRowView<Category: CategoryItem>: View {
                     .frame(width: 16, height: 16)
             }
         }
-        .categoryStyle(height: 60, color:category.color)
+        .categoryStyle(height: 60, color:category.color.color)
     }
 }
 
@@ -56,11 +56,11 @@ struct CategoryRowView<Category: CategoryItem>: View {
         category: TodoCategory(
             id: 1,
             name: "일상",
-            color: .mint,
-            colorName: "민트"
+            color: .mint
         ),
         onEdit: {},
         onDelete: {}
     )
     .padding()
 }
+

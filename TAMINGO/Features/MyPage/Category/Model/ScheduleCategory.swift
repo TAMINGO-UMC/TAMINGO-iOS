@@ -7,11 +7,9 @@
 
 import SwiftUI
 
-struct ScheduleCategory: Identifiable {
+struct ScheduleCategory: CategoryItem {
     let id: Int
     let name: String
-    let color: Color
-    let colorName: String
+    let color: CategoryColor
 }
 
-extension ScheduleCategory:CategoryItem{}

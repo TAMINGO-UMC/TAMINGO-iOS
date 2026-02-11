@@ -7,11 +7,9 @@
 
 import SwiftUI
 
-struct TodoCategory: Identifiable {
+struct TodoCategory: CategoryItem {
     let id: Int
     let name: String
-    let color: Color
-    let colorName: String
+    let color: CategoryColor
 }
 
-extension TodoCategory:CategoryItem{}

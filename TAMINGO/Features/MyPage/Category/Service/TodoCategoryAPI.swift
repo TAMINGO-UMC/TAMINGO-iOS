@@ -1,0 +1,59 @@
+//
+//  TodoCategoryAPI.swift
+//  TAMINGO
+//
+//  Created by 권예원 on 2/11/26.
+//
+
+import Foundation
+import Moya
+import Alamofire
+
+enum TodoCategoryAPI {
+    case fetchCategories
+    case createCategory
+    case updateCategory(id: Int)
+    case deleteCategory(id: Int)
+}
+
+extension TodoCategoryAPI : APITargetType {
+    var path: String {
+        switch self {
+        case .fetchCategories, .createCategory:
+            return "/api/schedule-categories"
+        case .updateCategory(let id), .deleteCategory(let id):
+            return "/api/schedule-categories/\(id)"
+        }
+    }
+    
+    var method: Moya.Method {
+        switch self {
+        case .fetchCategories:
+            return .get
+        case .createCategory:
+            return .post
+        case .updateCategory:
+            return .patch
+        case .deleteCategory:
+            return .delete
+        }
+    }
+    
+    var task: Task {
+        switch self {
+        case .fetchCategories, .createCategory:
+            return .requestPlain
+
+        case .updateCategory(let id),.deleteCategory(let id):
+            return .requestJSONEncodable(id)
+        }
+    }
+    
+    var headers: [String : String]? {
+        [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(AuthConstants.accessToken)",
+        ]
+    }
+    
+}

@@ -12,50 +12,31 @@ import Observation
 extension TodoCategory {
 
     static let mockList: [TodoCategory] = [
-        TodoCategory(
-            id: 1,
-            name: "일상",
-            color: CategoryColor.lightBlue.color,
-            colorName: CategoryColor.lightBlue.displayName
-        ),
-        TodoCategory(
-            id: 2,
-            name: "운동",
-            color: CategoryColor.mint.color,
-            colorName: CategoryColor.mint.displayName
-        ),
-        TodoCategory(
-            id: 3,
-            name: "학교",
-            color: CategoryColor.peach.color,
-            colorName: CategoryColor.peach.displayName
-        ),
-        TodoCategory(
-            id: 4,
-            name: "업무",
-            color: CategoryColor.purple.color,
-            colorName: CategoryColor.purple.displayName
-        ),
-        TodoCategory(
-            id: 6,
-            name: "여행",
-            color: CategoryColor.lightMint.color,
-            colorName: CategoryColor.lightMint.displayName
-        )
+        TodoCategory(id: 1, name: "일상", color: .lightBlue),
+        TodoCategory(id: 2, name: "운동", color: .mint)
     ]
 }
 
 @Observable
-final class TodoCategoryViewModel:CategoryViewModel {
+final class TodoCategoryViewModel: CategoryViewModel {
 
     typealias CategoryType = TodoCategory
-    // MARK: - List
-    var categories: [TodoCategory] = TodoCategory.mockList
 
-    // MARK: - Edit State
+    // MARK: - Dependency
+    private let service: TodoCategoryServiceProtocol
+
+    init(service: TodoCategoryServiceProtocol = TodoCategoryService()) {
+        self.service = service
+    }
+
+    // MARK: - State
+    var categories: [TodoCategory] = []
     var editingCategoryId: Int? = nil
     var name: String = ""
     var selectedColor: CategoryColor = .mint
+
+    var isLoading: Bool = false
+    var errorMessage: String?
 
     // MARK: - Validation
     var canSaveCategory: Bool {
@@ -65,56 +46,102 @@ final class TodoCategoryViewModel:CategoryViewModel {
     var isEmpty: Bool {
         categories.isEmpty
     }
-    
+
+    // MARK: - Fetch
+    func fetchCategories() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            categories = try await service.fetchCategories()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // MARK: - Add
     func didTapAdd() {
-        editingCategoryId = nil
         name = ""
         selectedColor = .mint
+
+        // 항상 음수로 생성
+        let tempId = -((categories.count) + 1)
+
+        let newCategory = TodoCategory(
+            id: tempId,
+            name: "",
+            color: selectedColor
+        )
+
+        categories.append(newCategory)
+        editingCategoryId = tempId
     }
+
+
 
     // MARK: - Edit
     func didTapEdit(_ category: TodoCategory) {
         editingCategoryId = category.id
         name = category.name
-        selectedColor =
-            CategoryColor.allCases.first {
-                $0.displayName == category.colorName
-            } ?? .mint
+        selectedColor = category.color
     }
 
-    // MARK: - Save (Create / Update)
-    func saveCategory() {
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedName.isEmpty else { return }
-        
-        if let id = editingCategoryId,
-           let index = categories.firstIndex(where: { $0.id == id }) {
+    func cancelEditing() {
+        if let id = editingCategoryId, id < 0 {
+            categories.removeAll { $0.id == id }
+        }
+        editingCategoryId = nil
+    }
 
-            // update
-            categories[index] = TodoCategory(
-                id: id,
-                name: name,
-                color: selectedColor.color,
-                colorName: selectedColor.displayName
-            )
+    // MARK: - Save
+    func saveCategory() async {
+        guard canSaveCategory else { return }
 
-        } else {
-            // create
-            let newId = (categories.map { $0.id }.max() ?? 0) + 1
-            categories.append(
-                TodoCategory(
-                    id: newId,
-                    name: name,
-                    color: selectedColor.color,
-                    colorName: selectedColor.displayName
-                )
-            )
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            if let id = editingCategoryId {
+
+                if id < 0 {
+                    let created = try await service.createCategory(
+                        name: name,
+                        colorCode: selectedColor.hexCode
+                    )
+
+                    categories.removeAll { $0.id == id }
+                    categories.append(created)
+
+                } else {
+                    let updated = try await service.updateCategory(
+                        id: id,
+                        name: name,
+                        colorCode: selectedColor.hexCode
+                    )
+
+                    if let index = categories.firstIndex(where: { $0.id == id }) {
+                        categories[index] = updated
+                    }
+                }
+            }
+
+            editingCategoryId = nil
+
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
     // MARK: - Delete
-    func deleteCategory(_ category: TodoCategory) {
-        categories.removeAll { $0.id == category.id }
+    func deleteCategory(_ category: TodoCategory) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await service.deleteCategory(id: category.id)
+            categories.removeAll { $0.id == category.id }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }

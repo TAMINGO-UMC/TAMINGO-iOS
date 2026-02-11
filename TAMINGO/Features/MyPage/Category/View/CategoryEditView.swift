@@ -97,7 +97,7 @@ private extension CategoryEditView {
         HStack(spacing: 8) {
 
             Button {
-                vm.editingCategoryId = nil
+                vm.cancelEditing()
             } label: {
                 Text("취소")
                     .font(.semiBold14)
@@ -114,8 +114,9 @@ private extension CategoryEditView {
             }
 
             Button {
-                vm.saveCategory()
-                vm.editingCategoryId = nil
+                Task {
+                    await vm.saveCategory()
+               }
             } label: {
                 Text("저장")
                     .font(.semiBold14)
@@ -129,7 +130,7 @@ private extension CategoryEditView {
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
             }
-            .disabled(!vm.canSaveCategory)
+            .disabled(!vm.canSaveCategory || vm.isLoading)
         }
     }
 }
@@ -138,11 +139,10 @@ private extension CategoryEditView {
     let vm = TodoCategoryViewModel()
 
     let category = TodoCategory(
-            id: 1,
-            name: "집",
-            color: CategoryColor.peach.color,
-            colorName: CategoryColor.peach.displayName
-        )
+        id: 1,
+        name: "집",
+        color: .peach
+    )
 
     CategoryEditView(
         vm: vm,

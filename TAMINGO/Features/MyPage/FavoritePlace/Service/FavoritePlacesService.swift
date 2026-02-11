@@ -96,7 +96,7 @@ final class FavoritePlacesService: FavoritePlacesServiceProtocol {
 
 private extension FavoritePlacesService {
 
-    private func request(_ target: FavoritePlaceAPI) async throws -> Response {
+    func request(_ target: FavoritePlaceAPI) async throws -> Response {
         try await withCheckedThrowingContinuation { continuation in
             provider.request(target) { result in
                 switch result {

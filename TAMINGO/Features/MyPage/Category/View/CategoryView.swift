@@ -13,7 +13,7 @@ VM: CategoryViewModel & Observable & AnyObject,
 VM.CategoryType: CategoryItem {
 
     let type: CategoryType
-    @State private var vm: VM
+    @Bindable var vm: VM
     @Environment(\.dismiss) private var dismiss // 시트용
     let onBack: () -> Void
 
@@ -24,7 +24,7 @@ VM.CategoryType: CategoryItem {
     ) {
         self.type = type
         self.onBack = onBack          
-        _vm = State(wrappedValue: vm)
+        self.vm = vm
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -36,29 +36,31 @@ VM.CategoryType: CategoryItem {
                 VStack(alignment: .leading, spacing: 16) {
                     introText
 
-                    if (vm.isEmpty){
-                        
-                    } else {
-                        ForEach(vm.categories) { category in
-                            VStack(spacing: 8) {
-                                CategoryRowView(
-                                    category: category,
-                                    onEdit: { vm.didTapEdit(category) },
-                                    onDelete: { vm.deleteCategory(category) }
-                                )
-
-                                if vm.editingCategoryId == category.id {
-                                    CategoryEditView(
-                                        vm: vm,
-                                        category: category
-                                    )
-                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    ForEach(vm.categories) { category in
+                        VStack(spacing: 8) {
+                            CategoryRowView(
+                                category: category,
+                                onEdit: { vm.didTapEdit(category) },
+                                onDelete: {
+                                    Task {
+                                        await vm.deleteCategory(category)
+                                    }
                                 }
+                            )
+
+                            if vm.editingCategoryId == category.id {
+                                CategoryEditView(
+                                    vm: vm,
+                                    category: category
+                                )
+                                .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                         }
-
                     }
                     
+                    if vm.categories.isEmpty {
+                        CategoryEmptyView()
+                    }
                     AIInfoView()
 
                 }
@@ -67,6 +69,23 @@ VM.CategoryType: CategoryItem {
         }
         .padding(16)
         .navigationBarBackButtonHidden(true)
+        .task {
+            await vm.fetchCategories()
+        }
+        .alert(
+            "알림",
+            isPresented: Binding(
+                get: { vm.errorMessage != nil },
+                set: { _ in vm.errorMessage = nil }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                vm.errorMessage = nil
+            }
+        } message: {
+            Text(vm.errorMessage ?? "")
+        }
+
 
     }
 }
@@ -90,7 +109,9 @@ private extension CategoryView {
             Spacer()
 
             Button {
-                /* 기능 준비 후 구현 예정 */
+                withAnimation {
+                    vm.didTapAdd()
+                }
             } label: {
                 Image("MyPage_icon_plus")
                     .resizable()
@@ -121,20 +142,14 @@ struct CategoryEmptyView: View {
                 .foregroundStyle(Color(hex: "#BEBEBE"))
         }
         .frame(height: 193)
+        .frame(maxWidth: .infinity)
     }
 }
 
-//// 프리뷰용
-//extension CategoryView {
-//    init(type: CategoryType, previewVM: VM) {
-//        self.type = type
-//        _vm = State(wrappedValue: previewVM)
-//    }
-//}
-//
-//#Preview {
-//    CategoryView(
-//        type: .todo,
-//        previewVM: TodoCategoryViewModel()
-//    )
-//}
+#Preview("Todo Category") {
+    CategoryView<TodoCategoryViewModel>(
+        type: .todo,
+        vm: TodoCategoryViewModel(),
+        onBack: {}
+    )
+}

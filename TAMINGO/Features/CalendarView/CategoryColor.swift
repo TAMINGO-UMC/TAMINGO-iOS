@@ -45,3 +45,11 @@ enum CategoryColor: String, CaseIterable, Codable {
         Color(hex: hexCode)
     }
 }
+
+extension CategoryColor {
+    static func from(hex: String) -> CategoryColor {
+        return Self.allCases.first {
+            $0.hexCode.lowercased() == hex.lowercased()
+        } ?? .mint
+    }
+}

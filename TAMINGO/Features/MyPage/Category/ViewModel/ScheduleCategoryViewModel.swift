@@ -15,34 +15,15 @@ extension ScheduleCategory {
         ScheduleCategory(
             id: 1,
             name: "일상",
-            color: CategoryColor.lightBlue.color,
-            colorName: CategoryColor.lightBlue.displayName
+            color: .lightBlue
         ),
         ScheduleCategory(
             id: 2,
             name: "운동",
-            color: CategoryColor.mint.color,
-            colorName: CategoryColor.mint.displayName
-        ),
-        ScheduleCategory(
-            id: 3,
-            name: "학교",
-            color: CategoryColor.peach.color,
-            colorName: CategoryColor.peach.displayName
-        ),
-        ScheduleCategory(
-            id: 4,
-            name: "업무",
-            color: CategoryColor.purple.color,
-            colorName: CategoryColor.purple.displayName
-        ),
-        ScheduleCategory(
-            id: 6,
-            name: "여행",
-            color: CategoryColor.lightMint.color,
-            colorName: CategoryColor.lightMint.displayName
+            color: .mint
         )
     ]
+
 }
 
 
@@ -50,9 +31,18 @@ extension ScheduleCategory {
 final class ScheduleCategoryViewModel: CategoryViewModel {
     
     typealias CategoryType = ScheduleCategory
+    
+    private let service: ScheduleCategoryServiceProtocol
+    init(service: ScheduleCategoryServiceProtocol = ScheduleCategoryService()) {
+        self.service = service
+    }
+
 
     // MARK: - List
     var categories: [ScheduleCategory] = ScheduleCategory.mockList
+    
+    var isLoading: Bool = false
+    var errorMessage: String?
 
     // MARK: - Edit State
     var editingCategoryId: Int? = nil
@@ -70,53 +60,100 @@ final class ScheduleCategoryViewModel: CategoryViewModel {
 
     // MARK: - Add
     func didTapAdd() {
-        editingCategoryId = nil
         name = ""
         selectedColor = .mint
+
+        // 항상 음수로 생성
+        let tempId = -((categories.count) + 1)
+
+        let newCategory = ScheduleCategory(
+            id: tempId,
+            name: "",
+            color: selectedColor
+        )
+
+        categories.append(newCategory)
+        editingCategoryId = tempId
     }
+
 
     // MARK: - Edit
     func didTapEdit(_ category: ScheduleCategory) {
         editingCategoryId = category.id
         name = category.name
-        selectedColor =
-            CategoryColor.allCases.first {
-                $0.displayName == category.colorName
-            } ?? .mint
+        selectedColor = category.color
     }
+    
+    func cancelEditing() {
+        if let id = editingCategoryId, id < 0 {
+            categories.removeAll { $0.id == id }
+        }
+        editingCategoryId = nil
+    }
+    
+    // MARK: - Fetch
+    func fetchCategories() async {
+            isLoading = true
+            defer { isLoading = false }
+
+            do {
+                categories = try await service.fetchCategories()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
 
     // MARK: - Save (Create / Update)
-    func saveCategory() {
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmedName.isEmpty else { return }
-        
-        if let id = editingCategoryId,
-           let index = categories.firstIndex(where: { $0.id == id }) {
+    func saveCategory() async {
+        guard canSaveCategory else { return }
 
-            // update
-            categories[index] = ScheduleCategory(
-                id: id,
-                name: name,
-                color: selectedColor.color,
-                colorName: selectedColor.displayName
-            )
+        isLoading = true
+        defer { isLoading = false }
 
-        } else {
-            // create
-            let newId = (categories.map { $0.id }.max() ?? 0) + 1
-            categories.append(
-                ScheduleCategory(
-                    id: newId,
-                    name: name,
-                    color: selectedColor.color,
-                    colorName: selectedColor.displayName
-                )
-            )
+        do {
+            if let id = editingCategoryId {
+
+                if id < 0 {
+                    let created = try await service.createCategory(
+                        name: name,
+                        colorCode: selectedColor.hexCode
+                    )
+
+                    categories.removeAll { $0.id == id }
+                    categories.append(created)
+
+                } else {
+                    let updated = try await service.updateCategory(
+                        id: id,
+                        name: name,
+                        colorCode: selectedColor.hexCode
+                    )
+
+                    if let index = categories.firstIndex(where: { $0.id == id }) {
+                        categories[index] = updated
+                    }
+                }
+            }
+
+            editingCategoryId = nil
+
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
+
     // MARK: - Delete
-    func deleteCategory(_ category: ScheduleCategory) {
-        categories.removeAll { $0.id == category.id }
+    func deleteCategory(_ category: ScheduleCategory) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await service.deleteCategory(id: category.id)
+            categories.removeAll { $0.id == category.id }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
+
 }

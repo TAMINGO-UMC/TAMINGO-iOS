@@ -10,6 +10,5 @@ import SwiftUI
 protocol CategoryItem: Identifiable {
     var id: Int { get }
     var name: String { get }
-    var color: Color { get }
-    var colorName: String { get }
+    var color: CategoryColor { get }
 }

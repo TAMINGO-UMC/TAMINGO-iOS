@@ -14,13 +14,18 @@ protocol CategoryViewModel: AnyObject {
 
     var name: String { get set }
     var selectedColor: CategoryColor { get set }
-    
+
+    var isLoading: Bool { get set }
+    var errorMessage: String? { get set }
+
     var isEmpty: Bool { get }
     var canSaveCategory: Bool { get }
 
+    func fetchCategories() async
     func didTapAdd()
     func didTapEdit(_ category: CategoryType)
-    func saveCategory()
-    func deleteCategory(_ category: CategoryType)
+    func cancelEditing()
+    func saveCategory() async
+    func deleteCategory(_ category: CategoryType) async
 }
 
