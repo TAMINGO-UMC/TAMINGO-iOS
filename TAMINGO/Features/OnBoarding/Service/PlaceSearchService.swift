@@ -27,8 +27,11 @@ final class PlaceSearchService {
 
         var request = URLRequest(url: url)
         request.addValue(
-            "KakaoAK \(Config.kakaoAddressAPIKey)",
-            forHTTPHeaderField: "Authorization"
+//            "KakaoAK \(Config.kakaoAddressAPIKey)",
+//            forHTTPHeaderField: "Authorization"
+
+// LOGIN_APIKey로 교체 
+        "KakaoAK \(Config.kakaoAddressAPIKey)", forHTTPHeaderField: "Authorization"
         )
 
 

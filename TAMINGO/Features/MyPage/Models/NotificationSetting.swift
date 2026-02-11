@@ -5,7 +5,7 @@
 //  Created by 권예원 on 1/24/26.
 //
 
-// 온보딩에서도 사용
+
 struct NotificationSetting {
     let departAlertEnabled: Bool
     let departAlertMinutes: ArrivalBufferType?
@@ -16,12 +16,12 @@ struct NotificationSetting {
     let routineAlertEnabled: Bool
 }
 
-extension NotificationSetting {
 
+extension NotificationSetting {
     func toDTO() -> NotificationSettingDTO {
         NotificationSettingDTO(
             departAlertEnabled: departAlertEnabled,
-            departAlertMinutes: departAlertMinutes?.rawValue,
+            departAlertMinutes: departAlertMinutes?.dtoValue,
             lateRiskAlertEnabled: lateRiskAlertEnabled,
             realtimeTransitEnabled: realtimeTransitEnabled,
             todoRecommendEnabled: todoRecommendEnabled,
@@ -30,3 +30,4 @@ extension NotificationSetting {
         )
     }
 }
+

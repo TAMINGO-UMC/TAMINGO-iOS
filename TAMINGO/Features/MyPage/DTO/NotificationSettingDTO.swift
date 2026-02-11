@@ -8,7 +8,7 @@
 import Foundation
 struct NotificationSettingDTO: Codable {
     let departAlertEnabled: Bool
-    let departAlertMinutes: Int?
+    let departAlertMinutes: String?
     let lateRiskAlertEnabled: Bool
     let realtimeTransitEnabled: Bool
     let todoRecommendEnabled: Bool
@@ -16,20 +16,19 @@ struct NotificationSettingDTO: Codable {
     let routineAlertEnabled: Bool
 }
 
+
 enum NotificationSettingError: Error {
     case invalidDepartAlertMinutes
 }
 
 extension NotificationSettingDTO {
-
     func toDomain() throws -> NotificationSetting {
-
         let buffer: ArrivalBufferType?
 
         if departAlertEnabled {
             guard
                 let minutes = departAlertMinutes,
-                let value = ArrivalBufferType(rawValue: minutes)
+                let value = ArrivalBufferType(dtoValue: minutes)
             else {
                 throw NotificationSettingError.invalidDepartAlertMinutes
             }
@@ -49,5 +48,3 @@ extension NotificationSettingDTO {
         )
     }
 }
-
-

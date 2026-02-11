@@ -116,7 +116,9 @@ final class LoginViewModel: ObservableObject {
             print("🎯 onboardingCompleted: \(response.onboardingCompleted)")
             
             // 4. 로그인 성공 알림
-            NotificationCenter.default.post(name: .userDidLogin, object: nil)
+            if response.onboardingCompleted {
+                NotificationCenter.default.post(name: .userDidLogin, object: nil)
+            }
             
             // 5. 화면 전환
             isLoginFailed = false
@@ -186,7 +188,9 @@ final class LoginViewModel: ObservableObject {
             TokenManager.shared.printTokenStatus()
             
             // 로그인 성공 알림
-            NotificationCenter.default.post(name: .userDidLogin, object: nil)
+            if response.onboardingCompleted {
+                NotificationCenter.default.post(name: .userDidLogin, object: nil)
+            }
             
             isLoginFailed = false
             actionSubject.send(.loginSuccess(

@@ -10,6 +10,22 @@ import Foundation
 @Observable
 final class OnboardingViewModel {
     
+    let setupViewModel: SetupViewModel
+
+    init(setupViewModel: SetupViewModel = SetupViewModel()) {
+        self.setupViewModel = setupViewModel
+    }
+    
+    private let onboardingService = OnboardingService()
+    
+    // 중복 방지
+    var isSubmitting = false
+    var didFinishOnboarding: Bool = false
+    
+    // 에러 관리
+    var showErrorAlert :Bool = false
+    var errorMessage: String?
+    
     // intro, setup, done
     var step: OnboardingStep = .intro
     // intro 1~4
@@ -53,8 +69,10 @@ final class OnboardingViewModel {
         switch step {
         case .intro:
             return introPage != .overview
-        case .setup, .done:
+        case .setup:
             return true
+        case .done:
+            return false
         }
     }
 
@@ -122,9 +140,56 @@ final class OnboardingViewModel {
             step = .intro
             introPage = IntroPage.allCases.last ?? .overview
         case .done:
-            step = .setup
+            break
         }
     }
     
+    
+    
 }
+
+extension OnboardingViewModel {
+    
+
+    
+    private func handleAPIError(_ error: APIError) {
+        switch error.statusCode {
+        case 409:
+            didFinishOnboarding = true
+
+        case 401:
+            errorMessage = "인증이 만료되었습니다. 다시 로그인해주세요."
+            showErrorAlert = true
+
+        default:
+            errorMessage = error.localizedDescription
+            showErrorAlert = true
+        }
+    }
+
+
+    @MainActor
+    func completeOnboarding() async {
+        guard !isSubmitting else { return }
+            isSubmitting = true
+            defer { isSubmitting = false }
+        guard let request = OnboardingRequestDTO(viewModel: setupViewModel) else {
+            return
+        }
+
+        do {
+            _ = try await onboardingService.completeOnboarding(
+                request: request
+            )
+            step = .done
+            didFinishOnboarding = true
+
+        } catch let error as APIError {
+            handleAPIError(error)
+        } catch {
+            print(error)
+        }
+    }
+}
+
 
