@@ -136,4 +136,19 @@ extension EditScheduleViewModel {
             return false
         }
     }
+    
+    // MARK: - Network: Delete Schedule
+    func deleteSchedule(id: Int) async -> Bool {
+        self.isLoading = true
+        defer { self.isLoading = false }
+        
+        do {
+            let _: BaseResponse<String> = try await provider.request(.deleteSchedule(id: id))
+            print("일정 삭제 성공: ID \(id)")
+            return true
+        } catch {
+            print("일정 삭제 실패: \(error.localizedDescription)")
+            return false
+        }
+    }
 }
