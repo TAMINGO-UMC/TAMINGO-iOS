@@ -85,9 +85,6 @@ struct AddScheduleView: View {
                     // 메모 필드
                     ScheduleMemo(memo: $viewModel.memo)
                     
-                    ScheduleDeleteButton() {
-                        dismiss()
-                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)

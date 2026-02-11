@@ -138,6 +138,7 @@ extension EditScheduleViewModel {
     }
     
     // MARK: - Network: Delete Schedule
+    @MainActor
     func deleteSchedule(id: Int) async -> Bool {
         self.isLoading = true
         defer { self.isLoading = false }

@@ -12,7 +12,7 @@ struct EditScheduleView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var activeSheet: SheetType? = nil
-    @State private var showResetAlert = false
+    @State private var showDeleteAlert = false
     
     let scheduleId: Int
     
@@ -79,7 +79,7 @@ struct EditScheduleView: View {
                     ScheduleMemo(memo: $viewModel.memo)
                     
                     ScheduleDeleteButton() {
-                        showResetAlert.toggle()
+                        showDeleteAlert.toggle()
                     }
                 }
                 .padding(.horizontal, 20)
@@ -117,7 +117,7 @@ struct EditScheduleView: View {
             .presentationDetents([.height(240)])
             .presentationDragIndicator(.visible)
         }
-        .alert("일정을 삭제하시겠습니까?", isPresented: $showResetAlert) {
+        .alert("일정을 삭제하시겠습니까?", isPresented: $showDeleteAlert) {
             Button("취소", role: .cancel) { }
             Button("삭제", role: .destructive) {
                 Task {

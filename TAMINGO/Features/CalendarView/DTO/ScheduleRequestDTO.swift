@@ -46,7 +46,7 @@ struct ScheduleEditDTO: Encodable {
     let linkedTodoIds: [Int]
 }
 
-struct addPlaceDTO: Encodable {
+struct AddPlaceDTO: Encodable {
     let name: String
     let address: String
     let latitude: Double

@@ -28,6 +28,8 @@ extension AddScheduleViewModel {
         // 빈 문자열 처리 (빈 값이면 nil 전송)
         let placeNameToSend: String? = placeName.isEmpty ? nil : placeName
         let addressToSend: String? = address.isEmpty ? nil : address
+        let latitudeToSend: Double? = placeNameToSend == nil ? nil : latitude
+        let longitudeToSend: Double? = placeNameToSend == nil ? nil : longitude
         
         // AI 소스 처리 (내용 없으면 nil)
         let aiSourceToSend: AIInferenceSource?
@@ -46,8 +48,8 @@ extension AddScheduleViewModel {
             endTime: endTime.toString(format: "HH:mm"),
             placeName: placeNameToSend,
             address: addressToSend,
-            latitude: latitude,
-            longitude: longitude,
+            latitude: latitudeToSend,
+            longitude: longitudeToSend,
             scheduleCategoryId: categoryIdToSend,
             memo: memo,
             repeatType: repeatType.rawValue,

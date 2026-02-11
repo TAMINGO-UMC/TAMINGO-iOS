@@ -14,7 +14,7 @@ import Moya
 @MainActor
 class AddScheduleViewModel {
     // MARK: - Dependencies
-    let provider = MoyaProvider<ScheduleTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))])
+    let provider = MoyaProvider<ScheduleTarget>()
     
     var cancellables = Set<AnyCancellable>()
     let inputSubject = PassthroughSubject<String, Never>()

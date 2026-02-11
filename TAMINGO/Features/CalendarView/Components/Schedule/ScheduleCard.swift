@@ -24,25 +24,9 @@ struct ScheduleCard: View {
                         .foregroundStyle(.black00)
                     
                     if let cat = schedule.category {
-                        Text(cat)
-                            .font(.medium12)
-                            .foregroundStyle(color)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(color.opacity(0.15))
-                            )
+                        categoryTag(text: cat, color: color)
                     } else {
-                        Text("없음")
-                            .font(.medium12)
-                            .foregroundStyle(.gray)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(.gray.opacity(0.15))
-                            )
+                        categoryTag(text: "없음", color: .gray)
                     }
                 }
                 
@@ -66,5 +50,17 @@ struct ScheduleCard: View {
             )
         }
         .frame(height: 60)
+    }
+    
+    private func categoryTag(text: String, color: Color) -> some View {
+        Text(text)
+            .font(.medium12)
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(color.opacity(0.15))
+            )
     }
 }

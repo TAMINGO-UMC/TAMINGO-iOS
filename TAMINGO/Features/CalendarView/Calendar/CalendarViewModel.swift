@@ -19,7 +19,7 @@ struct Marker: Hashable, Identifiable {
 
 @Observable
 class CalendarViewModel {
-    private let provider = MoyaProvider<ScheduleTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
+    private let provider = MoyaProvider<ScheduleTarget>()
     
     private let calendar = Calendar.current
     
@@ -69,47 +69,47 @@ class CalendarViewModel {
     
     // MARK: - 카테고리 맵 업데이트 (회색 '없음' 추가)
     private func updateCategoryMap(with categories: [CategoryDTO]) {
-            var newMap: [String: Color] = [:]
-            
-            // 서버에서 받아온 카테고리 매핑
-            for cat in categories {
-                newMap[cat.name] = Color(hex: cat.colorCode)
-            }
-            
-            // 카테고리 없음에 대한 명시적 회색 매핑
-            // 서버에서 null(빈문자열)로 오거나, 실제 이름이 "카테고리 없음"인 경우 모두 대응
-            newMap[""] = .gray
-            newMap["없음"] = .gray
-            
-            self.categoryMap = newMap
-            
-            // 기존 카테고리는 이름순 정렬
-            var sortedList = newMap
-                .filter { $0.key != "" && $0.key != "없음" } // '없음'은 따로 처리하기 위해 제외
-                .sorted { $0.key < $1.key }
-            
-            // 리스트 맨 뒤에 없음(회색) 항목 수동 추가
-            sortedList.append((key: "없음", value: .gray))
-            
-            self.categories = sortedList
+        var newMap: [String: Color] = [:]
+        
+        // 서버에서 받아온 카테고리 매핑
+        for cat in categories {
+            newMap[cat.name] = Color(hex: cat.colorCode)
         }
         
-        // MARK: - 마커 관리
-        func setMarkers(from schedules: [ScheduleListDTO]) {
-            clearAllMarkers()
+        // 카테고리 없음에 대한 명시적 회색 매핑
+        // 서버에서 null(빈문자열)로 오거나, 실제 이름이 "카테고리 없음"인 경우 모두 대응
+        newMap[""] = .gray
+        newMap["없음"] = .gray
+        
+        self.categoryMap = newMap
+        
+        // 기존 카테고리는 이름순 정렬
+        var sortedList = newMap
+            .filter { $0.key != "" && $0.key != "없음" } // '없음'은 따로 처리하기 위해 제외
+            .sorted { $0.key < $1.key }
+        
+        // 리스트 맨 뒤에 없음(회색) 항목 수동 추가
+        sortedList.append((key: "없음", value: .gray))
+        
+        self.categories = sortedList
+    }
+    
+    // MARK: - 마커 관리
+    private func setMarkers(from schedules: [ScheduleListDTO]) {
+        clearAllMarkers()
+        
+        for schedule in schedules {
+            // category가 nil이면 ""(빈문자열)로 변환 -> Map에서 .gray를 찾아냄
+            let categoryKey = schedule.category ?? ""
             
-            for schedule in schedules {
-                // category가 nil이면 ""(빈문자열)로 변환 -> Map에서 .gray를 찾아냄
-                let categoryKey = schedule.category ?? ""
-                
-                // Map에 있으면 그 색상, 정 없으면 .gray (2중 안전장치)
-                let color = categoryMap[categoryKey] ?? .gray
-                
-                if let date = schedule.startTime.toDate() {
-                    addMarker(for: date, color: color)
-                }
+            // Map에 있으면 그 색상, 정 없으면 .gray (2중 안전장치)
+            let color = categoryMap[categoryKey] ?? .gray
+            
+            if let date = schedule.startTime.toDate() {
+                addMarker(for: date, color: color)
             }
         }
+    }
     
     func addMarker(for date: Date, color: Color) {
         let dayKey = date.startOfDay

@@ -30,7 +30,7 @@ extension AddScheduleViewModel {
     
     func addFavoritePlace() {
         guard let lat = latitude, let lon = longitude else { return }
-        let requestBody = addPlaceDTO(
+        let requestBody = AddPlaceDTO(
             name: placeName, address: address, latitude: lat, longitude: lon, isAiSuggested: true
         )
         

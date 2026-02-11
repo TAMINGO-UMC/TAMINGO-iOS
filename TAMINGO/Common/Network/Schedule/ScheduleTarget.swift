@@ -13,7 +13,7 @@ enum ScheduleTarget {
     case createSchedule(body: ScheduleRequestDTO)
     case aiInference(title: String)
     case updateSchedule(id: Int, body: ScheduleEditDTO)
-    case aiFavoritePlaces(body: addPlaceDTO)
+    case aiFavoritePlaces(body: AddPlaceDTO)
     case getFavoritePlaces
     case getScheduleList(date: String)
     case getScheduleDetail(id: Int)
