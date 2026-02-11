@@ -33,4 +33,6 @@ struct AppRootView: View {
 
 #Preview {
     AppRootView()
+        .environment(SignupProgressStore())
+        .environment(SignupSessionStore())
 }
