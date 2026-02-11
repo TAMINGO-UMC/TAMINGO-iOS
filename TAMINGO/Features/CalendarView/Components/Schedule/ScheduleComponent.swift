@@ -120,20 +120,41 @@ struct ScheduleOptionRow: View {
 struct SelectedItemRow: View {
     let title: String
     let onEdit: () -> Void
+    let onDelete: () -> Void
     
     var body: some View {
         HStack {
-            Text(title).font(.medium12)
+            if title.isEmpty {
+                Text("없음")
+                    .font(.medium12)
+                    .foregroundStyle(.gray2)
+            } else {
+                Text(title).font(.medium12)
+            }
+            
             Spacer()
-            Button("수정") { onEdit() }
-                .font(.medium12)
-                .foregroundStyle(Color.gray)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .foregroundStyle(.gray0)
-                )
+            
+            HStack(spacing: 8) {
+                Button("수정") { onEdit() }
+                    .font(.medium14)
+                    .foregroundStyle(Color.gray)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .foregroundStyle(.gray0)
+                    )
+                
+                Button("삭제") { onDelete() }
+                    .font(.medium14)
+                    .foregroundStyle(.mainPink)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .foregroundStyle(.subPink)
+                    )
+            }
         }
     }
 }

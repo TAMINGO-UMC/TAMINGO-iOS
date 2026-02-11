@@ -45,6 +45,14 @@ extension AddScheduleViewModel {
         }
     }
     
+    func removePlace() {
+        self.placeName = ""
+        self.address = ""
+        self.latitude = nil
+        self.longitude = nil
+        self.aiInferenceSource.aiSuggestedPlaceName = ""
+    }
+    
     // MARK: - Todo Logic
     func toggleTodoSelection(_ todo: TodoSummaryDTO) {
         // 이미 연결된 목록(linkedTodos)에 있는지 확인
@@ -80,5 +88,11 @@ extension AddScheduleViewModel {
     func selectCategory(_ category: ScheduleCategoryDTO) {
         self.categoryName = category.name
         self.scheduleCategoryId = category.id
+    }
+    
+    func removeCategory() {
+        self.scheduleCategoryId = 0
+        self.categoryName = ""
+        self.aiInferenceSource.aiSuggestedCategoryName = ""
     }
 }

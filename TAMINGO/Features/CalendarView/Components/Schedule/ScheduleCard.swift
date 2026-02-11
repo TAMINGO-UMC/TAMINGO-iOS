@@ -23,19 +23,38 @@ struct ScheduleCard: View {
                         .font(.medium14)
                         .foregroundStyle(.black00)
                     
-                    Text(schedule.category)
-                        .font(.medium12)
-                        .foregroundStyle(color)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(color.opacity(0.15))
-                        )
+                    if let cat = schedule.category {
+                        Text(cat)
+                            .font(.medium12)
+                            .foregroundStyle(color)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(color.opacity(0.15))
+                            )
+                    } else {
+                        Text("없음")
+                            .font(.medium12)
+                            .foregroundStyle(.gray)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.gray.opacity(0.15))
+                            )
+                    }
                 }
-                Text("\(schedule.endTime.toTimeStr(format: "HH:mm"))  \(schedule.placeName)")
-                    .font(.medium12)
-                    .foregroundStyle(.gray2)
+                
+                if let place = schedule.placeName {
+                    Text("\(schedule.endTime.toTimeStr(format: "HH:mm"))  \(place)")
+                        .font(.medium12)
+                        .foregroundStyle(.gray2)
+                } else {
+                    Text("\(schedule.endTime.toTimeStr(format: "HH:mm"))  장소 없음")
+                        .font(.medium12)
+                        .foregroundStyle(.gray2)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

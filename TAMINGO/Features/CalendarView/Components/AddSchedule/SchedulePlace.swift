@@ -20,6 +20,7 @@ struct SchedulePlace: View {
     // Actions
     var onSelectPlace: (MyPlaceDTO) -> Void
     var onResetFavoriteRecommendation: () -> Void
+    var onDeletePlace: () -> Void
     
     // Local State (내부적으로 관리)
     @State private var isEditing: Bool = false
@@ -39,12 +40,18 @@ struct SchedulePlace: View {
                 //TODO: 장소 검색 추가
                 placeListScroll
             } else {
-                SelectedItemRow(title: placeName) {
-                    withAnimation {
-                        isEditing = true
-                        onResetFavoriteRecommendation()
+                SelectedItemRow(
+                    title: placeName,
+                    onEdit: {
+                        withAnimation {
+                            isEditing = true
+                            onResetFavoriteRecommendation()
+                        }
+                    },
+                    onDelete: {
+                        onDeletePlace()
                     }
-                }
+                )
             }
         }
     }
