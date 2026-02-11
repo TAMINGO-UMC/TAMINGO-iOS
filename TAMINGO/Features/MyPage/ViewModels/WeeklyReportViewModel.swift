@@ -15,11 +15,10 @@ final class WeeklyReportViewModel {
     private let baseDate: Date
 
     // 선택된 조회 기간
-    var selectedPeriod: PeriodOption = .thisWeek
+    var selectedPeriod: PeriodOption = .lastWeek
 
     // SelectList에 뿌릴 옵션
     let periodOptions: [PeriodOption] = [
-        .thisWeek,
         .lastWeek,
         .thisMonth
     ]
@@ -61,18 +60,6 @@ extension WeeklyReportViewModel {
         let calendar = Calendar.current
 
         switch option {
-
-        case .thisWeek:
-            let start = calendar
-                .date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: baseDate))!
-                .startOfDay
-
-            let end = calendar
-                .date(byAdding: .day, value: 6, to: start)!
-                .startOfDay
-
-            return PeriodRange(start: start, end: end)
-
         case .lastWeek:
             let thisWeekStart = calendar
                 .date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: baseDate))!

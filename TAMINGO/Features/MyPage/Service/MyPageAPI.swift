@@ -1,49 +1,41 @@
 //
-//  ActivityTimeSettingAPI.swift
+//  MyPageAPI.swift
 //  TAMINGO
 //
-//  Created by 권예원 on 2/9/26.
+//  Created by 권예원 on 2/10/26.
 //
 
 import Foundation
 import Moya
 import Alamofire
 
-enum ActivityTimeSettingAPI {
-    case fetchActivityTime
-    case saveActivityTime(ActivityTimeRequestDTO)
+enum MyPageAPI {
+    case fetchSummary
 }
 
-
-extension ActivityTimeSettingAPI: APITargetType {
-
+extension MyPageAPI: APITargetType {
+    
     var path: String {
         switch self {
-        case .fetchActivityTime,
-             .saveActivityTime:
-            return "/api/activity-time"
+        case .fetchSummary:
+            return "/api/mypage"
         }
     }
-
+    
     var method: Moya.Method {
         switch self {
-        case .fetchActivityTime:
+        case .fetchSummary:
             return .get
-        case .saveActivityTime:
-            return .post
         }
     }
-
+    
     var task: Task {
         switch self {
-        case .fetchActivityTime:
+        case .fetchSummary:
             return .requestPlain
-
-        case .saveActivityTime(let dto):
-            return .requestJSONEncodable(dto)
         }
     }
-
+    
     var headers: [String: String]? {
         [
             "Content-Type": "application/json",
@@ -52,3 +44,4 @@ extension ActivityTimeSettingAPI: APITargetType {
         ]
     }
 }
+

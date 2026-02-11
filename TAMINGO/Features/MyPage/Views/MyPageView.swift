@@ -18,10 +18,8 @@ struct MyPageView: View {
                     .font(.semiBold18)
                 profile
                 WeeklyReportSection(
-                    metrics: weeklyMetricMocks,
-                    onTap: {
-                        onSelect(.weeklyReport)
-                    }
+                    metrics: vm.weeklyMetrics,
+                    onTap: { onSelect(.weeklyReport) }
                 )
                 CategorySection(onTapSchedule: {
                     onSelect(.scheduleCategory)
@@ -61,10 +59,10 @@ struct MyPageView: View {
                 .clipShape(Circle())
             
             VStack(alignment:.leading, spacing: 4){
-                Text("사용자님")
+                Text(vm.profileName)
                     .font(.medium14)
                     .foregroundStyle(.black00)
-                Text(verbatim: "aaa@aaa.aaa")
+                Text(vm.profileEmail)
                     .font(.regular12)
                     .foregroundColor(.gray2)
                     
@@ -220,7 +218,7 @@ struct PlaceTimeSection: View {
             
             CategorySettingRowView(
                 title: "이동수단 설정",
-                sub: "버스 > 지하철 > 도보",
+                sub: vm.transportPriorityText,
                 textColor: .gray2
             ) {
                 onTapTransport()

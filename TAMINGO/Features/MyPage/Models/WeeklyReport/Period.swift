@@ -7,7 +7,6 @@
 import Foundation
 
 enum PeriodOption: Identifiable, CaseIterable {
-    case thisWeek
     case lastWeek
     case thisMonth
 
@@ -15,7 +14,6 @@ enum PeriodOption: Identifiable, CaseIterable {
     
     var displayTitle: String {
         switch self {
-        case .thisWeek: return "이번주"
         case .lastWeek: return "지난주"
         case .thisMonth: return "이번달"
         }
@@ -29,5 +27,12 @@ struct PeriodRange {
     var formatted: String {
         "\(start.toString(format: "M/d")) - \(end.toString(format: "M/d"))"
     }
+}
+
+extension PeriodRange {
+    static let `default` = PeriodRange(
+        start: Date().startOfDay,
+        end: Date().startOfDay
+    )
 }
 

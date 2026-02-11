@@ -13,7 +13,13 @@ struct ActivityTime {
     var activeDays: Set<Weekday>
 }
 
-
+extension ActivityTime {
+    static let `default` = ActivityTime(
+        startTime: "09:00".toTimeOnlyDate()!,
+        endTime: "22:00".toTimeOnlyDate()!,
+        activeDays: []
+    )
+}
 
 enum Weekday: String, CaseIterable, Identifiable {
     case mon, tue, wed, thu, fri, sat, sun
