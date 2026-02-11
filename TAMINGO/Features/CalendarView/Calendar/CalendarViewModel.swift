@@ -10,8 +10,10 @@ import SwiftUI
 import Observation
 import Moya
 
-/// 캘린더 마커를 위한 구조체. 마커의 색상을 정의
-struct Marker: Hashable {
+/// 캘린더 마커를 위한 구조체.
+/// Identifiable을 채택하여 같은 색상이라도 고유하게 식별되도록 수정
+struct Marker: Hashable, Identifiable {
+    let id = UUID() // 고유 ID 자동 생성
     let color: Color
 }
 
