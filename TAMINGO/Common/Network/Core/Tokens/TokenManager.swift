@@ -248,7 +248,7 @@ final class TokenManager {
 }
 
 // MARK: - Token Auto Refresh Interceptor
-class TokenInterceptor: RequestInterceptor {
+class TokenInterceptor: RequestInterceptor, @unchecked Sendable{
     
     // MARK: - Adapt (요청 전 토큰 추가 + 만료 체크)
     func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
@@ -375,7 +375,6 @@ class TokenInterceptor: RequestInterceptor {
         
         let decoder = JSONDecoder()
         let baseResponse = try decoder.decode(BaseResponse<RefreshTokenResponseDTO>.self, from: data)
-        
         guard let accessToken = await baseResponse.result?.accessToken else {
             throw APIError.transport("새로운 Access Token을 받지 못했습니다.")
         }

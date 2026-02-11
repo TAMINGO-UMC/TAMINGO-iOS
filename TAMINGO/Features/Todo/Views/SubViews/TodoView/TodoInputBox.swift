@@ -43,8 +43,8 @@ struct TodoInputBox: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 4)
                             .stroke(Color.gray1, lineWidth: 0.5)
-                    )
-                    .onChange(of: todoTitle) { newValue in
+                    )            
+                    .onChange(of: todoTitle) { oldValue, newValue in 
                         debounceTimer?.invalidate()
                         if newValue.isEmpty {
                             aiViewModel.reset()
