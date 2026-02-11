@@ -100,12 +100,6 @@ final class TokenManager {
                 if timeLeft > 0 {
                     print("⏳ 남은 시간: \(formatTimeInterval(timeLeft))")
                     
-                    // 시각적 게이지
-                    let percentage = (timeLeft / 3600) * 100
-                    let bars = Int(percentage / 10)
-                    let gauge = String(repeating: "█", count: bars) + String(repeating: "░", count: 10 - bars)
-                    print("📊 상태: \(gauge) \(String(format: "%.1f", percentage))%")
-                    
                     if timeLeft < 300 {
                         print("⚠️  경고: 5분 이내 만료")
                     } else if timeLeft < 600 {
@@ -136,8 +130,8 @@ final class TokenManager {
             print(" - 만료 시간: \(formatDateTime(expiryDate))")
             print(" - 유효 시간: \(formatTimeInterval(expiresIn))")
             
+        }
     }
-    
     func getRefreshToken() -> String? {
         return get(forKey: refreshTokenKey)
     }
