@@ -4,6 +4,7 @@
 //
 //  Created by 엄지용 on 2/8/26.
 //  Updated: 2/9/26 - 날짜 미지정 처리 및 AI category null 처리
+//  Updated: 2/12/26 - AIInferenceResult 파라미터 누락 수정
 //
 
 import SwiftUI
@@ -47,22 +48,28 @@ class TodoEditViewModel {
     
     var myLocations: [TodoMyLocation] = []
     var isFavoriteRecommendation: Bool = false
-    var availableCategories: [String] = []
+    var availableCategories: [TodoCategory] = []  // TodoCategory 사용
     
     var aiInferenceDisplay: AIInferenceResult? {
-        guard !isCategoryAIGenerated || !isLocationAIGenerated || !isDurationAIGenerated else {
-            return nil
+            guard !isCategoryAIGenerated || !isLocationAIGenerated || !isDurationAIGenerated else {
+                return nil
+            }
+            
+            // 현재 카테고리 이름과 일치하는 카테고리 정보를 찾음
+            let matchedCategory = availableCategories.first(where: { $0.name == category })
+            
+
+            return AIInferenceResult(
+                categoryId: matchedCategory?.id,
+                category: category,
+                categoryColor: matchedCategory?.color ?? .gray, 
+                placeName: placeName.isEmpty ? nil : placeName,
+                address: address,
+                latitude: latitude,
+                longitude: longitude,
+                duration: parsedTotalMinutes
+            )
         }
-        
-        return AIInferenceResult(
-            category: category,
-            placeName: placeName.isEmpty ? nil : placeName,
-            address: address,
-            latitude: latitude,
-            longitude: longitude,
-            duration: parsedTotalMinutes
-        )
-    }
     
     private let apiService = TodoAPIService.shared
     private var aiInferenceTask: Task<Void, Never>?
@@ -204,8 +211,18 @@ class TodoEditViewModel {
     }
     
     func loadCategories() async {
-        await MainActor.run {
-            self.availableCategories = ["일상", "생활", "업무", "먹기"]
+        do {
+            // ✅ 서버에서 카테고리 목록 조회
+            let categories = try await apiService.getCategories()
+            await MainActor.run {
+                self.availableCategories = categories
+            }
+        } catch {
+            print("카테고리 목록 조회 실패: \(error)")
+            // ✅ 실패 시 빈 배열
+            await MainActor.run {
+                self.availableCategories = []
+            }
         }
     }
     

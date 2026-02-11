@@ -72,16 +72,3 @@ struct AIInferenceResultView: View {
     }
 }
 
-#Preview {
-    AIInferenceResultView(
-        result: AIInferenceResult(
-            category: "일상",
-            placeName: "광운대학교 중앙도서관",
-            address: "서울 노원구 광운로 20",
-            latitude: 37.6192404638865,
-            longitude: 127.058270608867,
-            duration: 10
-        )
-    )
-    .padding()
-}

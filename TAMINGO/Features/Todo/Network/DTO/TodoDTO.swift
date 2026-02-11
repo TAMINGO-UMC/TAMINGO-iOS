@@ -22,7 +22,7 @@ struct MyPlacesDTO: Codable {
 struct TodoCreateRequestDTO: Codable {
     let title: String
     let targetDate: String?  // ✅ Optional로 변경 (null 허용)
-    let todoCategoryId: Int
+    let todoCategoryId: Int? // ✅ Optional로 변경
     let placeName: String?
     let address: String?
     let latitude: Double?
@@ -51,7 +51,7 @@ struct TodoUpdateRequestDTO: Codable {
     let latitude: Double?
     let longitude: Double?
     let duration: Int
-    let todoCategoryId: Int
+    let todoCategoryId: Int? // ✅ Optional로 변경
     let repeatType: String
     let repeatEndDate: String?
     let linkedScheduleId: Int?
@@ -69,7 +69,9 @@ struct TodoAIInferenceResponseDTO: Codable {
     let todoInfo: TodoInfoDTO
     
     struct TodoInfoDTO: Codable {
+        let categoryId: Int?       // ✅ 추가
         let category: String?
+        let categoryColor: String? // ✅ 추가
         let placeName: String?
         let address: String?
         let latitude: Double?
@@ -107,8 +109,9 @@ struct TodoListResponseDTO: Codable {
     struct TodoItemDTO: Codable {
         let todoId: Int
         let title: String
-        let categoryName: String
-        let categoryColor: String
+        let categoryId: Int?       // ✅ 추가: 서버 카테고리 ID
+        let categoryName: String?
+        let categoryColor: String?
         let isChecked: Bool
     }
 }
@@ -123,6 +126,7 @@ struct TodoDetailResponseDTO: Codable {
     let latitude: Double?
     let longitude: Double?
     let duration: Int
+    let categoryId: Int?       // ✅ 추가: 서버 카테고리 ID
     let category: String
     let categoryColor: String?  // ✅ 서버가 제공할 수도 있는 색상 필드 추가
     let repeatType: String
@@ -180,7 +184,9 @@ extension MyPlacesDTO {
 extension TodoAIInferenceResponseDTO.TodoInfoDTO {
     func toAIInferenceResult() -> AIInferenceResult {
         AIInferenceResult(
+            categoryId: categoryId,
             category: category ?? "미지정",
+            categoryColor: categoryColor != nil ? Color(hex: categoryColor!) : nil,
             placeName: placeName,
             address: address,
             latitude: latitude,
@@ -203,14 +209,15 @@ extension RecommendSchedulesResponseDTO.ScheduleItemDTO {
 
 extension TodoListResponseDTO.TodoItemDTO {
     func toTodoItem() -> TodoItem {
-        // ✅ 서버가 제공하는 categoryColor를 최우선으로 사용
-        let color = Color(hex: categoryColor)
-        
+        //[수정] categoryColor가 nil이면 기본 회색(#D1D1D1) 사용
+        let colorCode = categoryColor ?? "#D1D1D1"
+        let color = Color(hex: colorCode)
         return TodoItem(
             id: todoId,
             title: title,
-            category: categoryName,
-            categoryColor: color,  // ✅ 서버 Hex 색상 사용
+            categoryId: categoryId,    // 서버 ID 사용
+            category: categoryName ?? "미지정",
+            categoryColor: color,      // 서버 Hex 색상 사용
             isCompleted: isChecked,
             date: nil
         )
@@ -219,7 +226,7 @@ extension TodoListResponseDTO.TodoItemDTO {
 
 extension TodoDetailResponseDTO {
     func toTodoItem() -> TodoItem {
-        // ✅ linkedSchedule을 relatedSchedules 배열로 변환 (isSelected = true)
+        // linkedSchedule을 relatedSchedules 배열로 변환 (isSelected = true)
         var linkedSchedules: [TodoRelatedScheduleItem] = []
         
         if let schedule = linkedSchedule {
@@ -227,31 +234,31 @@ extension TodoDetailResponseDTO {
                 TodoRelatedScheduleItem(
                     title: schedule.title,
                     location: schedule.placeName ?? "",
-                    isSelected: true,  // ✅ 연결된 스케줄은 선택된 상태
+                    isSelected: true,  // 연결된 스케줄은 선택된 상태
                     scheduleId: schedule.scheduleId
                 )
             )
         }
         
-        // ✅ candidateSchedules를 미선택 상태로 추가
+        // candidateSchedules를 미선택 상태로 추가
         let candidateScheduleItems = candidateSchedules.map { schedule in
             TodoRelatedScheduleItem(
                 title: schedule.title,
                 location: schedule.placeName ?? "",
-                isSelected: false,  // ✅ 후보 스케줄은 미선택 상태
+                isSelected: false,  // 후보 스케줄은 미선택 상태
                 scheduleId: schedule.scheduleId
             )
         }
         
-        // ✅ 연결된 스케줄 + 후보 스케줄 합치기
+        // 연결된 스케줄 + 후보 스케줄 합치기
         let allSchedules = linkedSchedules + candidateScheduleItems
         
-        print("🔄 toTodoItem 변환")
+        print("toTodoItem 변환")
         print("  - linkedSchedule: \(linkedSchedule?.scheduleId ?? -1)")
         print("  - 전체 스케줄 수: \(allSchedules.count)")
         print("  - 선택된 스케줄 수: \(allSchedules.filter { $0.isSelected }.count)")
         
-        // ✅ 서버 색상이 있으면 사용, 없으면 클라이언트 매핑 사용
+        // 서버 색상이 있으면 사용, 없으면 클라이언트 매핑 사용
         let color: Color
         if let serverColor = categoryColor {
             color = Color(hex: serverColor)
@@ -264,6 +271,7 @@ extension TodoDetailResponseDTO {
         return TodoItem(
             id: todoId,
             title: title,
+            categoryId: categoryId,    // 서버 ID 사용
             category: category,
             categoryColor: color,
             isCompleted: false,
@@ -286,17 +294,18 @@ extension TodoDetailResponseDTO {
 // MARK: - Model → DTO 변환
 
 extension TodoItem {
-    func toCreateRequestDTO(todoCategoryId: Int) -> TodoCreateRequestDTO {
-        // ✅ 날짜 변환 로그 추가
+    func toCreateRequestDTO(todoCategoryId: Int?) -> TodoCreateRequestDTO {
+        // 날짜 변환 로그 추가
         let targetDateString = date?.toAPIDateString()
         print("📤 toCreateRequestDTO 생성")
         print("  - item.date: \(date?.toAPIDateString() ?? "nil")")
         print("  - targetDate (전송값): \(targetDateString ?? "nil")")
+        print("  - todoCategoryId: \(todoCategoryId ?? -1)")
         
         return TodoCreateRequestDTO(
             title: title,
-            targetDate: targetDateString,  // ✅ nil 전송 가능
-            todoCategoryId: todoCategoryId,
+            targetDate: targetDateString,  // nil 전송 가능
+            todoCategoryId: todoCategoryId, // nil 전송 가능
             placeName: placeName,
             address: address,
             latitude: latitude,
@@ -318,7 +327,7 @@ extension TodoItem {
             repeatType = "NONE"
         }
         
-        // ✅ 날짜 변환 로그 추가
+        // 날짜 변환 로그 추가
         let targetDateString = date?.toAPIDateString()
         print("📤 toUpdateRequestDTO 생성")
         print("  - item.date: \(date?.toAPIDateString() ?? "nil")")

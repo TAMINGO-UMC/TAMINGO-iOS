@@ -6,14 +6,17 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct AIInferenceResult {
+    let categoryId: Int?       // 추가
     let category: String
+    let categoryColor: Color?  // 추가
     let placeName: String?
     let address: String?
     let latitude: Double?
     let longitude: Double?
-    let duration: Int  // 분 단위
+    let duration: Int
     
     /// UI 표시용 장소 문자열
     var locationDisplay: String {

@@ -26,11 +26,17 @@ struct LocationSection: View {
                 Spacer()
             }
             
-            if !viewModel.isLocationExpanded {
-                collapsedView
-            }else
-            {
-                expandedView
+            // ✅ [수정] AI 추론 중일 때 로딩 UI 표시
+            // viewModel.isInferringCategory 변수가 현재 AI 추론 전체 로딩 상태를 담당하고 있습니다.
+            if viewModel.isInferringCategory {
+                AILoadingRow(text: "장소 추론중 ...")
+            } else {
+                // 기존 로직 유지
+                if !viewModel.isLocationExpanded {
+                    collapsedView
+                } else {
+                    expandedView
+                }
             }
         }
         .sheet(isPresented: $showingPlaceSearch) {

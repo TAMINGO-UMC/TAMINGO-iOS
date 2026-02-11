@@ -4,6 +4,7 @@
 //
 //  Created by 엄지용 on 2/8/26.
 //  Updated: 2/9/26 - categoryIdMap 확장 및 디버깅 로그 추가
+//  Updated: 2/12/26 - toUpdateRequestDTO 호출 시 Optional Unwrapping 오류 수정
 //
 
 import SwiftUI
@@ -25,11 +26,6 @@ class TodoViewModel {
     var editingItem: TodoItem?
     
     private let apiService = TodoAPIService.shared
-    
-    //  카테고리 이름 → Color 변환 (CategoryHelper 사용)
-    private func categoryColor(for categoryName: String) -> Color {
-        return CategoryHelper.color(for: categoryName)
-    }
     
     // MARK: - 할일 목록 조회
     func loadTodos(for date: Date) async {
@@ -73,13 +69,14 @@ class TodoViewModel {
     func addTodo(aiResult: AIInferenceResult?) {
         guard !newTodoTitle.isEmpty else { return }
         
+        let categoryId = aiResult?.categoryId
         let category = aiResult?.category ?? "미지정"
-        let color = categoryColor(for: category)
-        let todoCategoryId = CategoryHelper.id(for: category)  // ✅ CategoryHelper 사용
+        let color = aiResult?.categoryColor ?? Color.gray
         
         var newItem = TodoItem(
             id: nil,
             title: newTodoTitle,
+            categoryId: categoryId,    // ✅ 서버 ID 사용
             category: category,
             categoryColor: color,
             isCompleted: false,
@@ -100,13 +97,15 @@ class TodoViewModel {
         
         Task {
             do {
-                let requestDTO = newItem.toCreateRequestDTO(todoCategoryId: todoCategoryId)
+     
+                let requestDTO = newItem.toCreateRequestDTO(todoCategoryId: categoryId)
                 let response = try await apiService.createTodo(body: requestDTO)
                 
                 await MainActor.run {
                     newItem = TodoItem(
                         id: response.todoId,
                         title: newItem.title,
+                        categoryId: newItem.categoryId,
                         category: newItem.category,
                         categoryColor: newItem.categoryColor,
                         isCompleted: newItem.isCompleted,
@@ -166,7 +165,7 @@ class TodoViewModel {
                         
                         targetItem.title = fetchedItem.title
                         targetItem.category = fetchedItem.category
-                        targetItem.categoryColor = fetchedItem.categoryColor  // ✅ 서버 색상 사용
+                        targetItem.categoryColor = fetchedItem.categoryColor
                         targetItem.date = fetchedItem.date
                         
                         targetItem.placeName = fetchedItem.placeName
@@ -176,7 +175,7 @@ class TodoViewModel {
                         
                         targetItem.estimatedMinutes = fetchedItem.estimatedMinutes
                         
-                        // ✅ relatedSchedules 및 linkedScheduleId 복원
+                        // relatedSchedules 및 linkedScheduleId 복원
                         targetItem.relatedSchedules = fetchedItem.relatedSchedules
                         targetItem.linkedScheduleId = fetchedItem.linkedScheduleId
                         
@@ -235,6 +234,7 @@ class TodoViewModel {
         print("🔵 updateItem 호출됨")
         print("  - item.id: \(item.id ?? -1)")
         print("  - item.title: \(item.title)")
+        print("  - item.categoryId: \(item.categoryId ?? -1)")
         print("  - item.category: \(item.category)")
         print("  - item.date: \(item.date?.toAPIDateString() ?? "nil (backlog)")")
         print("  - linkedScheduleId: \(item.linkedScheduleId ?? -1)")
@@ -247,9 +247,9 @@ class TodoViewModel {
             return
         }
         
-        // ✅ CategoryHelper 사용
-        let todoCategoryId = CategoryHelper.id(for: item.category)
-        print("✅ todoCategoryId: \(todoCategoryId)")
+        // ✅ categoryId 사용 (없으면 nil)
+        let todoCategoryId = item.categoryId
+        print("✅ todoCategoryId: \(todoCategoryId ?? -1)")
         
         // 로컬 업데이트 (임시)
         if let index = todoItems.firstIndex(where: { $0.localId == item.localId }) {
@@ -260,7 +260,9 @@ class TodoViewModel {
         // 서버 업데이트
         Task {
             do {
-                let requestDTO = item.toUpdateRequestDTO(todoCategoryId: todoCategoryId)
+                // ✅ [수정] todoCategoryId가 Optional(Int?)이므로 nil일 경우 기본값(0)을 주어 Int 타입으로 맞춤
+                let requestDTO = item.toUpdateRequestDTO(todoCategoryId: todoCategoryId ?? 0)
+                
                 print("🔵 PUT 요청 시작 - /api/todos/\(itemId)")
                 print("  - Request DTO: \(requestDTO)")
                 

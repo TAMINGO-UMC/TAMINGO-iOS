@@ -24,19 +24,21 @@ struct CategorySections: View {
                 
                 Spacer()
                 
-                // AI 추론 중 로딩 표시
-                if viewModel.isInferringCategory {
-                    ProgressView()
-                        .scaleEffect(0.8)
+                // ✅ [삭제] 기존 헤더 쪽 ProgressView 제거 (아래 AILoadingRow로 대체)
+            }
+            
+            // ✅ [수정] AI 추론 중일 때 로딩 UI 표시
+            if viewModel.isInferringCategory {
+                AILoadingRow(text: "카테고리 추론중 ...")
+            } else {
+                // 기존 로직 유지
+                if !viewModel.isCategoryExpanded {
+                    collapsedView
                 }
-            }
-            
-            if !viewModel.isCategoryExpanded {
-                collapsedView
-            }
-            
-            if viewModel.isCategoryExpanded {
-                expandedView
+                
+                if viewModel.isCategoryExpanded {
+                    expandedView
+                }
             }
         }
     }
@@ -91,12 +93,12 @@ struct CategorySections: View {
             // 카테고리 목록 (좌우 스크롤)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(viewModel.availableCategories, id: \.self) { category in
+                    ForEach(viewModel.availableCategories) { category in
                         CategoryButton(
                             category: category,
-                            isSelected: viewModel.category == category
+                            isSelected: viewModel.category == category.name
                         ) {
-                            viewModel.category = category
+                            viewModel.category = category.name
                             viewModel.isCategoryAIGenerated = false
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 viewModel.isCategoryExpanded = false
@@ -130,28 +132,18 @@ struct CategorySections: View {
 
 // MARK: - CategoryButton
 struct CategoryButton: View {
-    let category: String
+    let category: TodoCategory  // ✅ TodoCategory 사용
     let isSelected: Bool
     let action: () -> Void
     
-    private var categoryColor: Color {
-        switch category {
-        case "일상": return Color(hex: "#22C7A9")
-        case "생활": return Color(hex: "#A7E0D8")
-        case "업무": return Color(hex: "#FFC576")
-        case "먹기": return Color(hex: "#FFD3B6")
-        default: return Color(hex: "#22C7A9")
-        }
-    }
-    
     var body: some View {
         Button(action: action) {
-            Text(category)
+            Text(category.name)
                 .font(.regular12)
-                .foregroundColor(isSelected ? .white : categoryColor)
+                .foregroundColor(isSelected ? .white : category.color)
                 .padding(.horizontal, 12)
                 .frame(height: 32)
-                .background(isSelected ? categoryColor : categoryColor.opacity(0.15))
+                .background(isSelected ? category.color : category.color.opacity(0.15))
                 .cornerRadius(8)
         }
     }

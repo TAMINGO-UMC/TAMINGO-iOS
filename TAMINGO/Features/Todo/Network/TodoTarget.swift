@@ -37,6 +37,9 @@ enum TodoTarget {
     
     // 9. 할일 삭제
     case deleteTodo(id: Int)
+    
+    // 10. 카테고리 목록 조회
+    case getCategories
 }
 
 // MARK: - APITargetType 구현
@@ -62,6 +65,8 @@ extension TodoTarget: APITargetType {
             return "/api/todos/\(id)/check"
         case .deleteTodo(let id):
             return "/api/todos/\(id)"
+        case .getCategories:
+            return "/api/categories"
         }
     }
     
@@ -75,7 +80,7 @@ extension TodoTarget: APITargetType {
             return .patch
         case .deleteTodo:
             return .delete
-        case .getMyPlaces, .getTodoList, .getTodoDetail:
+        case .getMyPlaces, .getTodoList, .getTodoDetail, .getCategories:
             return .get
         }
     }
@@ -104,7 +109,7 @@ extension TodoTarget: APITargetType {
         case .updateTodoCompletion(_, let body):
             return .requestJSONEncodable(body)
             
-        case .getMyPlaces, .getTodoDetail, .deleteTodo:
+        case .getMyPlaces, .getTodoDetail, .deleteTodo, .getCategories:
             return .requestPlain
         }
     }
@@ -288,6 +293,42 @@ extension TodoTarget: APITargetType {
               "code": "SUCCESS-200",
               "message": "삭제에 성공했습니다.",
               "result": "삭제됨"
+            }
+            """.data(using: .utf8)!
+            
+        case .getCategories:
+            return """
+            {
+              "isSuccess": true,
+              "code": "SUCCESS-200",
+              "message": "요청에 성공했습니다.",
+              "result": [
+                {
+                  "id": 1,
+                  "name": "업무",
+                  "colorCode": "#FFC576"
+                },
+                {
+                  "id": 2,
+                  "name": "학업",
+                  "colorCode": "#9DCAFF"
+                },
+                {
+                  "id": 3,
+                  "name": "운동",
+                  "colorCode": "#FB9B9B"
+                },
+                {
+                  "id": 4,
+                  "name": "일상",
+                  "colorCode": "#22C7A9"
+                },
+                {
+                  "id": 5,
+                  "name": "미지정",
+                  "colorCode": "#D1D1D1"
+                }
+              ]
             }
             """.data(using: .utf8)!
         }

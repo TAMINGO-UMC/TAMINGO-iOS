@@ -8,7 +8,7 @@
 
 import Foundation
 import Moya
-import Alamofire // ✅ Session 사용을 위해 추가
+import Alamofire
 
 class TodoAPIService {
     static let shared = TodoAPIService()
@@ -19,18 +19,18 @@ class TodoAPIService {
     private init() {
         let logger = NetworkLoggerPlugin(configuration: .init(logOptions: [.verbose]))
         
-        // ✅ Interceptor를 포함한 Session 생성
-        // TokenInterceptor가 요청 전 토큰 주입(adapt) 및 401 에러 시 갱신(retry)을 담당합니다.
+        // Interceptor를 포함한 Session 생성
+        // TokenInterceptor가 요청 전 토큰 주입(adapt) 및 401 에러 시 갱신(retry)을 담당
         let session = Session(interceptor: TokenInterceptor())
         
-        // MARK: - ✅ 실제 서버 연결 (Stub 비활성화)
+        // MARK: - 실제 서버 연결 (Stub 비활성화)
         // 생성한 session을 Provider에 주입합니다.
         self.provider = MoyaProvider<TodoTarget>(
             session: session,
             plugins: [logger]
         )
         
-        // MARK: - ⚠️ 테스트 모드 (Stub 활성화) - 테스트 시에만 사용
+        // MARK: - 테스트 모드 (Stub 활성화) - 테스트 시에만 사용
         // self.provider = MoyaProvider<TodoTarget>(
         //     stubClosure: MoyaProvider.immediatelyStub,
         //     session: session, // Stub 모드에서도 인터셉터 동작을 테스트하려면 session 주입 필요
@@ -93,6 +93,13 @@ class TodoAPIService {
         _ = try decodeOrThrow(response, as: String.self)
     }
     
+    // MARK: - 10. 카테고리 목록 조회
+    func getCategories() async throws -> [TodoCategory] {
+        let response = try await provider.requestAsync(.getCategories)
+        let dtos = try decodeOrThrow(response, as: [CategoryResponseDTO].self)
+        return dtos.map { $0.toDomain() }
+    }
+    
     // MARK: - Decode Helper
     private func decodeOrThrow<T: Decodable>(_ response: Response, as type: T.Type) throws -> T {
         if (200..<300).contains(response.statusCode) {
@@ -112,7 +119,7 @@ class TodoAPIService {
             print("[TodoAPIService] 서버 에러 응답 Body: \(errorBody)")
             
             if let errorResponse = try? decoder.decode(APIErrorResponseDTO.self, from: response.data) {
-                // Interceptor가 재시도(Retry)를 했음에도 실패하면 이쪽으로 오게 됩니다.
+                // Interceptor가 재시도(Retry)를 했음에도 실패하면 이쪽으로.
                 throw APIError.server(status: errorResponse.status, message: errorResponse.message)
             } else {
                 throw APIError.server(status: response.statusCode, message: "서버 오류: \(errorBody)")

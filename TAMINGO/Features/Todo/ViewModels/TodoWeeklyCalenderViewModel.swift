@@ -13,7 +13,7 @@ import Observation
 /// 캘린더 마커를 위한 구조체
 struct TodoMarker: Hashable {
     let color: Color
-    let category: String  // ✅ 카테고리 이름 추가
+    let category: String  // 카테고리 이름 추가
 }
 
 @Observable
@@ -32,14 +32,14 @@ class TodoWeeklyCalendarViewModel {
         let dayKey = date.startOfDay
         var markers = dateMarkers[dayKey] ?? []
         
-        // ✅ 같은 카테고리가 이미 있으면 추가하지 않음 (중복 제거)
+        // 같은 카테고리가 이미 있으면 추가하지 않음 (중복 제거)
         if !markers.contains(where: { $0.category == category }) {
             markers.append(TodoMarker(color: color, category: category))
             dateMarkers[dayKey] = markers
         }
     }
     
-    // ✅ 현재 표시 중인 범례용 카테고리 목록
+    // 현재 표시 중인 카테고리 목록
     var visibleCategories: [(category: String, color: Color)] {
         let allMarkers = dateMarkers.values.flatMap { $0 }
         let uniqueCategories = Dictionary(grouping: allMarkers, by: { $0.category })

@@ -5,7 +5,6 @@
 //  Created by 엄지용 on 1/29/26.
 //  Updated: 2/8/26 - TimePicker 표시 수정
 //
-
 import SwiftUI
 
 struct DurationSection: View {
@@ -25,16 +24,21 @@ struct DurationSection: View {
                 Spacer()
             }
             
-            ZStack(alignment: .topTrailing) {
-                durationRow
-                
-                if viewModel.showingDurationPicker {
-                    durationPicker
+            // ✅ [수정] AI 추론 중일 때 로딩 UI 표시
+            if viewModel.isInferringCategory {
+                AILoadingRow(text: "소요시간 추론중 ...")
+            } else {
+                // 기존 로직 유지
+                ZStack(alignment: .topTrailing) {
+                    durationRow
+                    
+                    if viewModel.showingDurationPicker {
+                        durationPicker
+                    }
                 }
             }
         }
     }
-    
     // MARK: - Duration Row
     private var durationRow: some View {
         HStack(spacing: 8) {

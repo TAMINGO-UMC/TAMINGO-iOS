@@ -12,6 +12,7 @@ struct TodoItem: Identifiable, Equatable {
     let id: Int?
     let localId = UUID()
     var title: String
+    var categoryId: Int?       // 추가: 서버 카테고리 ID
     var category: String
     var categoryColor: Color
     var isCompleted: Bool
