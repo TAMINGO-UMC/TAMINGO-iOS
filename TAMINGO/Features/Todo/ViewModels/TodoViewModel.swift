@@ -65,7 +65,6 @@ class TodoViewModel {
         return todoItems.filter { $0.date == nil }
     }
     
-    // MARK: - Actions
     func addTodo(aiResult: AIInferenceResult?) {
         guard !newTodoTitle.isEmpty else { return }
         
@@ -73,10 +72,11 @@ class TodoViewModel {
         let category = aiResult?.category ?? "미지정"
         let color = aiResult?.categoryColor ?? Color.gray
         
-        var newItem = TodoItem(
+        // 1. 처음 생성 시 let으로 선언하여 캡처 안전성 확보
+        let initialItem = TodoItem(
             id: nil,
             title: newTodoTitle,
-            categoryId: categoryId,    // ✅ 서버 ID 사용
+            categoryId: categoryId,
             category: category,
             categoryColor: color,
             isCompleted: false,
@@ -97,28 +97,20 @@ class TodoViewModel {
         
         Task {
             do {
-     
-                let requestDTO = newItem.toCreateRequestDTO(todoCategoryId: categoryId)
+                let requestDTO = initialItem.toCreateRequestDTO(todoCategoryId: categoryId)
                 let response = try await apiService.createTodo(body: requestDTO)
                 
+                // 2. MainActor로 보낼 때 필요한 데이터를 미리 상수로 추출
+                let newId = response.todoId
+                
                 await MainActor.run {
-                    newItem = TodoItem(
-                        id: response.todoId,
-                        title: newItem.title,
-                        categoryId: newItem.categoryId,
-                        category: newItem.category,
-                        categoryColor: newItem.categoryColor,
-                        isCompleted: newItem.isCompleted,
-                        date: newItem.date,
-                        placeName: newItem.placeName,
-                        address: newItem.address,
-                        latitude: newItem.latitude,
-                        longitude: newItem.longitude,
-                        estimatedMinutes: newItem.estimatedMinutes,
-                        aiSource: newItem.aiSource
-                    )
-                    todoItems.append(newItem)
-                    newTodoTitle = ""
+                    // 3. 기존의 initialItem 정보를 바탕으로 새로운 인스턴스 생성
+                    var updatedItem = initialItem
+                    updatedItem.id = newId
+                    
+                    // Observable 배열에 추가
+                    self.todoItems.append(updatedItem)
+                    self.newTodoTitle = ""
                 }
             } catch {
                 await MainActor.run { print("할 일 생성 실패: \(error.localizedDescription)") }

@@ -271,7 +271,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             Task {
                 do {
                     let newAccessToken = try await refreshAccessToken()
-                    await TokenManager.shared.saveAccessToken(newAccessToken)
+                    TokenManager.shared.saveAccessToken(newAccessToken)
                     print("사전 갱신 성공")
                 } catch {
                     print("사전 갱신 실패 (401 시 재시도 예정): \(error)")
@@ -309,12 +309,12 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             do {
                 print("토큰 갱신 시작...")
                 let newAccessToken = try await refreshAccessToken()
-                await TokenManager.shared.saveAccessToken(newAccessToken)
+                TokenManager.shared.saveAccessToken(newAccessToken)
                 print("✅ 토큰 갱신 성공! 원래 요청 자동 재시도")
                 completion(.retry)
             } catch {
                 print(" 토큰 갱신 실패: \(error) → 로그아웃 처리")
-                await TokenManager.shared.clearAll()
+                TokenManager.shared.clearAll()
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .userDidLogout, object: nil)
                 }
@@ -325,12 +325,12 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     
     // MARK: - Private: Refresh Token API 호출
     private func refreshAccessToken() async throws -> String {
-        guard let refreshToken = await TokenManager.shared.getRefreshToken() else {
+        guard let refreshToken = TokenManager.shared.getRefreshToken() else {
             throw APIError.transport("Refresh Token이 없습니다.")
         }
         
         // Config.baseURL은 최신 브랜치 사양(non-await)에 맞춰 적용
-        guard let url = URL(string: "\(await Config.baseURL)/api/auth/token/refresh") else {
+        guard let url = URL(string: "\(Config.baseURL)/api/auth/token/refresh") else {
             throw APIError.transport("잘못된 URL입니다.")
         }
         
@@ -360,7 +360,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         let decoder = JSONDecoder()
         let baseResponse = try decoder.decode(BaseResponse<RefreshTokenResponseDTO>.self, from: data)
         
-        guard let accessToken = await baseResponse.result?.accessToken else {
+        guard let accessToken = baseResponse.result?.accessToken else {
             throw APIError.transport("새로운 Access Token을 받지 못했습니다.")
         }
         

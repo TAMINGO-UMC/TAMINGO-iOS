@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct TodoItem: Identifiable, Equatable {
-    let id: Int?
+    var id: Int?
     let localId = UUID()
     var title: String
     var categoryId: Int?       // 추가: 서버 카테고리 ID
