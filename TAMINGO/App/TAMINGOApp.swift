@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import KakaoSDKCommon  // ⭐️ 추가
+import KakaoSDKCommon  // 추가
 
 @main
 struct TAMINGOApp: App {
@@ -23,6 +23,7 @@ struct TAMINGOApp: App {
     init() {
         let kakaoAppKey = Config.kakaoLoginKey
         print("[TAMINGOApp.init] 카카오 앱 키: \(kakaoAppKey)")
+        
         KakaoSDK.initSDK(appKey: kakaoAppKey)
         print("[TAMINGOApp.init] 카카오 SDK 초기화 완료")
     }
@@ -61,15 +62,24 @@ struct TAMINGOApp: App {
 
     private func checkLoginStatus() async {
         // 저장된 토큰 확인
-        if TokenManager.shared.getAccessToken() != nil,
-           TokenManager.shared.getRefreshToken() != nil {
-            isLoggedIn = true
-            print("자동 로그인: 저장된 토큰 발견")
-        } else {
+        guard TokenManager.shared.getAccessToken() != nil,
+              TokenManager.shared.getRefreshToken() != nil else {
             isLoggedIn = false
+            isLoading = false
             print("저장된 토큰 없음 → 로그인 화면")
+            return
         }
-
+        
+        print("자동 로그인: 저장된 토큰 발견")
+        
+        // ✅ 토큰 상태 확인
+        TokenManager.shared.printTokenStatus()
+        
+        // 토큰이 있으면 일단 메인 화면으로
+        // 만료되었어도 TokenInterceptor가 자동으로 갱신 처리
+        isLoggedIn = true
         isLoading = false
+        
+        print("✅ 메인 화면으로 진입 (만료 시 첫 API 요청에서 자동 갱신)")
     }
 }

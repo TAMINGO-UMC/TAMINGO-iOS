@@ -22,16 +22,4 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         return true
     }
     
-    // MARK: - URL Scheme 처리 (카카오 로그인 리다이렉트)
-    func application(
-        _ app: UIApplication,
-        open url: URL,
-        options: [UIApplication.OpenURLOptionsKey : Any] = [:]
-    ) -> Bool {
-        if AuthApi.isKakaoTalkLoginUrl(url) {
-            return AuthController.handleOpenUrl(url: url)
-        }
-        
-        return false
-    }
 }

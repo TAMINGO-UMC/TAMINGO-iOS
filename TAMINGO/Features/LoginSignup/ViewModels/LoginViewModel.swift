@@ -88,11 +88,29 @@ final class LoginViewModel: ObservableObject {
             let response = try await repo.kakaoLogin(kakaoToken: kakaoAccessToken)
             print("✅ 백엔드 로그인 성공")
             
+            // 🔍 디버깅: 토큰 출력 (JWT 파싱용)
+            print("")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("🔍 토큰 디버깅 (https://jwt.io 에서 확인)")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("")
+            print("📱 Access Token:")
+            print(response.accessToken)
+            print("")
+            print("🔄 Refresh Token:")
+            print(response.refreshToken)
+            print("")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("")
+            
             // 3. 토큰 저장
-            TokenManager.shared.saveAccessToken(response.accessToken)
+            TokenManager.shared.saveAccessTokenWithJWT(response.accessToken)
             TokenManager.shared.saveRefreshToken(response.refreshToken)
             TokenManager.shared.saveUserId(response.userId)
             print("✅ 토큰 저장 완료")
+            
+            // 토큰 상태 확인
+            TokenManager.shared.printTokenStatus()
             
             print("👤 userId: \(response.userId)")
             print("🎯 onboardingCompleted: \(response.onboardingCompleted)")
@@ -144,10 +162,28 @@ final class LoginViewModel: ObservableObject {
         do {
             let response = try await repo.login(email: trimmedId, password: trimmedPassword)
             
+            // 🔍 디버깅: 토큰 출력 (JWT 파싱용)
+            print("")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("🔍 토큰 디버깅 (https://jwt.io 에서 확인)")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("")
+            print("📱 Access Token:")
+            print(response.accessToken)
+            print("")
+            print("🔄 Refresh Token:")
+            print(response.refreshToken)
+            print("")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("")
+            
             // 토큰 저장 (TokenManager 사용)
-            TokenManager.shared.saveAccessToken(response.accessToken)
+            TokenManager.shared.saveAccessTokenWithJWT(response.accessToken)
             TokenManager.shared.saveRefreshToken(response.refreshToken)
             TokenManager.shared.saveUserId(response.userId)
+            
+            // 토큰 상태 확인
+            TokenManager.shared.printTokenStatus()
             
             // 로그인 성공 알림
             NotificationCenter.default.post(name: .userDidLogin, object: nil)
