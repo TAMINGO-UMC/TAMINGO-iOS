@@ -43,16 +43,16 @@ struct PlaceSearchSheet: View {
             Divider()
             buttons
         }
-        .onAppear {
+        .task {
             if let place = editingPlace {
-               vm.address = place.address
-               vm.placeName = place.name
-               vm.latitude = place.latitude
-               vm.longitude = place.longitude
-               vm.step = .nameInput
-           } else {
-               vm.reset()
-           }
+                vm.address = place.address
+                vm.placeName = place.name
+                vm.latitude = place.latitude
+                vm.longitude = place.longitude
+                vm.step = .nameInput
+            } else {
+                vm.reset()
+            }
         }
     }
 

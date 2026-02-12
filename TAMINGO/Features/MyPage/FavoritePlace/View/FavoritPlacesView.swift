@@ -11,7 +11,6 @@ struct FavoritPlacesView: View {
 
     @State private var vm = FavoritePlacesViewModel()
     @State private var isPlaceSearchPresented = false
-    @State private var editingPlace: FavoritePlace?
 
     @Environment(\.dismiss) private var dismiss // 시트 용
     let onBack: () -> Void
@@ -30,7 +29,7 @@ struct FavoritPlacesView: View {
                         FrequentPlaceRowView(
                             place: PlaceUIModel(place: place),
                             onEdit: {
-                                editingPlace = place
+                                vm.editPlace(place)
                                 isPlaceSearchPresented = true
                             },
                             onDelete: {
@@ -54,15 +53,10 @@ struct FavoritPlacesView: View {
         .padding(16)
         .sheet(isPresented: $isPlaceSearchPresented) {
             PlaceSearchSheet(
-                editingPlace: editingPlace
+                editingPlace: vm.editingPlace
             ) { place in
                 Task {
-                    if editingPlace != nil {
-                        await vm.updatePlace(place)
-                    } else {
-                        await vm.addPlace(place)
-                    }
-                    editingPlace = nil
+                    await vm.savePlace(place)
                     isPlaceSearchPresented = false
                 }
             }
@@ -93,7 +87,7 @@ struct FavoritPlacesView: View {
             Spacer()
             
             Button {
-                editingPlace = nil
+                vm.editPlace(nil)
                 isPlaceSearchPresented = true
             } label: {
                 Image("MyPage_icon_plus")

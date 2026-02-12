@@ -55,10 +55,18 @@ final class FavoritePlacesViewModel {
         await deletePlace(id: place.id)
     }
 
-    func editPlace(_ place: FavoritePlace) {
+    func editPlace(_ place: FavoritePlace?) {
         editingPlace = place
     }
 
+    func savePlace(_ place: Place) async {
+        if editingPlace != nil {
+            await updatePlace(place)
+        } else {
+            await addPlace(place)
+        }
+        editingPlace = nil
+    }
     
 }
 
