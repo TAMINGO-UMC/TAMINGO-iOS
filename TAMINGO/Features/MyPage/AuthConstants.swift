@@ -9,6 +9,6 @@
 // 개발 완료 후 삭제 예정
 
 enum AuthConstants {
-    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwODIyMTg5LCJleHAiOjE3NzA4MjU3ODl9.m93Fie7jsoyzDDOK9rKJIKw25k2P9z-z_CSxBw6vY9o"
+    static let accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzcwODc2NzM1LCJleHAiOjE3NzA4ODAzMzV9.QFnWfH0QRqY6m5D-K7EMRUbnSlVnRqFnP4jRxsFREEs"
     static let userId = 6
 }

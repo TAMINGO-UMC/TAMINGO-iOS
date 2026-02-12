@@ -47,18 +47,6 @@ final class TodoCategoryViewModel: CategoryViewModel {
         categories.isEmpty
     }
 
-    // MARK: - Fetch
-    func fetchCategories() async {
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            categories = try await service.fetchCategories()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
     // MARK: - Add
     func didTapAdd() {
         name = ""
@@ -93,6 +81,22 @@ final class TodoCategoryViewModel: CategoryViewModel {
         editingCategoryId = nil
     }
 
+
+}
+
+@MainActor
+extension TodoCategoryViewModel {
+    // MARK: - Fetch
+    func fetchCategories() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            categories = try await service.fetchCategories()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
     // MARK: - Save
     func saveCategory() async {
         guard canSaveCategory else { return }

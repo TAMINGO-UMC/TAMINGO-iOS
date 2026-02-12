@@ -34,8 +34,10 @@ final class FavoritePlacesService: FavoritePlacesServiceProtocol {
             BaseResponse<[FavoritePlaceDTO]>.self,
             from: response.data
         )
-
-        return decoded.result.map { $0.toDomain() }!
+        guard let result = decoded.result else {
+            return []
+        }
+        return result.map { $0.toDomain() }
     }
 
 

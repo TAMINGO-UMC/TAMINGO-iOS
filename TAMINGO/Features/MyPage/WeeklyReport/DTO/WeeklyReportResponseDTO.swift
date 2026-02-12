@@ -55,7 +55,7 @@ extension WeeklyReportDetailResponseDTO {
             productivityScore: score,
             grade: grade,
 
-            dailyActivities: (dailyActivities ?? []).map { $0.toDomain() },
+            dailyActivities: (dailyActivities ?? []).compactMap { $0.toDomain() },
             insights: (insights ?? []).map { $0.toDomain() }
         )
     }
@@ -70,17 +70,22 @@ struct DailyActivityDTO: Decodable {
     let taskCount: Int
     let activityRate: Int
 }
-extension DailyActivityDTO {
 
-    func toDomain() -> DailyActivity {
-        DailyActivity(
-            day: Weekday(rawValue: dayOfWeek) ?? .mon,
+extension DailyActivityDTO {
+    func toDomain() -> DailyActivity? {
+        guard let day = Weekday(serverValue: dayOfWeek) else {
+            return nil
+        }
+
+        return DailyActivity(
+            day: day,
             scheduleCount: scheduleCount,
             taskCount: taskCount,
             activityRate: activityRate
         )
     }
 }
+
 
 
 struct WeeklyInsightDTO: Decodable {
