@@ -1,5 +1,5 @@
 //
-//  RouteFindResponseDTO.swift
+//  RouteFindEndResponseDTO.swift
 //  TAMINGO
 //
 //  Created by Jung Hyun Han on 2/12/26.

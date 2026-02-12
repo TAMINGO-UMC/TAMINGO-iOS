@@ -20,7 +20,7 @@ struct BusTimelineRow: View {
         self.leg = leg
         self.isFirst = isFirst
         self.isLast = isLast
-        _selectedOption = State(initialValue: leg.options.first!)
+        _selectedOption = State(initialValue: leg.options.first ?? TransitOptionModel(type: "", number: "", sectionTime: 0))
     }
 
     var body: some View {
@@ -32,15 +32,23 @@ struct BusTimelineRow: View {
             )
 
             VStack(alignment: .leading, spacing: 10) {
-
+                
                 Text(leg.startName ?? "버스 정류장")
                     .font(.semiBold14)
-
+                
                 ForEach(leg.options) { option in
                     optionRow(option)
                 }
-
-                expandButton
+                
+//                expandButton
+                
+                if isExpanded {
+                    ExpandStationsView(
+                        count: leg.stationCount,
+                        time: selectedOption.sectionTime,
+                        stations: leg.stations
+                    )
+                }
             }
             .padding(.vertical, 20)
 

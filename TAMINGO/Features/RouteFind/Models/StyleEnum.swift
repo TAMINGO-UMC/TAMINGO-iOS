@@ -1,5 +1,5 @@
 //
-//  Enum.swift
+//  StyleEnum.swift
 //  TAMINGO
 //
 //  Created by Jung Hyun Han on 2/10/26.

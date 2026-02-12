@@ -156,7 +156,7 @@ extension RouteResultModel {
 
             RouteInputCardView(
                 route: route,
-                wayPoints: route.wayPoints as! [String]
+                wayPoints: route.wayPoints.map { $0.name }
             )
 
             .padding(.bottom, 12)

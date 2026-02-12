@@ -25,16 +25,22 @@ struct WayPointDTO: Decodable {
 }
 
 extension RouteFindStartResponseDTO {
+    
+    private static let isoFormatter: ISO8601DateFormatter = {
+            let f = ISO8601DateFormatter()
+            f.formatOptions = [.withInternetDateTime]
+            return f
+       }()
 
     func toModel() -> RouteResultModel {
         RouteResultModel(
             totalDuration: totalDuration,
-            startTime: ISO8601DateFormatter().date(from: startTime) ?? Date(),
-            arriveTime: ISO8601DateFormatter().date(from: arriveTime) ?? Date(),
+            startTime: Self.isoFormatter.date(from: startTime) ?? Date(),
+            arriveTime: Self.isoFormatter.date(from: arriveTime) ?? Date(),
             startPlaceName: startPlaceName,
             arrivePlaceName: arrivePlaceName,
             wayPoints: wayPoints.map { $0.toModel() },
-            legs: legs.compactMap { $0.toModel() }
+            legs: legs.map { $0.toModel() }
         )
     }
 }

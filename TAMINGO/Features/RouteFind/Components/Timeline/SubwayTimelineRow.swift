@@ -49,7 +49,7 @@ struct SubwayTimelineRow: View {
 
                 // 중단
                 HStack(spacing: 10) {
-                    Text("왕십리역 방면")
+                    Text(subwayDirectionText() ?? "")
                         .font(.regular10)
                         .foregroundStyle(.gray2)
                         .padding(.horizontal, 6)
@@ -59,7 +59,7 @@ struct SubwayTimelineRow: View {
                                 .fill(Color.gray1.opacity(0.15))
                         )
 
-                    Text("\(leg.endName ?? "") (내선행)")
+                    Text("\(leg.endName ?? "") (\(directionSuffix()))")
                         .font(.semiBold14)
 
                     Text("\(leg.sectionTime)분")
@@ -127,9 +127,9 @@ struct SubwayTimelineRow: View {
             RouteSummaryHeaderView(route: route)
 
             RouteInputCardView(
-                route: route,
-                wayPoints: route.wayPoints as! [String]
-            )
+                            route: route,
+                            wayPoints: route.wayPoints.map { $0.name }
+                        )
             .padding(.bottom, 12)
 
             RouteTimelineView(route: route)

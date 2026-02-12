@@ -19,6 +19,14 @@ struct RouteFindView: View {
         VStack {
             if let route = viewModel.routeResult {
                 RouteTimelineView(route: route)
+            } else if case .error(let message) = viewModel.state {
+                VStack(spacing: 12) {
+                    Text("경로를 찾을 수 없습니다")
+                        .font(.medium16)
+                    Text(message)
+                        .font(.medium12)
+                        .foregroundStyle(.gray2)
+                }
             } else {
                 ProgressView("경로 찾는 중...")
             }

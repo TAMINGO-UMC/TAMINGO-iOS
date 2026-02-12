@@ -23,7 +23,7 @@ struct TimelineEndRow: View {
 
             Text(title)
                 .font(.semiBold14)
-                .foregroundStyle(.black)
+                .foregroundStyle(.black00)
                 .padding(.vertical, 20)
 
             Spacer()

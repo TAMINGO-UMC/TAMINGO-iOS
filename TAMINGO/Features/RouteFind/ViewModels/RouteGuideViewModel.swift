@@ -10,6 +10,7 @@ import CoreLocation
 import Observation
 
 @Observable
+@MainActor
 final class RouteGuideViewModel {
 
     enum State {
@@ -29,7 +30,7 @@ final class RouteGuideViewModel {
     private let locationService = LocationService()
     private let locationManager = LocationManager.shared
 
-    private var timer: Timer?
+    private var realtimeTask: Task<Void, Never>?
 
     init(scheduleId: Int) {
         self.scheduleId = scheduleId
@@ -61,35 +62,33 @@ final class RouteGuideViewModel {
     // MARK: - Realtime GPS
     private func startRealtime() {
         stopRealtime()
-
-        timer = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { [weak self] _ in
-            guard let self else { return }
-
-            Task {
+        
+        realtimeTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(600))
+                guard let self, !Task.isCancelled else { break }
+                
                 do {
                     let coord = try await self.locationManager.requestCurrentCoordinate()
-
                     let isArrived = try await self.locationService.sendRealtime(
                         scheduleId: self.scheduleId,
                         latitude: coord.latitude,
                         longitude: coord.longitude
                     )
-
                     if isArrived {
                         self.state = .arrived
                         self.stopRealtime()
                     }
-
                 } catch {
                     print("Realtime error:", error)
                 }
             }
         }
     }
-
+    
     func stopRealtime() {
-        timer?.invalidate()
-        timer = nil
+        realtimeTask?.cancel()
+        realtimeTask = nil
     }
 
     // MARK: - End Route
@@ -110,6 +109,7 @@ final class RouteGuideViewModel {
                 state = .ended
             } else {
                 state = .navigating
+                startRealtime()
             }
 
         } catch {

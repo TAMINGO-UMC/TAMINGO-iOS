@@ -22,7 +22,7 @@ struct RouteBottomActionView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
                     .background{
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: 5)
                             .fill(Color("SubPink"))
                     }
                     .overlay{

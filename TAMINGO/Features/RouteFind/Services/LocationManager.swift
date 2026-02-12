@@ -22,8 +22,15 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     }
 
     func requestCurrentCoordinate() async throws -> CLLocationCoordinate2D {
+        guard continuation == nil else {
+            throw NSError(
+                domain: "LocationManager",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "A location request is already in progress"]
+            )
+        }
         manager.requestWhenInUseAuthorization()
-
+        
         return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
             manager.requestLocation()

@@ -32,11 +32,13 @@ struct LocationRowView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background{
+            .background {
                 RoundedRectangle(cornerRadius: 5)
-                    .stroke(Color.gray1)
                     .fill(Color.gray0)
-                    
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(Color.gray1)
+                    }
             }
         }
     }
