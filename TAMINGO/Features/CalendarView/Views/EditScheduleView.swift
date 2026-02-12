@@ -13,6 +13,7 @@ struct EditScheduleView: View {
     
     @State private var activeSheet: SheetType? = nil
     @State private var showDeleteAlert = false
+    @State private var errorAlert = false
     
     let scheduleId: Int
     
@@ -97,7 +98,7 @@ struct EditScheduleView: View {
                             onSave?()
                             dismiss()
                         } else {
-                            //TODO: 저장 실패 시 알림
+                            errorAlert.toggle()
                         }
                     }
                 }
@@ -129,6 +130,13 @@ struct EditScheduleView: View {
                     }
                 }
             }
+        }
+        .alert("알림", isPresented: $errorAlert) {
+            Button("확인", role: .cancel) {
+                dismiss()
+            }
+        } message: {
+            Text("일정 수정을 실패했어요.")
         }
     }
 }
