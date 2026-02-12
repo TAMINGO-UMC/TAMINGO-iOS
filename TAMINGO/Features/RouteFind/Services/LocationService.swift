@@ -24,7 +24,7 @@ final class LocationService {
             longitude: longitude
         )
         
-        let response: BaseResponse<SilentGPSResponseDTO?> =
+        let _: BaseResponse<SilentGPSResponseDTO?> =
         try await provider.request(.silentGPS(request))
         
         // result 없어도 성공이면 통과
