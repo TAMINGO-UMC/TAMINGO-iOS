@@ -65,7 +65,6 @@ struct GapTimeCardView: View {
 
                     HStack(spacing: 12) {
                         Button("편성") {
-                            print("편성 버튼 눌림:", gapTime.id)
                             onAssignTap()
                         }
                         .buttonStyle(GapPrimaryButtonStyle())

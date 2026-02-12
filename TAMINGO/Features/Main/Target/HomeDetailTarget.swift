@@ -36,7 +36,7 @@ extension HomeDetailTarget: APITargetType {
         }
     }
 
-    var task: Task {
+    var task: Moya.Task {
         switch self {
         case .acceptRoute(_, let request):
             return .requestJSONEncodable(request)

@@ -50,13 +50,14 @@ final class ScheduleDetailViewModel {
             baseScheduleId: baseScheduleId,
             title: detour.title,
             location: .init(name: detour.location, lat: detour.lat, lng: detour.lng),
-            requiredMinutes: Int(detour.detourMinutes) ?? 0
+            requiredMinutes: detour.detourMinutes
         )
         
         Task {
+            @MainActor in
             do {
-                print("🟢 [ACCEPT] suggestionId:", detour.suggestionId, "baseScheduleId:", baseScheduleId)
-                try await service.acceptRoute(suggestionId: detour.suggestionId, request: request)
+                print("🟢 [ACCEPT] suggestionId:", suggestionId, "baseScheduleId:", baseScheduleId)
+                try await service.acceptRoute(suggestionId: suggestionId, request: request)
                 print("🟢 [ACCEPT] success → reload detail")
                 await loadAsync()
             } catch {
@@ -70,6 +71,7 @@ final class ScheduleDetailViewModel {
     // MARK: - Route reject
     func rejectRoute(suggestionId: Int) {
         Task {
+            @MainActor in
             do {
                 print("🟡 [REJECT] suggestionId:", suggestionId)
                 try await service.rejectRoute(suggestionId: suggestionId)

@@ -16,8 +16,12 @@ final class HomeDetailService {
         let decoded: ScheduleDetailResponseDTO =
         try await provider.request(.detail(scheduleId: scheduleId))
         
+        guard decoded.isSuccess else {
+            throw NSError(domain: "Detail", code: -1, userInfo: [NSLocalizedDescriptionKey: decoded.message])
+        }
+        
         guard let result = decoded.result else {
-            throw NSError(domain: "Detail", code: -1)
+            throw NSError(domain: "Detail", code: -1, userInfo: [NSLocalizedDescriptionKey: "결과 데이터가 없습니다."])
         }
         
         return result.toModel()
