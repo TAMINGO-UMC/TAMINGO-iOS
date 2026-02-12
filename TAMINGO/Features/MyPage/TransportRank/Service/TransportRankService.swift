@@ -5,6 +5,7 @@
 //  Created by 권예원 on 2/11/26.
 //
 
+import Alamofire
 import Foundation
 import Moya
 
@@ -15,13 +16,26 @@ protocol TransportRankServiceProtocol {
 
 final class TransportRankService: TransportRankServiceProtocol {
 
-    private let provider = MoyaProvider<TransportRankAPI>(
-        plugins: [
-            NetworkLoggerPlugin(configuration: .init(
-                logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
-            ))
-        ]
-    )
+    // [수정] Interceptor Session 생성
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    
+    // [수정] Provider 선언
+    private let provider: MoyaProvider<TransportRankAPI>
+    
+    // [수정] init 추가 및 Session 주입
+    init() {
+        self.provider = MoyaProvider<TransportRankAPI>(
+            session: session, // 핵심: Interceptor 연결
+            plugins: [
+                NetworkLoggerPlugin(configuration: .init(
+                    logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
+                ))
+            ]
+        )
+    }
 
     func fetchTransportRank() async throws -> [TransportType] {
 

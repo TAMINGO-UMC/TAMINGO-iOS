@@ -4,7 +4,7 @@
 //
 //  Created by 권예원 on 2/10/26.
 //
-
+import Alamofire
 import Foundation
 import Moya
 
@@ -14,14 +14,24 @@ protocol MyPageServiceProtocol {
 
 final class MyPageService: MyPageServiceProtocol {
 
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    // 2. Provider 선언
+    private let provider: MoyaProvider<MyPageAPI>
     
-    private let provider = MoyaProvider<MyPageAPI>(
-        plugins: [
-            NetworkLoggerPlugin(configuration: .init(
-                logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
-            ))
-        ]
-    )
+    // 3. init에서 Session 주입
+    init() {
+        self.provider = MoyaProvider<MyPageAPI>(
+            session: session, // ✨ 핵심: 여기에 Interceptor가 포함된 session을 꼭 넣어야 합니다.
+            plugins: [
+                NetworkLoggerPlugin(configuration: .init(
+                    logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
+                ))
+            ]
+        )
+    }
     
     func fetchSummary() async throws -> MyPage {
         let response = try await request(.fetchSummary)

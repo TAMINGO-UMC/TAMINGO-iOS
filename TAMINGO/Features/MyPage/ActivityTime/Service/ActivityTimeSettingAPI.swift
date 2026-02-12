@@ -44,10 +44,4 @@ extension ActivityTimeSettingAPI: APITargetType {
         }
     }
     
-    var headers: [String : String]? {
-        [
-            "Content-Type": "application/json",
-            "Authorization": "Bearer \(AuthConstants.accessToken)",
-        ]
-    }
 }

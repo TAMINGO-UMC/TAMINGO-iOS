@@ -55,12 +55,6 @@ extension TodoCategoryAPI : APITargetType {
             return .requestPlain
         }
     }
-    
-    var headers: [String : String]? {
-        [
-            "Content-Type": "application/json",
-            "Authorization": "Bearer \(AuthConstants.accessToken)",
-        ]
-    }
+
     
 }
