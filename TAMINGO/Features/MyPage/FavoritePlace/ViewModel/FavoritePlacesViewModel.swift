@@ -12,18 +12,17 @@ import Observation
 @Observable
 final class FavoritePlacesViewModel {
 
-    var places: [PlaceUIModel] = []
+    var places: [FavoritePlace] = []
+    var editingPlace: FavoritePlace?
+
     var errorMessage: String?
 
     private let service: FavoritePlacesServiceProtocol
 
     init(
         service: FavoritePlacesServiceProtocol? = nil,
-        initialPlaces: [PlaceUIModel] = []
     ) {
         self.service = service ?? FavoritePlacesService()
-        self.places = initialPlaces
-        print("🔥 FavoritePlacesViewModel init", ObjectIdentifier(self))
     }
 
     // MARK: - View에서 호출
@@ -38,13 +37,29 @@ final class FavoritePlacesViewModel {
         await addPlace(request: request)
     }
 
-    func deletePlace(_ place: PlaceUIModel) async {
+    func updatePlace(_ place: Place) async {
+
+        guard let editingPlace else { return }
+
+        let request = PlaceRequestDTO(
+            name: place.name,
+            address: place.address,
+            latitude: place.latitude,
+            longitude: place.longitude
+        )
+
+        await updatePlace(id: editingPlace.id, request: request)
+    }
+
+    func deletePlace(_ place: FavoritePlace) async {
         await deletePlace(id: place.id)
     }
 
-    func editPlace(_ place: PlaceUIModel) {
-        // TODO: 수정 시트 / 네비게이션 트리거
+    func editPlace(_ place: FavoritePlace) {
+        editingPlace = place
     }
+
+    
 }
 
 // 요청
@@ -54,9 +69,7 @@ extension FavoritePlacesViewModel {
         errorMessage = nil
         do {
             let domainPlaces = try await service.fetchPlaces()
-            print("🔥 fetched:", domainPlaces)
-            self.places = domainPlaces.map { PlaceUIModel(place: $0) }
-            print("🔥 ui places:", places)
+            self.places = domainPlaces
         } catch let error as APIError {
             self.errorMessage = error.localizedDescription
         } catch {

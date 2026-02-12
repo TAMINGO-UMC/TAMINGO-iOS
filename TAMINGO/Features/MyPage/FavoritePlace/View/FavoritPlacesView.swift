@@ -11,6 +11,8 @@ struct FavoritPlacesView: View {
 
     @State private var vm = FavoritePlacesViewModel()
     @State private var isPlaceSearchPresented = false
+    @State private var editingPlace: FavoritePlace?
+
     @Environment(\.dismiss) private var dismiss // 시트 용
     let onBack: () -> Void
     
@@ -26,18 +28,17 @@ struct FavoritPlacesView: View {
 
                     ForEach(vm.places) { place in
                         FrequentPlaceRowView(
-                            place: place,
+                            place: PlaceUIModel(place: place),
                             onEdit: {
-                                vm.editPlace(place)
+                                editingPlace = place
+                                isPlaceSearchPresented = true
                             },
                             onDelete: {
-                                Task {
-                                    await vm.deletePlace(place)
-                                }
+                                Task { await vm.deletePlace(place) }
                             }
                         )
                     }
-                    
+
                     GuideBoxView(
                         title: "자주 가는 장소 활용",
                         description: """
@@ -52,9 +53,16 @@ struct FavoritPlacesView: View {
         }
         .padding(16)
         .sheet(isPresented: $isPlaceSearchPresented) {
-            PlaceSearchSheet { place in
+            PlaceSearchSheet(
+                editingPlace: editingPlace
+            ) { place in
                 Task {
-                    await vm.addPlace(place)
+                    if editingPlace != nil {
+                        await vm.updatePlace(place)
+                    } else {
+                        await vm.addPlace(place)
+                    }
+                    editingPlace = nil
                     isPlaceSearchPresented = false
                 }
             }
@@ -85,6 +93,7 @@ struct FavoritPlacesView: View {
             Spacer()
             
             Button {
+                editingPlace = nil
                 isPlaceSearchPresented = true
             } label: {
                 Image("MyPage_icon_plus")
