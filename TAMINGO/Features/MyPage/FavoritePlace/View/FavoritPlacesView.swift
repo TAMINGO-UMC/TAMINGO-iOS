@@ -25,7 +25,7 @@ struct FavoritPlacesView: View {
             ScrollView {
                 VStack(spacing: 12) {
 
-                    ForEach(vm.places) { place in
+                    ForEach(vm.places, id: \.id) { place in
                         FrequentPlaceRowView(
                             place: PlaceUIModel(place: place),
                             onEdit: {

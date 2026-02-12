@@ -77,6 +77,7 @@ extension FavoritePlacesViewModel {
         errorMessage = nil
         do {
             let domainPlaces = try await service.fetchPlaces()
+            print("🔥 fetched:", domainPlaces.map { $0.name })
             self.places = domainPlaces
         } catch let error as APIError {
             self.errorMessage = error.localizedDescription
@@ -109,12 +110,12 @@ extension FavoritePlacesViewModel {
 
     private func updatePlace(id: Int, request: PlaceRequestDTO) async {
         do {
-            _ = try await service.updatePlace(placeId: id, dto: request)
-            await fetchPlaces()
-        } catch let error as APIError {
-            self.errorMessage = error.localizedDescription
+            try await service.updatePlace(placeId: id, dto: request)
         } catch {
-            self.errorMessage = "네트워크 오류가 발생했습니다."
+            print(error)
         }
+
+        await fetchPlaces()  
     }
+
 }
