@@ -69,19 +69,6 @@ struct NotificationView: View {
                 }
             }
             .padding(.bottom, 8)
-            
-            if viewModel.departureAlertEnabled {
-                Group {
-                    Divider()
-                    
-                    ToggleBox(
-                        title: "지각 위험 알림",
-                        sub: "교통 상황 변화로 지각 위험 시 긴급 알림",
-                        isPink: true,
-                        isOn: $viewModel.latenessRiskAlertEnabled
-                    )
-                }
-            }
         }
         .padding(.horizontal)
         .cardStyle()
