@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RouteFindResponseDTO: Decodable {
+struct RouteFindStartResponseDTO: Decodable {
     let totalDuration: Int
     let startTime: String
     let arriveTime: String
@@ -24,7 +24,7 @@ struct WayPointDTO: Decodable {
     let order: Int
 }
 
-extension RouteFindResponseDTO {
+extension RouteFindStartResponseDTO {
 
     func toModel() -> RouteResultModel {
         RouteResultModel(

@@ -13,7 +13,3 @@ struct RouteFindEndRequestDTO: Encodable {
     let longitude: Double
 }
 
-struct RouteFindEndResultDTO: Decodable {
-    let isArrived: Bool
-}
-

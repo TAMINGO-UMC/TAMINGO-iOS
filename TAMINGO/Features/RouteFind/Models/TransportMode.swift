@@ -7,8 +7,9 @@
 
 import Foundation
 
-enum TransportMode {
-    case walk
-    case bus
-    case subway
+enum TransportMode: String {
+    case walk = "WALK"
+    case bus = "BUS"
+    case subway = "SUBWAY"
+    case unknown
 }

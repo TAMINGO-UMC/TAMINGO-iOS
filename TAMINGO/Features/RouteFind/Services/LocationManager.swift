@@ -10,32 +10,34 @@ import CoreLocation
 
 final class LocationManager: NSObject, CLLocationManagerDelegate {
 
-    private let manager = CLLocationManager()
-    var onUpdate: ((CLLocationCoordinate2D) -> Void)?
+    static let shared = LocationManager()
 
-    override init() {
+    private let manager = CLLocationManager()
+    private var continuation: CheckedContinuation<CLLocationCoordinate2D, Error>?
+
+    private override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
 
-    func requestPermission() {
+    func requestCurrentCoordinate() async throws -> CLLocationCoordinate2D {
         manager.requestWhenInUseAuthorization()
+
+        return try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+            manager.requestLocation()
+        }
     }
 
-    func start() {
-        manager.startUpdatingLocation()
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let coord = locations.last?.coordinate else { return }
+        continuation?.resume(returning: coord)
+        continuation = nil
     }
 
-    func stop() {
-        manager.stopUpdatingLocation()
-    }
-
-    func locationManager(
-        _ manager: CLLocationManager,
-        didUpdateLocations locations: [CLLocation]
-    ) {
-        guard let location = locations.last else { return }
-        onUpdate?(location.coordinate)
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        continuation?.resume(throwing: error)
+        continuation = nil
     }
 }

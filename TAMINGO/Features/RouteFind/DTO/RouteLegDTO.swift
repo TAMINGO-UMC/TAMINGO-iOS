@@ -31,7 +31,7 @@ extension RouteLegDTO {
             mode: mode.toModel(),
             sectionTime: sectionTime,
             distance: distance,
-            description: walkDescription,
+            walkDescription: walkDescription,
             startName: startName,
             endName: endName,
             routeName: routeName,

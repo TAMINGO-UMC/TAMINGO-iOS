@@ -21,7 +21,9 @@ struct RouteTimelineView: View {
             )
             
             // legs 자동 렌더링
-            ForEach(Array(route.legs.enumerated()), id: \.element.id) { idx, leg in
+            ForEach(route.legs.indices, id: \.self) { idx in
+                
+                let leg = route.legs[idx]
                 let isFirst = idx == 0
                 let isLast = idx == route.legs.count - 1
                 
@@ -29,7 +31,7 @@ struct RouteTimelineView: View {
                     
                 case .walk:
                     WalkTimelineRow(
-                        text: leg.description ?? "도보 \(leg.distance)m (\(leg.sectionTime)분)",
+                        text: leg.walkDescription ?? "도보 \(leg.distance)m (\(leg.sectionTime)분)",
                         isFirst: isFirst,
                         isLast: isLast
                     )
@@ -47,8 +49,12 @@ struct RouteTimelineView: View {
                         isFirst: isFirst,
                         isLast: isLast
                     )
+                    
+                case .unknown:
+                    EmptyView()
                 }
             }
+
             
             // 도착
             TimelineEndRow(
@@ -65,7 +71,7 @@ extension RouteLegModel {
         mode: .walk,
         sectionTime: 2,
         distance: 106,
-        description: "도보 106m (2분)",
+        walkDescription: "도보 106m (2분)",
         startName: nil,
         endName: nil,
         routeName: nil,
@@ -79,7 +85,7 @@ extension RouteLegModel {
         mode: .bus,
         sectionTime: 25,
         distance: 0,
-        description: nil,
+        walkDescription: nil,
         startName: "중앙고등학교 정류장",
         endName: "광운대학교",
         routeName: "지선 1024",
@@ -96,7 +102,7 @@ extension RouteLegModel {
         mode: .subway,
         sectionTime: 7,
         distance: 3700,
-        description: nil,
+        walkDescription: nil,
         startName: "양재",
         endName: "학여울",
         routeName: "수도권 3호선",
@@ -110,7 +116,7 @@ extension RouteLegModel {
         mode: .walk,
         sectionTime: 5,
         distance: 124,
-        description: "도보 124m (5분)",
+        walkDescription: "도보 124m (5분)",
         startName: nil,
         endName: nil,
         routeName: nil,
@@ -152,6 +158,7 @@ extension RouteResultModel {
                 route: route,
                 wayPoints: route.wayPoints as! [String]
             )
+
             .padding(.bottom, 12)
 
             RouteTimelineView(route: route)

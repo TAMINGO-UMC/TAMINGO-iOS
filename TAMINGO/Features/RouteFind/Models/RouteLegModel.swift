@@ -14,7 +14,7 @@ struct RouteLegModel: Identifiable {
     let sectionTime: Int
     let distance: Int
 
-    let description: String?
+    let walkDescription: String?
 
     let startName: String?
     let endName: String?

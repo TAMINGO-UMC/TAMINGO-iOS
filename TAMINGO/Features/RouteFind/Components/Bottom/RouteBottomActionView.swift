@@ -8,8 +8,32 @@
 import SwiftUI
 
 struct RouteBottomActionView: View {
+    
+    var onEndTap: (() -> Void)?
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            Button {
+                onEndTap?()
+            } label: {
+                Text("안내 종료")
+                    .font(.semiBold14)
+                    .foregroundStyle(Color("MainPink"))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 15)
+                    .background{
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color("SubPink"))
+                    }
+                    .overlay{
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(Color("MainPink"), lineWidth: 1)
+                    }
+            }
+        }
+        .padding(.horizontal, 28)
+        .padding(.bottom, 21)
+        .background(Color.white)
     }
 }
 

@@ -12,50 +12,29 @@ final class LocationService {
 
     private let provider = MoyaProvider<LocationTarget>()
 
-    // 1시간 전 1회 체크
-    func silentGPS(
-        scheduleId: Int,
-        latitude: Double,
-        longitude: Double
-    ) async throws -> SilentGPSResponseDTO {
-
-        let response: BaseResponse<SilentGPSResponseDTO> =
-            try await provider.request(.silentGPS(
-                scheduleId: scheduleId,
-                latitude: latitude,
-                longitude: longitude
-            ))
-
-        guard let result = response.result else {
-            throw NSError(domain: "SilentGPS", code: -1)
-        }
-
-        return result
-    }
-
-    // 실시간 위치 전송
     func sendRealtime(
         scheduleId: Int,
         latitude: Double,
         longitude: Double
     ) async throws -> Bool {
 
-        let response: BaseResponse<RealtimeGPSResponseDTO> =
-            try await provider.request(.realtime(
-                scheduleId: scheduleId,
-                latitude: latitude,
-                longitude: longitude
-            ))
+        let request = RealtimeGPSRequestDTO(
+            scheduleId: scheduleId,
+            latitude: latitude,
+            longitude: longitude
+        )
 
-        return response.result?.isArrived ?? false
-    }
+        let response: BaseResponse<RouteFindEndResponseDTO> =
+            try await provider.request(.realtime(request))
 
-    // 사후 확인
-    func postCheck(scheduleId: Int) async throws {
+        guard let result = response.result else {
+            throw NSError(
+                domain: "LocationService",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "Realtime result is nil"]
+            )
+        }
 
-        let _: BaseResponse<EmptyResponse> =
-            try await provider.request(.postCheck(scheduleId: scheduleId))
+        return result.isArrived
     }
 }
-
-struct EmptyResponse: Decodable {}

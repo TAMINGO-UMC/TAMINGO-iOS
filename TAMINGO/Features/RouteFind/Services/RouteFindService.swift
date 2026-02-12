@@ -12,29 +12,57 @@ final class RouteFindService {
 
     private let provider = MoyaProvider<RouteFindTarget>()
 
-    func startRouteFind(
+    // START
+    func start(
         scheduleId: Int,
         latitude: Double,
         longitude: Double
     ) async throws -> RouteResultModel {
 
-        let response: BaseResponse<RouteFindResponseDTO> =
-            try await provider.request(
-                .startRouteFind(
-                    scheduleId: scheduleId,
-                    latitude: latitude,
-                    longitude: longitude
-                )
-            )
+        let request = RouteFindStartRequestDTO(
+            scheduleId: scheduleId,
+            latitude: latitude,
+            longitude: longitude
+        )
 
-        guard let dto = response.result else {
+        let response: BaseResponse<RouteFindStartResponseDTO> =
+            try await provider.request(.start(request))
+
+        guard let result = response.result else {
             throw NSError(
                 domain: "RouteFindService",
                 code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "Route result is nil"]
+                userInfo: [NSLocalizedDescriptionKey: "Start result is nil"]
             )
         }
 
-        return dto.toModel()
+        return result.toModel()
+    }
+
+    // END
+    func end(
+        scheduleId: Int,
+        latitude: Double,
+        longitude: Double
+    ) async throws -> Bool {
+
+        let request = RouteFindEndRequestDTO(
+            scheduleId: scheduleId,
+            latitude: latitude,
+            longitude: longitude
+        )
+
+        let response: BaseResponse<RouteFindEndResponseDTO> =
+            try await provider.request(.end(request))
+
+        guard let result = response.result else {
+            throw NSError(
+                domain: "RouteFindService",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "End result is nil"]
+            )
+        }
+
+        return result.isArrived
     }
 }
