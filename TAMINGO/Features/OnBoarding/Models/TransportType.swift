@@ -28,6 +28,17 @@ enum TransportType: CaseIterable, Identifiable {
 }
 
 extension TransportType {
+    init?(serverValue: String) {
+        switch serverValue {
+        case "WALK": self = .walk
+        case "SUBWAY": self = .subway
+        case "BUS": self = .bus
+        default: return nil
+        }
+    }
+}
+
+extension TransportType {
 
     var dtoValue: String? {
         switch self {

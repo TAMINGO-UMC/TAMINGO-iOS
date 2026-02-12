@@ -54,22 +54,27 @@ class TodoEditViewModel {
             guard !isCategoryAIGenerated || !isLocationAIGenerated || !isDurationAIGenerated else {
                 return nil
             }
-            
+        let matchedCategory = availableCategories.first(where: { $0.name == category })
             // 현재 카테고리 이름과 일치하는 카테고리 정보를 찾음
-            let matchedCategory = availableCategories.first(where: { $0.name == category })
-            
-
-            return AIInferenceResult(
-                categoryId: matchedCategory?.id,
-                category: category,
-                categoryColor: matchedCategory?.color ?? .gray, 
-                placeName: placeName.isEmpty ? nil : placeName,
-                address: address,
-                latitude: latitude,
-                longitude: longitude,
-                duration: parsedTotalMinutes
-            )
+        let displayColor: Color
+        if let matched = matchedCategory {
+            displayColor = Color(hex: matched.color.hexCode)
+        } else {
+            displayColor = .gray
         }
+            
+        
+        return AIInferenceResult(
+            categoryId: matchedCategory?.id,
+            category: category,
+            categoryColor: displayColor,
+            placeName: placeName.isEmpty ? nil : placeName,
+            address: address,
+            latitude: latitude,
+            longitude: longitude,
+            duration: parsedTotalMinutes
+        )
+    }
     
     private let apiService = TodoAPIService.shared
     private var aiInferenceTask: Task<Void, Never>?
@@ -234,6 +239,20 @@ class TodoEditViewModel {
         item.latitude = latitude
         item.longitude = longitude
         item.category = category
+        
+        // ✅ 카테고리 ID 및 **Color** 업데이트
+        if let matchedCategory = availableCategories.first(where: { $0.name == category }) {
+            item.categoryId = matchedCategory.id
+            item.categoryColor = Color(hex: matchedCategory.color.hexCode)
+            
+            print("✅ 매칭된 카테고리: \(matchedCategory.name), ID: \(matchedCategory.id)")
+        }else {
+            item.categoryId = nil
+            // 미지정이면 기본 회색
+            item.categoryColor = CategoryHelper.color(for: "미지정")
+            print("⚠️ 매칭되는 카테고리 없음 -> categoryId = nil")
+        }
+        
         item.estimatedMinutes = parsedTotalMinutes
         
         let selectedSchedules = relatedSchedules.filter { $0.isSelected }

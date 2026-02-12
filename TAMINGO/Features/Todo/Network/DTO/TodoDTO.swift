@@ -127,7 +127,7 @@ struct TodoDetailResponseDTO: Codable {
     let longitude: Double?
     let duration: Int
     let categoryId: Int?       // ✅ 추가: 서버 카테고리 ID
-    let category: String
+    let category: String?
     let categoryColor: String?  // ✅ 서버가 제공할 수도 있는 색상 필드 추가
     let repeatType: String
     let repeatEndDate: String?
@@ -264,7 +264,7 @@ extension TodoDetailResponseDTO {
             color = Color(hex: serverColor)
             print("  - 서버 색상 사용: \(serverColor)")
         } else {
-            color = CategoryHelper.color(for: category)
+            color = CategoryHelper.color(for: category ?? "미지정")
             print("  - 클라이언트 매핑 색상 사용")
         }
         
@@ -272,7 +272,7 @@ extension TodoDetailResponseDTO {
             id: todoId,
             title: title,
             categoryId: categoryId,    // 서버 ID 사용
-            category: category,
+            category: category ?? "미지정",
             categoryColor: color,
             isCompleted: false,
             date: targetDate?.toDates(),
@@ -319,7 +319,7 @@ extension TodoItem {
         )
     }
     
-    func toUpdateRequestDTO(todoCategoryId: Int) -> TodoUpdateRequestDTO {
+    func toUpdateRequestDTO(todoCategoryId: Int?) -> TodoUpdateRequestDTO {
         let repeatType: String
         if isRoutineEnabled {
             repeatType = routineType.apiString

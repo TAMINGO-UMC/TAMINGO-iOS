@@ -252,31 +252,32 @@ class TodoViewModel {
         // 서버 업데이트
         Task {
             do {
-                // ✅ [수정] todoCategoryId가 Optional(Int?)이므로 nil일 경우 기본값(0)을 주어 Int 타입으로 맞춤
-                let requestDTO = item.toUpdateRequestDTO(todoCategoryId: todoCategoryId ?? 0)
-                
+                // ✅ [수정] (nil 그대로 전달)
+                let requestDTO = item.toUpdateRequestDTO(todoCategoryId: todoCategoryId)
+                _ = try await apiService.updateTodo(id: itemId, body: requestDTO)
                 print("🔵 PUT 요청 시작 - /api/todos/\(itemId)")
                 print("  - Request DTO: \(requestDTO)")
                 
-                let response = try await apiService.updateTodo(id: itemId, body: requestDTO)
+                _ = try await apiService.updateTodo(id: itemId, body: requestDTO)
                 
                 print("✅ PUT 요청 성공")
-                print("  - actualTargetDate: \(response.actualTargetDate ?? "nil")")
+               
                 
-                // ✅ 서버가 반환한 실제 날짜로 동기화
+                // ✅ 서버가 날짜를 안 주므로, 클라이언트가 수정한 날짜(item.date)를 기준으로 동기화
                 await MainActor.run {
                     if let index = todoItems.firstIndex(where: { $0.localId == item.localId }) {
-                        if let actualDateString = response.actualTargetDate,
-                           let actualDate = actualDateString.toDates() {
-                            todoItems[index].date = actualDate
-                            selectedDate = actualDate
-                            print("📅 날짜 동기화 완료: \(actualDateString)")
+                        // 로컬 아이템 날짜 확정
+                        todoItems[index].date = item.date
+                        
+                        if let newDate = item.date {
+                            selectedDate = newDate
                         }
+                        print("📅 날짜 동기화 완료 (로컬 기준): \(item.date?.toAPIDateString() ?? "미지정")")
                     }
                 }
                 
                 // ✅ 동기화된 날짜로 목록 재조회
-                let targetDate = response.actualTargetDate?.toDates() ?? item.date ?? selectedDate
+                let targetDate = item.date ?? selectedDate
                 print("📅 목록 재조회 날짜: \(targetDate.toAPIDateString())")
                 
                 await loadTodos(for: targetDate)

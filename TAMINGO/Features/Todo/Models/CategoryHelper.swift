@@ -19,7 +19,7 @@ struct CategoryHelper {
         case "업무": return Color(hex: "#FFC576")
         case "먹기": return Color(hex: "#FFD3B6")
         case "놀기": return Color(hex: "#FFC576")
-        default: return Color(hex: "#22C7A9")  // 기본값
+        default: return Color(hex: "#D1D1D1")  // 기본값
         }
     }
     
