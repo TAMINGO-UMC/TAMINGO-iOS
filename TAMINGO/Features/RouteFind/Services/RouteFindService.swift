@@ -10,7 +10,9 @@ import Moya
 
 final class RouteFindService {
 
-    private let provider = MoyaProvider<RouteFindTarget>()
+    private let provider = MoyaProvider<RouteFindTarget>(
+        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
+    )
 
     // START
     func start(
@@ -19,25 +21,59 @@ final class RouteFindService {
         longitude: Double
     ) async throws -> RouteResultModel {
 
-        let request = RouteFindStartRequestDTO(
+        let requestDTO = RouteFindStartRequestDTO(
             scheduleId: scheduleId,
             latitude: latitude,
             longitude: longitude
         )
 
-        let response: BaseResponse<RouteFindStartResponseDTO> =
-            try await provider.request(.start(request))
+        print("🚀 START REQUEST")
+        print("scheduleId:", scheduleId)
+        print("latitude:", latitude)
+        print("longitude:", longitude)
 
-        guard let result = response.result else {
-            throw NSError(
-                domain: "RouteFindService",
-                code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "Start result is nil"]
-            )
+        return try await withCheckedThrowingContinuation { continuation in
+
+            provider.request(.start(requestDTO)) { result in
+
+                switch result {
+
+                case .success(let response):
+
+                    print("📡 STATUS:", response.statusCode)
+
+                    if let body = String(data: response.data, encoding: .utf8) {
+                        print("📡 BODY:", body)
+                    }
+
+                    do {
+                        let decoded = try JSONDecoder().decode(
+                            BaseResponse<RouteFindStartResponseDTO>.self,
+                            from: response.data
+                        )
+
+                        guard let result = decoded.result else {
+                            throw NSError(
+                                domain: "RouteFindService",
+                                code: -1,
+                                userInfo: [NSLocalizedDescriptionKey: "Start result is nil"]
+                            )
+                        }
+
+                        continuation.resume(returning: result.toModel())
+
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    print("❌ NETWORK ERROR:", error)
+                    continuation.resume(throwing: error)
+                }
+            }
         }
-
-        return result.toModel()
     }
+
 
     // END
     func end(

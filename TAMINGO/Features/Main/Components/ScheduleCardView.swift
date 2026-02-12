@@ -12,9 +12,11 @@ struct ScheduleCardView: View {
     let schedule: ScheduleSummary
     let state: ScheduleCardState
     let isExpanded: Bool
-    @Bindable var detailVM: ScheduleDetailViewModel
     let onChevronTap: (() -> Void)?
+    let onRouteStart: ((Int) -> Void)?
 
+    @Bindable var detailVM: ScheduleDetailViewModel
+    
     var body: some View {
         HStack(alignment: .top, spacing: 17) {
 
@@ -86,6 +88,8 @@ struct ScheduleCardView: View {
                             departureTime: detail.travel.expectedDepartureTimeText,
                             arrivalTime: detail.travel.expectedArrivalTimeText,
                             routeLink: detail.detourRecommendations.first,
+                            scheduleId: schedule.id,
+                                onRouteStart: onRouteStart,
                             onRouteAccept: { detour in
                                 detailVM.acceptRoute(
                                     suggestionId: detour.suggestionId,
