@@ -29,7 +29,11 @@ struct EditCategory: View {
             }
             
             if isEditing {
-                categoryListScroll
+                if categories.isEmpty {
+                    GuideText(text: "저장된 카테고리가 없습니다")
+                } else {
+                    categoryListScroll
+                }
             } else {
                 SelectedItemRow(
                     title: categoryName,

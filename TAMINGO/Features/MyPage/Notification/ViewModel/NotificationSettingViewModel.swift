@@ -17,7 +17,6 @@ final class NotificationSettingViewModel {
     // UI 상태값
     var departureAlertEnabled: Bool = false
     var departureAlertMinutes: ArrivalBufferType = .ten
-    var latenessRiskAlertEnabled: Bool = false
     var realtimeTransitEnabled: Bool = false
     var todoRecommendEnabled: Bool = false
     var locationMoveCheckEnabled: Bool = false
@@ -38,7 +37,6 @@ final class NotificationSettingViewModel {
         [
             departureAlertEnabled,
             departureAlertMinutes,
-            latenessRiskAlertEnabled,
             realtimeTransitEnabled,
             todoRecommendEnabled,
             locationMoveCheckEnabled
@@ -82,7 +80,6 @@ final class NotificationSettingViewModel {
                     // UI 업데이트
                     self.departureAlertEnabled = res.departureAlertEnabled
                     self.departureAlertMinutes = ArrivalBufferType(rawValue: res.departureLeadMinutes) ?? .ten
-                    self.latenessRiskAlertEnabled = res.latenessRiskAlertEnabled
                     self.realtimeTransitEnabled = res.realtimeTransitEnabled
                     self.todoRecommendEnabled = res.todoProposalEnabled
                     self.locationMoveCheckEnabled = res.locationMoveCheckEnabled
@@ -100,7 +97,6 @@ final class NotificationSettingViewModel {
         let request = NotificationSettingResult(
             departureAlertEnabled: departureAlertEnabled,
             departureLeadMinutes: departureAlertMinutes.rawValue,
-            latenessRiskAlertEnabled: latenessRiskAlertEnabled,
             realtimeTransitEnabled: realtimeTransitEnabled,
             todoProposalEnabled: todoRecommendEnabled,
             locationMoveCheckEnabled: locationMoveCheckEnabled

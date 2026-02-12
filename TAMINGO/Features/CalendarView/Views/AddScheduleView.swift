@@ -13,6 +13,7 @@ struct AddScheduleView: View {
     
     @State var activeSheet: SheetType? = nil
     @State var isFavoriteAdded: Bool = false
+    @State private var errorAlert = false
     
     var onSave: (() -> Void)?
     
@@ -101,7 +102,7 @@ struct AddScheduleView: View {
                             onSave?()
                             dismiss()
                         } else {
-                            //TODO: 저장 실패 시 알림
+                            errorAlert.toggle()
                         }
                     }
                 }
@@ -132,6 +133,13 @@ struct AddScheduleView: View {
             )
             .presentationDetents([.height(240)])
             .presentationDragIndicator(.visible)
+        }
+        .alert("알림", isPresented: $errorAlert) {
+            Button("확인", role: .cancel) {
+                dismiss()
+            }
+        } message: {
+            Text("일정 추가를 실패했어요.")
         }
     }
 }
