@@ -7,6 +7,7 @@
 
 import Foundation
 import Moya
+import Alamofire
 
 protocol TodoCategoryServiceProtocol {
     func fetchCategories() async throws -> [TodoCategory]
@@ -17,14 +18,26 @@ protocol TodoCategoryServiceProtocol {
 
 final class TodoCategoryService: TodoCategoryServiceProtocol {
     
-    private let provider = MoyaProvider<TodoCategoryAPI>(
-        plugins: [
-            NetworkLoggerPlugin(configuration: .init(
-                logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
-            ))
-        ]
-    )
+    // [수정 2] Interceptor가 포함된 Session 생성
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
     
+    // [수정 3] provider 변수 선언 (init에서 초기화)
+    private let provider: MoyaProvider<TodoCategoryAPI>
+    
+    // [수정 4] 초기화 메서드 추가 및 Session 주입
+    init() {
+        self.provider = MoyaProvider<TodoCategoryAPI>(
+            session: session, // 핵심: 여기에 interceptor가 담긴 session을 전달해야 갱신 로직이 동작함
+            plugins: [
+                NetworkLoggerPlugin(configuration: .init(
+                    logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
+                ))
+            ]
+        )
+    }
     func fetchCategories() async throws -> [TodoCategory] {
         let response = try await provider.requestAsync(.fetchCategories)
 
