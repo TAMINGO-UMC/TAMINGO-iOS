@@ -29,6 +29,15 @@ extension ScheduleSummary {
     }
     
     var leftMinuteText: String {
-        "\(leftMinute)분 후"
+        if leftMinute <= 0 {
+            return "지금"
+        }
+
+        if leftMinute < 60 {
+            return "\(leftMinute)분 후"
+        }
+
+        let hours = leftMinute / 60
+        return "\(hours)시간 후"
     }
 }

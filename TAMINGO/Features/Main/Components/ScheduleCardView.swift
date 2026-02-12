@@ -12,7 +12,7 @@ struct ScheduleCardView: View {
     let schedule: ScheduleSummary
     let state: ScheduleCardState
     let isExpanded: Bool
-    let detailVM: ScheduleDetailViewModel?
+    @Bindable var detailVM: ScheduleDetailViewModel
     let onChevronTap: (() -> Void)?
 
     var body: some View {
@@ -76,23 +76,29 @@ struct ScheduleCardView: View {
                     }
                 }
                 
-                if isExpanded, let detail = detailVM?.detail {
+                if isExpanded {
+                    @Bindable var vm = detailVM
 
-                    DepartureStatusCardView(
-                        status: detail.travel.status,
-                        departureTime: detail.travel.expectedDepartureTimeText,
-                        arrivalTime: detail.travel.expectedArrivalTimeText,
-                        routeLink: detail.detourRecommendations.first,
-                        onRouteAccept: { detour in
-                            detailVM?.acceptRoute(
-                                baseScheduleId: schedule.id,
-                                detour: detour
-                            )
-                        },
-                        onRouteReject: { detourId in
-                            detailVM?.rejectRoute(scheduleId: detourId)
-                        }
-                    )
+                    if let detail = vm.detail {
+                        
+                        DepartureStatusCardView(
+                            status: detail.travel.status,
+                            departureTime: detail.travel.expectedDepartureTimeText,
+                            arrivalTime: detail.travel.expectedArrivalTimeText,
+                            routeLink: detail.detourRecommendations.first,
+                            onRouteAccept: { detour in
+                                detailVM.acceptRoute(
+                                    suggestionId: detour.suggestionId,
+                                    baseScheduleId: schedule.id,
+                                    detour: detour
+                                )
+                            },
+                            onRouteReject: { suggestionId in
+                                detailVM.rejectRoute(suggestionId: suggestionId)
+                            }
+                        )
+
+                    }
                 }
             }
             .padding(16)
@@ -175,40 +181,3 @@ private extension ScheduleCardView {
     }
 }
 
-
-#Preview {
-    VStack(spacing: 16) {
-        ScheduleCardView(
-            schedule: ScheduleSummary(
-                id: 1,
-                title: "팀플 미팅",
-                startTime: "09:40",
-                placeName: "S관 301",
-                leftMinute: 23,
-                duration: 32,
-                isNowSchedule: true
-            ),
-            state: .now,
-            isExpanded: true,
-            detailVM: nil,
-            onChevronTap: {}
-        )
-
-        ScheduleCardView(
-            schedule: ScheduleSummary(
-                id: 2,
-                title: "강의",
-                startTime: "14:00",
-                placeName: "공학관",
-                leftMinute: 55,
-                duration: 12,
-                isNowSchedule: false
-            ),
-            state: .past,
-            isExpanded: false,
-            detailVM: nil,
-            onChevronTap: nil
-        )
-    }
-    .padding()
-}

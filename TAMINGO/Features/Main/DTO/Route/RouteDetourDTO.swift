@@ -21,7 +21,7 @@ extension RouteDetourDTO {
         let minutesInt = Int(detourMinutes) ?? 0
 
         return RouteDetour(
-            id: suggestionId,
+            suggestionId: suggestionId,
             title: suggestionTitle,
             location: placeName,
             detourMinutes: minutesInt,

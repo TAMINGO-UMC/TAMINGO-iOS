@@ -10,92 +10,75 @@ import Observation
 
 @Observable
 final class ScheduleDetailViewModel {
-
+    
     private let service = HomeDetailService()
-    let accessToken: String
     let scheduleId: Int
-
+    
     var detail: ScheduleDetail?
     var isLoading: Bool = false
     var errorMessage: String?
     
-
-    init(scheduleId: Int, accessToken: String) {
+    init(scheduleId: Int) {
         self.scheduleId = scheduleId
-        self.accessToken = accessToken
     }
-
+    
     func load() {
+        Task { await loadAsync() }
+    }
+    
+    @MainActor
+    private func loadAsync() async {
+        print("detail loadAsync start:", scheduleId)
+        
         isLoading = true
         errorMessage = nil
-        print("🚀 Detail load start:", scheduleId)
-
-        service.fetchScheduleDetail(scheduleId: scheduleId, accessToken: accessToken) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                print("✅ Detail completion arrived:", self.scheduleId)
-
-                self.isLoading = false
-
-                switch result {
-                case .success(let detail):
-                    self.detail = detail
-                    print("✅ Detail success:", self.scheduleId)
-
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    print("❌ Detail fail:", self.scheduleId, error.localizedDescription)
-                }
-            }
+        
+        do {
+            detail = try await service.fetchDetail(scheduleId: scheduleId)
+            print("detail success:", detail)
+        } catch {
+            print("detail error:", error)
+            errorMessage = error.localizedDescription
         }
+        
+        isLoading = false
     }
-
-
-}
-
-extension ScheduleDetailViewModel {
-
-    // 들르기
-    func acceptRoute(
-        baseScheduleId: Int,
-        detour: RouteDetour
-    ) {
+    
+    // MARK: - Route accept
+    func acceptRoute(suggestionId: Int, baseScheduleId: Int, detour: RouteDetour) {
         let request = RouteAcceptRequestDTO(
             baseScheduleId: baseScheduleId,
             title: detour.title,
-            location: .init(
-                name: detour.location,
-                lat: detour.lat,
-                lng: detour.lng
-            ),
+            location: .init(name: detour.location, lat: detour.lat, lng: detour.lng),
             requiredMinutes: Int(detour.detourMinutes) ?? 0
         )
-
-        service.acceptRoute(
-            scheduleId: baseScheduleId,
-            request: request,
-            accessToken: accessToken
-        ) { result in
-            DispatchQueue.main.async {
-                if case .success = result {
-                    print("✅ 동선 연계 적용 완료")
-                }
+        
+        Task {
+            do {
+                print("🟢 [ACCEPT] suggestionId:", detour.suggestionId, "baseScheduleId:", baseScheduleId)
+                try await service.acceptRoute(suggestionId: detour.suggestionId, request: request)
+                print("🟢 [ACCEPT] success → reload detail")
+                await loadAsync()
+            } catch {
+                print("🔴 [ACCEPT ERROR]:", error)
+                errorMessage = error.localizedDescription
             }
         }
     }
-
-    // 삭제
-    func rejectRoute(scheduleId: Int) {
-        service.rejectRoute(
-            scheduleId: scheduleId,
-            accessToken: accessToken
-        ) { result in
-            DispatchQueue.main.async {
-                if case .success = result {
-                    print("🗑 동선 연계 삭제 완료")
-                }
+    
+    
+    // MARK: - Route reject
+    func rejectRoute(suggestionId: Int) {
+        Task {
+            do {
+                print("🟡 [REJECT] suggestionId:", suggestionId)
+                try await service.rejectRoute(suggestionId: suggestionId)
+                print("🟡 [REJECT] success → reload detail")
+                await loadAsync()
+            } catch {
+                print("🔴 [REJECT ERROR]:", error)
+                errorMessage = error.localizedDescription
             }
         }
     }
 }
-

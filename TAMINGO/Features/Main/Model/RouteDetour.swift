@@ -8,7 +8,7 @@
 import Foundation
 
 struct RouteDetour {
-    let id: Int
+    let suggestionId: Int
     let title: String
     let location: String
     let detourMinutes: Int

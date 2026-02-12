@@ -13,7 +13,7 @@ struct ScheduleStatusDTO: Decodable {
     let leftOrDelayMinutes: Int
     let expectedDepartureTime: String
     let expectedArrivalTime: String
-    let lateArrivalMinutes: Int
+    let lateArrivalMinutes: Int?
 }
 
 enum CurrentStatusDTO: String, Decodable {
@@ -42,15 +42,15 @@ extension ScheduleStatusDTO {
         case .departureExtremeDelayed:
             status = .late(
                 remainingMinutes: leftOrDelayMinutes,
-                delayMinutes: lateArrivalMinutes
+                delayMinutes: lateArrivalMinutes ?? 0
             )
         }
-        
+
         return TravelStatus(
             status: status,
             expectedDepartureTimeText: expectedDepartureTime.hhmm,
             expectedArrivalTimeText: expectedArrivalTime.hhmm,
-            lateArrivalMinutes: lateArrivalMinutes,
+            lateArrivalMinutes: lateArrivalMinutes ?? 0,
             leftOrDelayMinutes: leftOrDelayMinutes,
             isStarted: isStarted
         )

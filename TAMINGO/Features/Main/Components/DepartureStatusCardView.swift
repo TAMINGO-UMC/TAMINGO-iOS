@@ -109,7 +109,7 @@ struct DepartureStatusCardView: View {
                 },
                 onDeleteTap: {
                     showRouteLink = false
-                    onRouteReject?(routeLink.id)
+                    onRouteReject?(routeLink.suggestionId)
                 }
             )
         }

@@ -10,146 +10,159 @@ import Observation
 
 @Observable
 final class HomeScheduleViewModel {
-    
+
     // MARK: - Dependencies
     private let service = HomeService()
-    let accessToken: String
 
-        init(accessToken: String) {
-            self.accessToken = accessToken
-        }
-    
     // MARK: - State
     var timelineItems: [HomeTimelineItem] = []
     var expandedScheduleId: Int?
     
-    var scheduleDetailVMs: [Int: ScheduleDetailViewModel] = [:]
-    
+    var detailViewModels: [Int: ScheduleDetailViewModel] = [:]
+
+    var nextScheduleId: Int?
+
     var isLoading: Bool = false
     var errorMessage: String?
-    
-    var detailViewModels: [Int: ScheduleDetailViewModel] = [:]
-    
-    // MARK: - API 연동
-    
-    func loadToday(accessToken: String) {
+
+    // MARK: - API
+    func loadToday() {
+        Task { await loadTodayAsync() }
+    }
+
+    @MainActor
+    private func loadTodayAsync() async {
         isLoading = true
         errorMessage = nil
-        
-        service.fetchTodayTimeline(accessToken: accessToken) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                self.isLoading = false
-                
-                switch result {
-                    
-                case .success(let response):
-                    guard response.isSuccess else {
-                        self.errorMessage = response.message
-                        print("❌ HomeSchedule 실패:", response.code, response.message)
-                        self.timelineItems = []
-                        return
-                    }
 
-                    let items = response.result?.items ?? []
-                    self.timelineItems = items.compactMap { $0.toModel() }
+        do {
+            let response = try await service.fetchTodayTimeline()
 
-                    print("✅ HomeSchedule 서버 연동 성공:", self.timelineItems.count)
-                    print("📦 timelineItems:", self.timelineItems.count)
-                    dump(self.timelineItems)
-                    
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    print("❌ HomeSchedule 서버 연동 실패:", error)
+            guard response.isSuccess else {
+                errorMessage = response.message
+                timelineItems = []
+                isLoading = false
+                return
+            }
+
+            let items = response.result?.items ?? []
+            timelineItems = items.compactMap { $0.toModel() }
+
+            updateNextSchedule()
+
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
+    // MARK: - 가장 첫 번째 남은 일정 찾기
+    private func updateNextSchedule() {
+
+        let now = Date()
+
+        for item in timelineItems {
+            if case let .schedule(schedule) = item {
+                if let start = todayTime(schedule.startTime), start >= now {
+                    nextScheduleId = schedule.id
+                    return
                 }
             }
         }
-    }
-    
-    // MARK: - UI Interaction (View가 쓰는 것들)
-    func toggleDepartureCard(
-        for schedule: ScheduleSummary,
-        accessToken: String
-    ) {
-        print("🔥 toggleDepartureCard called:", schedule.id)
 
+        nextScheduleId = nil
+    }
+
+    // MARK: - 상태 계산
+    func scheduleState(for schedule: ScheduleSummary) -> ScheduleCardState {
+
+        // 가장 첫 번째 남은 일정이면 .now
+        if schedule.id == nextScheduleId {
+            return .now
+        }
+
+        // 이미 지난 일정이면 .past
+        guard let start = todayTime(schedule.startTime) else {
+            return .past
+        }
+
+        if start < Date() {
+            return .past
+        }
+
+        // 나머지는 upcoming
+        return .upcoming
+    }
+
+    // MARK: - UI Interaction
+    func toggleDepartureCard(for schedule: ScheduleSummary) {
+
+        print("🔥 toggle called for:", schedule.id)
+        
         if expandedScheduleId == schedule.id {
             expandedScheduleId = nil
-            print("⬆️ collapse")
-        } else {
-            expandedScheduleId = schedule.id
-            print("⬇️ expand:", schedule.id)
+            return
+        }
 
-            if scheduleDetailVMs[schedule.id] == nil {
-                let vm = ScheduleDetailViewModel(
-                    scheduleId: schedule.id,
-                    accessToken: accessToken
-                )
-                scheduleDetailVMs[schedule.id] = vm
-                vm.load()
-            }
+        expandedScheduleId = schedule.id
+
+        let vm = detailViewModel(for: schedule.id)
+        if vm.detail == nil {
+            print("🔥 loading detail...")
+            vm.load()
         }
     }
 
-    
-    // MARK: - GAP (틈새 시간)
     func acceptGap(_ gap: GapTime) {
+        Task { await acceptGapAsync(gap) }
+    }
+
+    @MainActor
+    private func acceptGapAsync(_ gap: GapTime) async {
         isLoading = true
 
-        service.acceptSuggestion(
-            suggestionId: gap.id,
-            accessToken: accessToken
-        ) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                self.isLoading = false
-
-                switch result {
-                case .success:
-                    print("✅ 틈새 일정 편성 성공:", gap.id)
-
-                    // 1. UI 즉시 반영
-                    self.timelineItems.removeAll {
-                        if case .gap(let g) = $0 {
-                            return g.id == gap.id
-                        }
-                        return false
-                    }
-
-                    // 2. 서버 기준 재동기화
-                    self.loadToday(accessToken: self.accessToken)
-
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                }
-            }
+        do {
+            try await service.acceptSuggestion(id: gap.id)
+            await loadTodayAsync()
+        } catch {
+            errorMessage = error.localizedDescription
         }
+
+        isLoading = false
     }
 
-    
     func rejectGap(_ gap: GapTime) {
-        timelineItems.removeAll {
-            if case .gap(let g) = $0 { return g.id == gap.id }
-            return false
-        }
+        Task { await rejectGapAsync(gap) }
     }
-    
-    // MARK: -  detail-ViewModel
-    func detailViewModel(for scheduleId: Int) -> ScheduleDetailViewModel {
-        if let vm = detailViewModels[scheduleId] {
-            return vm
+
+    @MainActor
+    private func rejectGapAsync(_ gap: GapTime) async {
+        isLoading = true
+
+        do {
+            try await service.rejectSuggestion(id: gap.id)
+            await loadTodayAsync()
+        } catch {
+            errorMessage = error.localizedDescription
         }
 
-        let vm = ScheduleDetailViewModel(
-            scheduleId: scheduleId,
-            accessToken: accessToken
-        )
-        vm.load()
+        isLoading = false
+    }
+
+    // MARK: - Detail VM cache
+    func detailViewModel(for scheduleId: Int) -> ScheduleDetailViewModel {
+
+        if let cached = detailViewModels[scheduleId] {
+            return cached
+        }
+
+        let vm = ScheduleDetailViewModel(scheduleId: scheduleId)
         detailViewModels[scheduleId] = vm
         return vm
     }
-
 }
+
 
 extension ScheduleSummary {
 
@@ -165,11 +178,10 @@ extension ScheduleSummary {
 extension HomeScheduleViewModel {
 
     private func todayTime(_ timeString: String) -> Date? {
-        // "12:00", "12:00:00", "12:00:00.000" 다 대응
+
         let comps = timeString.split(separator: ":")
         guard comps.count >= 2 else { return nil }
 
-        // "00.000" 같이 붙는 경우까지 대비해서 숫자만 추출
         let hour = Int(comps[0].filter(\.isNumber)) ?? -1
         let minute = Int(comps[1].filter(\.isNumber)) ?? -1
         guard (0...23).contains(hour), (0...59).contains(minute) else { return nil }
@@ -183,21 +195,5 @@ extension HomeScheduleViewModel {
             second: 0,
             of: Date()
         )
-    }
-
-    func scheduleState(for schedule: ScheduleSummary) -> ScheduleCardState {
-
-        guard let start = todayTime(schedule.startTime) else {
-            print("⚠️ startTime parse fail:", schedule.startTime)
-            return .past
-        }
-
-        let now = Date()
-        let durationMinutes = max(schedule.duration, 1)
-        let end = start.addingTimeInterval(TimeInterval(durationMinutes * 60))
-
-        if now < start { return .upcoming }
-        if now < end { return .now }
-        return .past
     }
 }
