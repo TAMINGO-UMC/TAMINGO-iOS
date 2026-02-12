@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Moya
+@preconcurrency import Moya
 
 protocol AuthRepositoryProtocol {
     func getTerms() async throws -> [TermDTO]

@@ -93,11 +93,12 @@ class TodoAPIService {
         let response = try await provider.requestAsync(.deleteTodo(id: id))
         _ = try decodeOrThrow(response, as: String.self)
     }
-    
+
     // MARK: - 10. 카테고리 목록 조회
     func getCategories() async throws -> [TodoCategory] {
         let response = try await provider.requestAsync(.getCategories)
-        let dtos = try decodeOrThrow(response, as: [CategoryResponseDTO].self)
+        // ✅ 수정: TodoCategoryResponseDTO로 변경
+        let dtos = try decodeOrThrow(response, as: [TodoCategoryResponseDTO].self)
         return dtos.map { $0.toDomain() }
     }
     

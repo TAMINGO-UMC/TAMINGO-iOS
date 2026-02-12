@@ -132,18 +132,23 @@ struct CategorySections: View {
 
 // MARK: - CategoryButton
 struct CategoryButton: View {
-    let category: TodoCategory  // ✅ TodoCategory 사용
+    let category: TodoCategory
     let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
+        // ✅ 1. 팀원의 Custom Color 타입을 SwiftUI Color로 변환
+        let uiColor = Color(hex: category.color.hexCode)
+        
         Button(action: action) {
             Text(category.name)
                 .font(.regular12)
-                .foregroundColor(isSelected ? .white : category.color)
+                // ✅ 2. 변환한 uiColor 사용
+                .foregroundColor(isSelected ? .white : uiColor)
                 .padding(.horizontal, 12)
                 .frame(height: 32)
-                .background(isSelected ? category.color : category.color.opacity(0.15))
+                // ✅ 3. 변환한 uiColor 사용 (.opacity 적용 가능해짐)
+                .background(isSelected ? uiColor : uiColor.opacity(0.15))
                 .cornerRadius(8)
         }
     }
