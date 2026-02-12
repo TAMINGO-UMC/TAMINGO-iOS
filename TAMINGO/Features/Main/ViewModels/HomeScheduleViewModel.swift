@@ -11,111 +11,189 @@ import Observation
 @Observable
 final class HomeScheduleViewModel {
 
+    // MARK: - Dependencies
+    private let service = HomeService()
+
+    // MARK: - State
     var timelineItems: [HomeTimelineItem] = []
     var expandedScheduleId: Int?
-
-    var scheduleDetails: [Int: ScheduleDetail] = [:]
     
-    init() {
-        loadMock()
+    var detailViewModels: [Int: ScheduleDetailViewModel] = [:]
+
+    var nextScheduleId: Int?
+
+    var isLoading: Bool = false
+    var errorMessage: String?
+
+    // MARK: - API
+    func loadToday() {
+        Task { await loadTodayAsync() }
     }
 
+    @MainActor
+    private func loadTodayAsync() async {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let response = try await service.fetchTodayTimeline()
+
+            guard response.isSuccess else {
+                errorMessage = response.message
+                timelineItems = []
+                isLoading = false
+                return
+            }
+
+            let items = response.result?.items ?? []
+            timelineItems = items.compactMap { $0.toModel() }
+
+            updateNextSchedule()
+
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
+    // MARK: - 가장 첫 번째 남은 일정 찾기
+    private func updateNextSchedule() {
+
+        let now = Date()
+
+        for item in timelineItems {
+            if case let .schedule(schedule) = item {
+                if let start = todayTime(schedule.startTime), start >= now {
+                    nextScheduleId = schedule.id
+                    return
+                }
+            }
+        }
+
+        nextScheduleId = nil
+    }
+
+    // MARK: - 상태 계산
+    func scheduleState(for schedule: ScheduleSummary) -> ScheduleCardState {
+
+        // 가장 첫 번째 남은 일정이면 .now
+        if schedule.id == nextScheduleId {
+            return .now
+        }
+
+        // 이미 지난 일정이면 .past
+        guard let start = todayTime(schedule.startTime) else {
+            return .past
+        }
+
+        if start < Date() {
+            return .past
+        }
+
+        // 나머지는 upcoming
+        return .upcoming
+    }
+
+    // MARK: - UI Interaction
     func toggleDepartureCard(for schedule: ScheduleSummary) {
+
+        print("🔥 toggle called for:", schedule.id)
+        
         if expandedScheduleId == schedule.id {
             expandedScheduleId = nil
-        } else {
-            expandedScheduleId = schedule.id
-            loadScheduleDetailIfNeeded(id: schedule.id)
+            return
+        }
+
+        expandedScheduleId = schedule.id
+
+        let vm = detailViewModel(for: schedule.id)
+        if vm.detail == nil {
+            print("🔥 loading detail...")
+            vm.load()
         }
     }
 
-    func loadScheduleDetailIfNeeded(id: Int) {
-        guard scheduleDetails[id] == nil else { return }
-        
-        // 임시 mock
-        scheduleDetails[id] = ScheduleDetail.mock(id: id)
+    func acceptGap(_ gap: GapTime) {
+        Task { await acceptGapAsync(gap) }
     }
 
+    @MainActor
+    private func acceptGapAsync(_ gap: GapTime) async {
+        isLoading = true
 
-    func acceptGap(_ gap: GapTime) {
-        guard let index = timelineItems.firstIndex(where: {
-            if case .gap(let g) = $0 {
-                return g.id == gap.id
-            }
-            return false
-        }) else { return }
+        do {
+            try await service.acceptSuggestion(id: gap.id)
+            await loadTodayAsync()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
 
-        // gap → schedule 변환
-        let newSchedule = ScheduleSummary(
-            id: Int.random(in: 1000...9999), // 임시 ID
-            title: gap.title,
-            startTime: gap.gapStartTime,
-            placeName: gap.location,
-            leftMinute: 0,
-            duration: 0,
-            isNextSchedule: false
-        )
-
-        // 같은 위치에 schedule로 교체
-        timelineItems[index] = .schedule(newSchedule)
+        isLoading = false
     }
 
     func rejectGap(_ gap: GapTime) {
-        timelineItems.removeAll {
-            if case .gap(let g) = $0 { return g.id == gap.id }
-            return false
-        }
+        Task { await rejectGapAsync(gap) }
     }
 
-    private func loadMock() {
-        timelineItems = [
-            .schedule(
-                ScheduleSummary(
-                    id: 1,
-                    title: "팀플 미팅",
-                    startTime: "09:40",
-                    placeName: "S관 301",
-                    leftMinute: 23,
-                    duration: 13,
-                    isNextSchedule: true
-                )
-            ),
+    @MainActor
+    private func rejectGapAsync(_ gap: GapTime) async {
+        isLoading = true
 
-            .gap(
-                GapTime(
-                    id: 5,
-                    minutes: "5–7분",
-                    title: "도서 반납",
-                    location: "도서관",
-                    availableText: "12:10–12:30 공강에 처리 가능",
-                    gapStartTime: "12:10",
-                    gapEndTime: "12:30"
-                )
-            ),
+        do {
+            try await service.rejectSuggestion(id: gap.id)
+            await loadTodayAsync()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
 
-            .schedule(
-                ScheduleSummary(
-                    id: 2,
-                    title: "강의",
-                    startTime: "14:00",
-                    placeName: "공학관",
-                    leftMinute: 55,
-                    duration: 21,
-                    isNextSchedule: false
-                )
-            ),
+        isLoading = false
+    }
 
-            .schedule(
-                ScheduleSummary(
-                    id: 3,
-                    title: "스터디",
-                    startTime: "18:30",
-                    placeName: "중앙도서관",
-                    leftMinute: 180,
-                    duration: 20,
-                    isNextSchedule: false
-                )
-            )
-        ]
+    // MARK: - Detail VM cache
+    func detailViewModel(for scheduleId: Int) -> ScheduleDetailViewModel {
+
+        if let cached = detailViewModels[scheduleId] {
+            return cached
+        }
+
+        let vm = ScheduleDetailViewModel(scheduleId: scheduleId)
+        detailViewModels[scheduleId] = vm
+        return vm
+    }
+}
+
+
+extension ScheduleSummary {
+
+    var startDate: Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.date(from: startTime)
+    }
+}
+
+
+extension HomeScheduleViewModel {
+
+    private func todayTime(_ timeString: String) -> Date? {
+
+        let comps = timeString.split(separator: ":")
+        guard comps.count >= 2 else { return nil }
+
+        let hour = Int(comps[0].filter(\.isNumber)) ?? -1
+        let minute = Int(comps[1].filter(\.isNumber)) ?? -1
+        guard (0...23).contains(hour), (0...59).contains(minute) else { return nil }
+
+        var calendar = Calendar.current
+        calendar.timeZone = .current
+
+        return calendar.date(
+            bySettingHour: hour,
+            minute: minute,
+            second: 0,
+            of: Date()
+        )
     }
 }

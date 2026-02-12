@@ -17,13 +17,17 @@ struct TodayHeaderView: View {
     }()
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text("오늘")
-                .font(.bold22)
-
-            Text(Self.todayFormatter.string(from: Date()))
-                .font(.medium14)
-                .foregroundStyle(.gray2)
+        HStack {
+            VStack(alignment: .leading, spacing: 5) {
+                Text("오늘")
+                    .font(.bold22)
+                
+                Text(Self.todayFormatter.string(from: Date()))
+                    .font(.medium14)
+                    .foregroundStyle(.gray2)
+            }
+            
+            Spacer()
         }
         .padding(.bottom, 5)
     }

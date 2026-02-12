@@ -17,7 +17,7 @@ struct GapTimeCardView: View {
         HStack(alignment: .top, spacing: 17) {
 
             // 시간
-            Text(gapTime.gapStartTime)
+            Text(gapTime.gapStartTimeText)
                 .font(.medium14)
                 .foregroundStyle(Color("Black00"))
                 .frame(alignment: .leading)
@@ -87,6 +87,7 @@ struct GapTimeCardView: View {
                         Color("SubYellow4"),
                         style: StrokeStyle(lineWidth: 1, dash: [4])
                     )
+                    .allowsHitTesting(false)
             }
             .shadow(
                 color: Color.black.opacity(0.06),
@@ -135,21 +136,3 @@ private struct GapSecondaryButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
-
-#Preview {
-    GapTimeCardView(
-        gapTime: GapTime(
-            id: 5,
-            minutes: "5–7분",
-            title: "도서 반납",
-            location: "도서관",
-            availableText: "12:10–12:30 공강에 처리 가능",
-            gapStartTime: "12:30",
-            gapEndTime: "12:40"
-        ),
-        onAssignTap: { print("편성") },
-        onLaterTap: { print("나중에") }
-    )
-    .padding()
-}
-
