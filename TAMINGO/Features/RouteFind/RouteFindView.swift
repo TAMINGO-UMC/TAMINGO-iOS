@@ -11,8 +11,6 @@ struct RouteFindView: View {
     
     @State private var viewModel: RouteGuideViewModel
     
-    let route = RouteResultModel.preview
-    
     init(scheduleId: Int) {
         _viewModel = State(initialValue: RouteGuideViewModel(scheduleId: scheduleId))
     }
@@ -20,14 +18,15 @@ struct RouteFindView: View {
     var body: some View {
         VStack {
             
-            RouteSummaryHeaderView(route: route)
-            
-            RouteInputCardView(
-                route: route,
-                wayPoints: route.wayPoints.map { $0.name }
-            )
-            
-            .padding(.bottom, 12)
+            if let route = viewModel.routeResult {
+                RouteSummaryHeaderView(route: route)
+
+                RouteInputCardView(
+                    route: route,
+                    wayPoints: route.wayPoints.map { $0.name }
+                )
+                .padding(.bottom, 12)
+            }
             
             ScrollView {
                 if let route = viewModel.routeResult {

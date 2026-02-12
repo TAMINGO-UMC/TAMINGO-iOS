@@ -10,7 +10,9 @@ import Moya
 
 final class HomeService {
 
-    private let provider = MoyaProvider<HomeTarget>()
+    private let provider = MoyaProvider<HomeTarget>(
+        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
+    )
 
     func fetchTodayTimeline() async throws -> HomeScheduleResponseDTO {
         let decoded: HomeScheduleResponseDTO =

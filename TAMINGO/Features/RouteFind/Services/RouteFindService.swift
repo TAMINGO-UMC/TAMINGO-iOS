@@ -47,10 +47,15 @@ final class RouteFindService {
                     }
 
                     do {
-                        let decoded = try JSONDecoder().decode(
-                            BaseResponse<RouteFindStartResponseDTO>.self,
-                            from: response.data
-                        )
+                        let decoder = JSONDecoder()
+                           decoder.dateDecodingStrategy = .formatted(
+                               RouteDateFormatter.isoWithNanoSeconds
+                           )
+
+                           let decoded = try decoder.decode(
+                               BaseResponse<RouteFindStartResponseDTO>.self,
+                               from: response.data
+                           )
 
                         guard let result = decoded.result else {
                             throw NSError(
