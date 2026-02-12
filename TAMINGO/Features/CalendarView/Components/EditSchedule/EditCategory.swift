@@ -17,6 +17,7 @@ struct EditCategory: View {
     
     // Actions
     var onSelectCategory: (ScheduleCategoryDTO) -> Void
+    var onDeleteCategory: () -> Void
     
     // Local State
     @State private var isEditing: Bool = false
@@ -30,9 +31,15 @@ struct EditCategory: View {
             if isEditing {
                 categoryListScroll
             } else {
-                SelectedItemRow(title: categoryName) {
-                    withAnimation { isEditing = true }
-                }
+                SelectedItemRow(
+                    title: categoryName,
+                    onEdit: {
+                        withAnimation { isEditing = true }
+                    },
+                    onDelete: {
+                        onDeleteCategory()
+                    }
+                )
             }
         }
     }

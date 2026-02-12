@@ -38,19 +38,25 @@ extension AddScheduleViewModel {
     
     // MARK: - AI Helpers
     func applyInferenceResult(_ data: AIInferenceResponseDTO) {
-        // 장소 매핑
-        self.placeName = data.aiInference.placeName
-        self.address = data.aiInference.address
+        // Optional 값 언래핑
+        
+        // 장소 정보 매핑
+        self.placeName = data.aiInference.placeName ?? ""
+        self.address = data.aiInference.address ?? ""
         self.latitude = data.aiInference.latitude
         self.longitude = data.aiInference.longitude
-        self.categoryName = data.aiInference.category
         
-        // 출처 기록
-        self.aiInferenceSource.aiSuggestedPlaceName = data.aiInference.placeName
-        self.aiInferenceSource.aiSuggestedCategoryName = data.aiInference.category
+        // 카테고리 이름 처리
+        let category = data.aiInference.category ?? ""
+        self.categoryName = category
+        
+        // 출처 기록 (Request Body용)
+        self.aiInferenceSource.aiSuggestedPlaceName = data.aiInference.placeName ?? ""
+        self.aiInferenceSource.aiSuggestedCategoryName = category
         
         // 카테고리 매칭
-        self.scheduleCategoryId = findCategoryId(by: data.aiInference.category) ?? 0
+        // category가 빈 문자열이면 찾지 못하므로 0 (기타/선택안함)으로 설정
+        self.scheduleCategoryId = findCategoryId(by: category) ?? 0
         
         // 할 일 리스트 매핑
         self.linkedTodos = data.context.nearbyTodos

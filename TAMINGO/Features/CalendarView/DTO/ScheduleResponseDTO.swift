@@ -18,8 +18,8 @@ struct ScheduleListDTO: Decodable, Identifiable {
     let title: String
     let startTime: String
     let endTime: String
-    let placeName: String
-    let category: String
+    let placeName: String?
+    let category: String?
     
     var id: Int { scheduleId }
 }
@@ -31,11 +31,11 @@ struct ScheduleResponseDTO: Decodable {
     let scheduleDate: String
     let startTime: String
     let endTime: String
-    let placeName: String
-    let address: String
-    let latitude: Double
-    let longitude: Double
-    let category: String
+    let placeName: String?
+    let address: String?
+    let latitude: Double?
+    let longitude: Double?
+    let category: String?
     let repeatType: String
     let repeatEndDate: String?
     let memo: String
@@ -56,11 +56,11 @@ struct AIInferenceContext: Decodable {
 }
 
 struct AIInferenceData: Decodable {
-    let placeName: String
-    let address: String
-    let latitude: Double
-    let longitude: Double
-    let category: String
+    let placeName: String?
+    let address: String?
+    let latitude: Double?
+    let longitude: Double?
+    let category: String?
 }
 
 // MARK: - 할 일 요약

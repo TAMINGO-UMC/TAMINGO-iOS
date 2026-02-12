@@ -23,28 +23,44 @@ struct ScheduleCard: View {
                         .font(.medium14)
                         .foregroundStyle(.black00)
                     
-                    Text(schedule.category)
-                        .font(.medium12)
-                        .foregroundStyle(color)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(color.opacity(0.15))
-                        )
+                    if let cat = schedule.category {
+                        categoryTag(text: cat, color: color)
+                    } else {
+                        categoryTag(text: "없음", color: .gray)
+                    }
                 }
-                Text("\(schedule.endTime.toTimeStr(format: "HH:mm"))  \(schedule.placeName)")
-                    .font(.medium12)
-                    .foregroundStyle(.gray2)
+                
+                if let place = schedule.placeName {
+                    Text("\(schedule.endTime.toTimeStr(format: "HH:mm"))  \(place)")
+                        .font(.medium12)
+                        .foregroundStyle(.gray2)
+                } else {
+                    Text("\(schedule.endTime.toTimeStr(format: "HH:mm"))  장소 없음")
+                        .font(.medium12)
+                        .foregroundStyle(.gray2)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(.white)
                     .shadow(color: .black.opacity(0.08), radius: 4.75, x: 2, y: 3)
+                    .frame(height: 60)
             )
         }
         .frame(height: 60)
+    }
+    
+    private func categoryTag(text: String, color: Color) -> some View {
+        Text(text)
+            .font(.medium12)
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(color.opacity(0.15))
+            )
     }
 }

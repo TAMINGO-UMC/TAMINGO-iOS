@@ -14,7 +14,7 @@ import Moya
 @MainActor
 class AddScheduleViewModel {
     // MARK: - Dependencies
-    let provider = MoyaProvider<ScheduleTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
+    let provider = MoyaProvider<ScheduleTarget>()
     
     var cancellables = Set<AnyCancellable>()
     let inputSubject = PassthroughSubject<String, Never>()
@@ -70,7 +70,6 @@ class AddScheduleViewModel {
         didSet {
             // 토글을 켜면 날짜를 오늘로 리셋 (혹은 기존 날짜 유지)
             if isEndDated {
-                let calendar = Calendar.current
                 self.repeatEndDate = Date()
             }
         }

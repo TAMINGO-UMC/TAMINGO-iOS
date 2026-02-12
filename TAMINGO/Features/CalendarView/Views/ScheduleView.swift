@@ -47,8 +47,12 @@ struct ScheduleView: View {
                         .foregroundStyle(.gray2)
                         .padding(.top, 20)
                 } else {
+                    Spacer()
+                        .frame(height: 8)
                     ForEach(calendarVM.selectedDateSchedules, id: \.scheduleId) { schedule in
-                        let color = calendarVM.categoryMap[schedule.category] ?? .gray
+                        // category가 nil이면 빈 문자열로 처리하여 색상 조회
+                        let categoryKey = schedule.category ?? ""
+                        let color = calendarVM.categoryMap[categoryKey] ?? .gray
                         
                         Button {
                             self.selectedSchedule = schedule
@@ -57,8 +61,11 @@ struct ScheduleView: View {
                         }
                     }
                     .padding(.horizontal)
+                    Spacer()
+                        .frame(height: 8)
                 }
             }
+            .padding(.bottom, 88)
             
             Spacer()
         }
