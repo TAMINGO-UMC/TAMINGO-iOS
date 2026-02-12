@@ -234,6 +234,20 @@ class TodoEditViewModel {
         item.latitude = latitude
         item.longitude = longitude
         item.category = category
+        
+        // ✅ 카테고리 ID 및 **Color** 업데이트
+        if let matchedCategory = availableCategories.first(where: { $0.name == category }) {
+            item.categoryId = matchedCategory.id
+            // 🎨 [중요] 색상도 같이 업데이트해줘야 리스트에서 바로 반영됨 (민트색 고정 해결)
+            item.categoryColor = matchedCategory.color
+            print("✅ 매칭된 카테고리: \(matchedCategory.name), ID: \(matchedCategory.id)")
+        } else {
+            item.categoryId = nil
+            // 미지정이면 기본 회색
+            item.categoryColor = CategoryHelper.color(for: "미지정")
+            print("⚠️ 매칭되는 카테고리 없음 -> categoryId = nil")
+        }
+        
         item.estimatedMinutes = parsedTotalMinutes
         
         let selectedSchedules = relatedSchedules.filter { $0.isSelected }
