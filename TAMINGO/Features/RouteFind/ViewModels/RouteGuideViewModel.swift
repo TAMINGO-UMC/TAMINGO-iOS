@@ -43,6 +43,14 @@ final class RouteGuideViewModel {
         do {
             let coord = try await locationManager.requestCurrentCoordinate()
 
+            // Silent GPS 먼저 호출
+            _ = try await locationService.silentGPS(
+                scheduleId: scheduleId,
+                latitude: coord.latitude,
+                longitude: coord.longitude
+            )
+
+            // route start
             let result = try await routeService.start(
                 scheduleId: scheduleId,
                 latitude: coord.latitude,
@@ -55,9 +63,11 @@ final class RouteGuideViewModel {
             startRealtime()
 
         } catch {
+            print("❌ startRoute error:", error)
             state = .error(error.localizedDescription)
         }
     }
+
 
     // MARK: - Realtime GPS
     private func startRealtime() {

@@ -40,15 +40,11 @@ struct BusTimelineRow: View {
                     optionRow(option)
                 }
                 
-//                expandButton
-                
-                if isExpanded {
-                    ExpandStationsView(
-                        count: leg.stationCount,
-                        time: selectedOption.sectionTime,
-                        stations: leg.stations
-                    )
-                }
+                ExpandStationsView(
+                    count: leg.stationCount,
+                    time: leg.sectionTime,
+                    stations: leg.stations
+                )
             }
             .padding(.vertical, 20)
 

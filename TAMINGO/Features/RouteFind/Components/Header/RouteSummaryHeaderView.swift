@@ -28,7 +28,7 @@ struct RouteSummaryHeaderView: View {
 
             Spacer()
         }
-        .padding(.horizontal, 30)
+        .padding(.horizontal, 35)
         .padding(.top, 7)
         .padding(.bottom, 15)
     }
