@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GapTime: Identifiable {
+struct GapTime: Identifiable, Hashable {
     let id: Int            // suggestionId
     let minutes: String
     let title: String
@@ -16,4 +16,11 @@ struct GapTime: Identifiable {
 
     let gapStartTime: String
     let gapEndTime: String
+}
+
+
+extension GapTime {
+    var gapStartTimeText: String {
+        String(gapStartTime.prefix(5))
+    }
 }

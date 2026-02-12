@@ -70,9 +70,12 @@ final class IdCreateViewModel {
             )
             
             // 토큰 저장 (TokenManager 사용)
-            TokenManager.shared.saveAccessToken(response.accessToken)
+            TokenManager.shared.saveAccessTokenWithJWT(response.accessToken)
             TokenManager.shared.saveRefreshToken(response.refreshToken)
             TokenManager.shared.saveUserId(response.userId)
+            
+            // 토큰 상태 확인
+            TokenManager.shared.printTokenStatus()
             
             onSuccess(response)
         } catch {

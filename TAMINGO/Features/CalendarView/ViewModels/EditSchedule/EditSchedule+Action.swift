@@ -35,9 +35,9 @@ extension EditScheduleViewModel {
                 self.endTime = end
             }
             
-            // 장소 정보 매핑
-            self.placeName = result.placeName
-            self.address = result.address
+            // 장소 정보 매핑 (Optional -> String 변환)
+            self.placeName = result.placeName ?? ""
+            self.address = result.address ?? ""
             self.latitude = result.latitude
             self.longitude = result.longitude
             
@@ -55,7 +55,7 @@ extension EditScheduleViewModel {
                 self.isEndDated = true
             } else {
                 self.isEndDated = false
-                self.repeatEndDate = Date() // 토글 켜면 오늘부터 시작하도록 리셋
+                self.repeatEndDate = Date()
             }
             
             // 할 일 리스트 매핑
@@ -63,10 +63,14 @@ extension EditScheduleViewModel {
             self.candidateTodos = result.candidateTodos
             
             // 카테고리 매핑
-            self.categoryName = result.category
-            // 카테고리 목록에서 이름이 일치하는 ID 찾기
-            if let id = self.findCategoryId(by: result.category) {
-                self.scheduleCategoryId = id
+            if let catName = result.category {
+                self.categoryName = catName
+                if let id = self.findCategoryId(by: catName) {
+                    self.scheduleCategoryId = id
+                }
+            } else {
+                self.categoryName = ""
+                self.scheduleCategoryId = 0
             }
             
         } catch {
@@ -90,6 +94,11 @@ extension EditScheduleViewModel {
         ? repeatEndDate.toString(format: "yyyy-MM-dd")
         : nil
         
+        // 옵셔널 값 처리 (빈 값 -> nil)
+        let categoryIdToSend: Int? = (scheduleCategoryId == 0) ? nil : scheduleCategoryId
+        let placeNameToSend: String? = placeName.isEmpty ? nil : placeName
+        let addressToSend: String? = address.isEmpty ? nil : address
+        
         // 연동된 투두 ID 추출
         let linkedIds = linkedTodos.map { $0.todoId }
         
@@ -99,11 +108,11 @@ extension EditScheduleViewModel {
             scheduleDate: dateString,
             startTime: startTimeString,
             endTime: endTimeString,
-            placeName: placeName,
-            address: address,
+            placeName: placeNameToSend,
+            address: addressToSend,
             latitude: latitude,
             longitude: longitude,
-            scheduleCategoryId: scheduleCategoryId,
+            scheduleCategoryId: categoryIdToSend,
             memo: memo,
             repeatType: repeatType.rawValue,
             repeatEndDate: repeatEndDateString,
@@ -114,7 +123,6 @@ extension EditScheduleViewModel {
             // API 요청
             let response: BaseResponse<String> = try await provider.request(.updateSchedule(id: self.scheduleId, body: dto))
             
-            // 결과 처리
             if response.isSuccess {
                 print("일정 수정 성공")
                 return true
@@ -125,6 +133,22 @@ extension EditScheduleViewModel {
             
         } catch {
             print("일정 수정 네트워크 에러: \(error)")
+            return false
+        }
+    }
+    
+    // MARK: - Network: Delete Schedule
+    @MainActor
+    func deleteSchedule(id: Int) async -> Bool {
+        self.isLoading = true
+        defer { self.isLoading = false }
+        
+        do {
+            let _: BaseResponse<String> = try await provider.request(.deleteSchedule(id: id))
+            print("일정 삭제 성공: ID \(id)")
+            return true
+        } catch {
+            print("일정 삭제 실패: \(error.localizedDescription)")
             return false
         }
     }

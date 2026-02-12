@@ -17,8 +17,8 @@ struct ScheduleRequestDTO: Encodable {
     let address: String?
     let latitude: Double?
     let longitude: Double?
-    let scheduleCategoryId: Int
-    let memo: String?
+    let scheduleCategoryId: Int?
+    let memo: String
     let repeatType: String
     let repeatEndDate: String?
     let linkedTodoIds: [Int]
@@ -39,14 +39,14 @@ struct ScheduleEditDTO: Encodable {
     let address: String?
     let latitude: Double?
     let longitude: Double?
-    let scheduleCategoryId: Int
-    let memo: String?
+    let scheduleCategoryId: Int?
+    let memo: String
     let repeatType: String
     let repeatEndDate: String?
     let linkedTodoIds: [Int]
 }
 
-struct addPlaceDTO: Encodable {
+struct AddPlaceDTO: Encodable {
     let name: String
     let address: String
     let latitude: Double

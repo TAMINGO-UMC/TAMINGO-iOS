@@ -5,6 +5,7 @@
 //  Created by 권예원 on 2/8/26.
 //
 
+import Alamofire
 import Foundation
 import Moya
 
@@ -17,13 +18,26 @@ protocol FavoritePlacesServiceProtocol {
 
 final class FavoritePlacesService: FavoritePlacesServiceProtocol {
 
-    private let provider = MoyaProvider<FavoritePlaceAPI>(
-        plugins: [
-            NetworkLoggerPlugin(configuration: .init(
-                logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
-            ))
-        ]
-    )
+    // [수정] Interceptor가 포함된 Session 생성
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    
+    // [수정] provider 변수 선언
+    private let provider: MoyaProvider<FavoritePlaceAPI>
+    
+    // [수정] init에서 session 주입
+    init() {
+        self.provider = MoyaProvider<FavoritePlaceAPI>(
+            session: session, // 핵심: Interceptor 연결
+            plugins: [
+                NetworkLoggerPlugin(configuration: .init(
+                    logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
+                ))
+            ]
+        )
+    }
 
     // MARK: - 조회
     func fetchPlaces() async throws -> [FavoritePlace] {

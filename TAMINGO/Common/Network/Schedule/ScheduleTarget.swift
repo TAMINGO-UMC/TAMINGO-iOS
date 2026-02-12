@@ -13,12 +13,13 @@ enum ScheduleTarget {
     case createSchedule(body: ScheduleRequestDTO)
     case aiInference(title: String)
     case updateSchedule(id: Int, body: ScheduleEditDTO)
-    case aiFavoritePlaces(body: addPlaceDTO)
+    case aiFavoritePlaces(body: AddPlaceDTO)
     case getFavoritePlaces
     case getScheduleList(date: String)
     case getScheduleDetail(id: Int)
     case getCategories
     case getMonthly(date: String)
+    case deleteSchedule(id: Int)
 }
 
 extension ScheduleTarget: APITargetType {
@@ -43,6 +44,8 @@ extension ScheduleTarget: APITargetType {
             return "/api/schedule-categories"
         case .getMonthly:
             return "/api/schedules/calendar"
+        case .deleteSchedule(let id):
+            return "/api/schedules/\(id)"
         }
     }
     
@@ -55,6 +58,8 @@ extension ScheduleTarget: APITargetType {
             return .put
         case .getFavoritePlaces, .getScheduleList, .getScheduleDetail, .getCategories, .getMonthly:
             return .get
+        case .deleteSchedule:
+            return .delete
         }
     }
     
@@ -86,8 +91,9 @@ extension ScheduleTarget: APITargetType {
                 encoding: URLEncoding.default
             )
             
-        case .getFavoritePlaces, .getScheduleDetail, .getCategories:
+        case .getFavoritePlaces, .getScheduleDetail, .getCategories, .deleteSchedule:
             return .requestPlain
+            
         }
     }
 }

@@ -51,16 +51,10 @@ extension TodoCategoryAPI : APITargetType {
         case .updateCategory(_, let request):
             return .requestJSONEncodable(request)
             
-        case .deleteCategory(let id):
+        case .deleteCategory(_):
             return .requestPlain
         }
     }
-    
-    var headers: [String : String]? {
-        [
-            "Content-Type": "application/json",
-            "Authorization": "Bearer \(AuthConstants.accessToken)",
-        ]
-    }
+
     
 }

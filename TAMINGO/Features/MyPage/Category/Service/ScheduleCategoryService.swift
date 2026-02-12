@@ -5,6 +5,7 @@
 //  Created by 권예원 on 2/11/26.
 //
 
+import Alamofire
 import Foundation
 import Moya
 
@@ -17,13 +18,25 @@ protocol ScheduleCategoryServiceProtocol {
 
 final class ScheduleCategoryService: ScheduleCategoryServiceProtocol {
     
-    private let provider = MoyaProvider<ScheduleCategoryAPI>(
-        plugins: [
-            NetworkLoggerPlugin(configuration: .init(
-                logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
-            ))
-        ]
-    )
+    // 1. Interceptor가 포함된 Session 생성
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    
+    // 2. provider 초기화 시 session 주입
+    private let provider: MoyaProvider<ScheduleCategoryAPI>
+    
+    init() {
+        self.provider = MoyaProvider<ScheduleCategoryAPI>(
+            session: session, // 여기에 session을 넣어줘야 401 발생 시 interceptor가 작동합니다.
+            plugins: [
+                NetworkLoggerPlugin(configuration: .init(
+                    logOptions: [.requestHeaders, .requestBody, .successResponseBody, .errorResponseBody]
+                ))
+            ]
+        )
+    }
     
     func fetchCategories() async throws -> [ScheduleCategory] {
         let response = try await provider.requestAsync(.fetchCategories)

@@ -20,7 +20,7 @@ struct MainTabContainerView: View {
                 case .calendar:
                     ScheduleView()
                 case .todo:
-                    MainView()
+                    ToDoView()
                 case .my:
                     MyPageRootView()
                 }

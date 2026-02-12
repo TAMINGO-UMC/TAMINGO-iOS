@@ -258,7 +258,8 @@ struct DateButton: View {
                             .fill(.clear)
                             .frame(width: 4, height: 4)
                     } else {
-                        ForEach(markers.prefix(3), id: \.self) { marker in
+                        // prefix는 ArraySlice를 반환하므로 Array로 래핑해야 안전.
+                        ForEach(Array(markers.prefix(3))) { marker in
                             Circle()
                                 .fill(marker.color)
                                 .frame(width: 4, height: 4)

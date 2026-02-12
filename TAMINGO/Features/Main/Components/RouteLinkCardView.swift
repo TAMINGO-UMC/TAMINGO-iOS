@@ -9,8 +9,8 @@ import SwiftUI
 
 struct RouteLinkCardView: View {
     
-    let routeLink: RouteLink
-    let state: RouteLinkState
+    let detour: RouteDetour
+    let state: RouteDetourState
     let onVisitTap: () -> Void
     let onDeleteTap: () -> Void
     
@@ -23,7 +23,7 @@ struct RouteLinkCardView: View {
             VStack(alignment: .leading, spacing: 6) {
                 
                 HStack(spacing: 8) {
-                    Text(routeLink.title)
+                    Text(detour.title)
                         .font(.medium14)
                         .foregroundStyle(Color("Black00"))
                     
@@ -40,18 +40,18 @@ struct RouteLinkCardView: View {
                 
                 HStack(spacing: 3) {
                     
-                    Text(routeLink.location)
+                    Text(detour.location)
                     
                     Text("·")
                     
-                    Text(routeLink.detourText)
+                    Text(detour.detourText)
                 }
                 .font(.regular10)
                 .foregroundStyle(Color("Gray2"))
             }
             
             // 추천 문구
-            Text("🚶 \(routeLink.suggestionText)")
+            Text("🚶 \(detour.suggestionText)")
                 .font(.regular10)
                 .foregroundStyle(Color("SubBlue2"))
             
@@ -118,19 +118,3 @@ private struct RouteDeleteButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
-
-
-#Preview {
-    RouteLinkCardView(
-        routeLink: RouteLink(
-            title: "약 수령",
-            location: "명동역 약국",
-            detourText: "+2분 우회",
-            suggestionText: "팀플 미팅 가는 길에 들를 수 있어요"
-        ), state: .normal,
-        onVisitTap: {},
-        onDeleteTap: {}
-    )
-    .padding()
-}
-

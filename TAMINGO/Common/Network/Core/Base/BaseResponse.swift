@@ -4,7 +4,7 @@
 //
 //  Created by 김도연 on 1/30/26.
 //
-
+import Foundation
 
 struct BaseResponse<T: Decodable>: Decodable {
     let isSuccess: Bool

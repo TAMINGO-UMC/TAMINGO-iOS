@@ -12,6 +12,8 @@ struct EditScheduleView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var activeSheet: SheetType? = nil
+    @State private var showDeleteAlert = false
+    
     let scheduleId: Int
     
     var onSave: (() -> Void)?
@@ -42,7 +44,8 @@ struct EditScheduleView: View {
                     EditPlace(
                         placeName: viewModel.placeName,
                         myPlaces: viewModel.myPlaces,
-                        onSelectPlace: { viewModel.selectPlace($0) }
+                        onSelectPlace: { viewModel.selectPlace($0) },
+                        onDeletePlace: { viewModel.removePlace() }
                     )
                     
                     // 할 일 수정
@@ -59,9 +62,8 @@ struct EditScheduleView: View {
                     EditCategory(
                         categoryName: viewModel.categoryName,
                         categories: viewModel.categories,
-                        onSelectCategory: {
-                            viewModel.selectCategory($0)
-                        }
+                        onSelectCategory: { viewModel.selectCategory($0) },
+                        onDeleteCategory: { viewModel.removeCategory() }
                     )
                     
                     // 일정 반복 수정
@@ -75,6 +77,10 @@ struct EditScheduleView: View {
                     
                     // 메모 필드
                     ScheduleMemo(memo: $viewModel.memo)
+                    
+                    ScheduleDeleteButton() {
+                        showDeleteAlert.toggle()
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
@@ -110,6 +116,19 @@ struct EditScheduleView: View {
             )
             .presentationDetents([.height(240)])
             .presentationDragIndicator(.visible)
+        }
+        .alert("일정을 삭제하시겠습니까?", isPresented: $showDeleteAlert) {
+            Button("취소", role: .cancel) { }
+            Button("삭제", role: .destructive) {
+                Task {
+                    let success = await viewModel.deleteSchedule(id: scheduleId)
+                    
+                    if success {
+                        onSave?()
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }

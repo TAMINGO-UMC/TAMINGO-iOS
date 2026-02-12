@@ -30,7 +30,7 @@ extension AddScheduleViewModel {
     
     func addFavoritePlace() {
         guard let lat = latitude, let lon = longitude else { return }
-        let requestBody = addPlaceDTO(
+        let requestBody = AddPlaceDTO(
             name: placeName, address: address, latitude: lat, longitude: lon, isAiSuggested: true
         )
         
@@ -43,6 +43,14 @@ extension AddScheduleViewModel {
                 print("\(error.localizedDescription)")
             }
         }
+    }
+    
+    func removePlace() {
+        self.placeName = ""
+        self.address = ""
+        self.latitude = nil
+        self.longitude = nil
+        self.aiInferenceSource.aiSuggestedPlaceName = ""
     }
     
     // MARK: - Todo Logic
@@ -80,5 +88,11 @@ extension AddScheduleViewModel {
     func selectCategory(_ category: ScheduleCategoryDTO) {
         self.categoryName = category.name
         self.scheduleCategoryId = category.id
+    }
+    
+    func removeCategory() {
+        self.scheduleCategoryId = 0
+        self.categoryName = ""
+        self.aiInferenceSource.aiSuggestedCategoryName = ""
     }
 }

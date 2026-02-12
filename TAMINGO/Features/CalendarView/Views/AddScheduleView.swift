@@ -47,7 +47,8 @@ struct AddScheduleView: View {
                         placeName: viewModel.placeName,
                         myPlaces: viewModel.myPlaces,
                         onSelectPlace: { viewModel.selectPlace($0) },
-                        onResetFavoriteRecommendation: { viewModel.isFavoriteRecommendation = false }
+                        onResetFavoriteRecommendation: { viewModel.isFavoriteRecommendation = false },
+                        onDeletePlace: { viewModel.removePlace() }
                     )
                     
                     // AI 할 일 연결
@@ -68,7 +69,8 @@ struct AddScheduleView: View {
                         titleInput: viewModel.title,
                         categoryName: viewModel.categoryName,
                         categories: viewModel.categories,
-                        onSelectCategory: { viewModel.selectCategory($0) }
+                        onSelectCategory: { viewModel.selectCategory($0) },
+                        onDeleteCategory: { viewModel.removeCategory() }
                     )
                     
                     // 일정 반복 설정
@@ -82,6 +84,7 @@ struct AddScheduleView: View {
                     
                     // 메모 필드
                     ScheduleMemo(memo: $viewModel.memo)
+                    
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
