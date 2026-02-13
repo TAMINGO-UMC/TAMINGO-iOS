@@ -14,8 +14,9 @@ struct CalendarSyncRequestDTO: Encodable {
 struct CalendarEventDTO: Encodable {
     let externalEventUid: String
     let title: String
-    let startAt: String
-    let endAt: String
+    let startAt: Date
+    let endAt: Date
     let location: String?
     let isAllDay: Bool
 }
+

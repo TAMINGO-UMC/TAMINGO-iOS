@@ -18,6 +18,14 @@ final class OnboardingViewModel {
     
     private let onboardingService = OnboardingService()
     
+    // 애플 캘린더 연동
+    private let calendarService = CalendarSyncService()
+    private let eventKitManager = EventKitManager()
+
+    var isCalendarLinking = false
+    var didLinkCalendar = false
+    var calendarErrorMessage: String?
+    
     // 중복 방지
     var isSubmitting = false
     var didFinishOnboarding: Bool = false
@@ -150,8 +158,6 @@ final class OnboardingViewModel {
 
 extension OnboardingViewModel {
     
-
-    
     private func handleAPIError(_ error: APIError) {
         switch error.statusCode {
         case 409:
@@ -190,6 +196,33 @@ extension OnboardingViewModel {
             print(error)
         }
     }
+    
+    
+    @MainActor
+    func linkAppleCalendar() async {
+        do {
+            isCalendarLinking = true
+
+            try await eventKitManager.requestAccess()
+
+            let result = try await calendarService.updateConnectionStatus(enabled: true)
+            didLinkCalendar = result.enabled
+
+            let start = Date().startOfDay
+            let end = Calendar.current.date(byAdding: .month, value: 1, to: start)!
+
+            let events = try eventKitManager.fetchEvents(start: start, end: end)
+            let dtoList = events.map { $0.toDTO() }
+
+            _ = try await calendarService.sync(events: dtoList)
+
+        } catch {
+            calendarErrorMessage = error.localizedDescription
+        }
+
+        isCalendarLinking = false
+    }
+
 }
 
 

@@ -93,7 +93,9 @@ struct IntroCalenderSection: View {
 
     var appleCalButton: some View {
         Button {
-            // TODO: 애플캘린더 연동 구현
+            Task {
+                await vm.linkAppleCalendar()
+            }
         } label: {
             Text("apple 캘린더 연동하기")
                 .font(.semiBold14)
