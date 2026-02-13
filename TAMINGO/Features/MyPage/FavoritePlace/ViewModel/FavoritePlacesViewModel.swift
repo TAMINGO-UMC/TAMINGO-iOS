@@ -111,8 +111,10 @@ extension FavoritePlacesViewModel {
     private func updatePlace(id: Int, request: PlaceRequestDTO) async {
         do {
             try await service.updatePlace(placeId: id, dto: request)
+        } catch let error as APIError {
+            self.errorMessage = error.localizedDescription
         } catch {
-            print(error)
+            self.errorMessage = "네트워크 오류가 발생했습니다."
         }
 
         await fetchPlaces()  
