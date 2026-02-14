@@ -12,3 +12,5 @@ struct BaseResponse<T: Decodable>: Decodable {
     let message: String
     let result: T?
 }
+
+struct EmptyResponse: Decodable {}

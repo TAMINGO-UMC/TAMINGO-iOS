@@ -11,6 +11,7 @@ struct FavoritPlacesView: View {
 
     @State private var vm = FavoritePlacesViewModel()
     @State private var isPlaceSearchPresented = false
+
     @Environment(\.dismiss) private var dismiss // 시트 용
     let onBack: () -> Void
     
@@ -24,20 +25,19 @@ struct FavoritPlacesView: View {
             ScrollView {
                 VStack(spacing: 12) {
 
-                    ForEach(vm.places) { place in
+                    ForEach(vm.places, id: \.id) { place in
                         FrequentPlaceRowView(
-                            place: place,
+                            place: PlaceUIModel(place: place),
                             onEdit: {
                                 vm.editPlace(place)
+                                isPlaceSearchPresented = true
                             },
                             onDelete: {
-                                Task {
-                                    await vm.deletePlace(place)
-                                }
+                                Task { await vm.deletePlace(place) }
                             }
                         )
                     }
-                    
+
                     GuideBoxView(
                         title: "자주 가는 장소 활용",
                         description: """
@@ -52,9 +52,11 @@ struct FavoritPlacesView: View {
         }
         .padding(16)
         .sheet(isPresented: $isPlaceSearchPresented) {
-            PlaceSearchSheet { place in
+            PlaceSearchSheet(
+                editingPlace: vm.editingPlace
+            ) { place in
                 Task {
-                    await vm.addPlace(place)
+                    await vm.savePlace(place)
                     isPlaceSearchPresented = false
                 }
             }
@@ -85,6 +87,7 @@ struct FavoritPlacesView: View {
             Spacer()
             
             Button {
+                vm.editPlace(nil)
                 isPlaceSearchPresented = true
             } label: {
                 Image("MyPage_icon_plus")

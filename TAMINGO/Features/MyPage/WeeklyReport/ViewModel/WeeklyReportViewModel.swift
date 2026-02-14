@@ -92,6 +92,17 @@ final class WeeklyReportViewModel {
             "\($0)% 감소"
         } ?? "-"
 
+        let taskPercentValue: String = {
+            guard let done = report?.taskDoneCount,
+                  let total = report?.taskTotalCount,
+                  total > 0 else {
+                return "-%"
+            }
+
+            let percent = Int((Double(done) / Double(total)) * 100)
+            return "\(percent)%"
+        }()
+
         let taskValue: String = {
             guard let done = report?.taskDoneCount,
                   let total = report?.taskTotalCount else {
@@ -114,7 +125,7 @@ final class WeeklyReportViewModel {
             ),
             WeeklyMetric(
                 title: "할 일 완료율",
-                value: taskValue,
+                value: taskPercentValue,
                 subValue: taskValue,
                 iconName: "MyPage_icon_report02",
                 textColor: .subPP2,

@@ -46,6 +46,13 @@ final class ScheduleCategoryService: ScheduleCategoryServiceProtocol {
             from: response.data
         )
 
+        guard decoded.isSuccess else {
+            throw APIError.server(
+                status: response.statusCode,
+                message: decoded.message
+            )
+        }
+        
         guard let result = decoded.result else {
             return []
         }
@@ -70,6 +77,13 @@ final class ScheduleCategoryService: ScheduleCategoryServiceProtocol {
             from: response.data
         )
 
+        guard decoded.isSuccess else {
+            throw APIError.server(
+                status: response.statusCode,
+                message: decoded.message
+            )
+        }
+        
         guard let result = decoded.result else {
             throw APIError.transport("응답 데이터가 없습니다.")
         }
@@ -95,6 +109,13 @@ final class ScheduleCategoryService: ScheduleCategoryServiceProtocol {
             from: response.data
         )
 
+        guard decoded.isSuccess else {
+            throw APIError.server(
+                status: response.statusCode,
+                message: decoded.message
+            )
+        }
+        
         guard let result = decoded.result else {
             throw APIError.transport("응답 데이터가 없습니다.")
         }
@@ -104,8 +125,21 @@ final class ScheduleCategoryService: ScheduleCategoryServiceProtocol {
 
     
     func deleteCategory(id: Int) async throws {
-        _ = try await provider.requestAsync(.deleteCategory(id: id))
+        let response = try await provider.requestAsync(.deleteCategory(id: id))
+
+        let decoded = try JSONDecoder().decode(
+            BaseResponse<EmptyResponse>.self,
+            from: response.data
+        )
+
+        guard decoded.isSuccess else {
+            throw APIError.server(
+                status: response.statusCode,
+                message: decoded.message
+            )
+        }
     }
+
     
     
 }
