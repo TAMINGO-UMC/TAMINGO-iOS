@@ -11,7 +11,26 @@ import Moya
 final class LocationService {
 
     private let provider = MoyaProvider<LocationTarget>()
-
+    
+    func silentGPS(
+        scheduleId: Int,
+        latitude: Double,
+        longitude: Double
+    ) async throws {
+        
+        let request = SilentGPSRequestDTO(
+            scheduleId: scheduleId,
+            latitude: latitude,
+            longitude: longitude
+        )
+        
+        let _: BaseResponse<SilentGPSResponseDTO?> =
+        try await provider.request(.silentGPS(request))
+        
+        // result 없어도 성공이면 통과
+    }
+    
+    
     func sendRealtime(
         scheduleId: Int,
         latitude: Double,

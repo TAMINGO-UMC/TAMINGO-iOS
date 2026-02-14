@@ -14,9 +14,12 @@ struct DepartureStatusCardView: View {
     let arrivalTime: String
     let routeLink: RouteDetour?
     
+    let scheduleId: Int
+    let onRouteStart: ((Int) -> Void)?
+    
     let onRouteAccept: ((RouteDetour) -> Void)?
     let onRouteReject: ((Int) -> Void)?
-    
+
     @State private var showRouteLink: Bool = true   // 삭제용
 
     var body: some View {
@@ -116,7 +119,7 @@ struct DepartureStatusCardView: View {
         
         // MARK: - 길 찾기 버튼
         Button {
-            print("길찾기 시작")
+            onRouteStart?(scheduleId)
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "map")

@@ -12,58 +12,60 @@ struct RouteTimelineView: View {
     let route: RouteResultModel
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .leading) {
             
-            // 시작
-            TimelineStartRow(
-                startPlaceName: route.startPlaceName,
-                isFirst: true
-            )
-            
-            // legs 자동 렌더링
-            ForEach(route.legs.indices, id: \.self) { idx in
+            VStack(spacing: 0) {
                 
-                let leg = route.legs[idx]
-                let isFirst = idx == 0
-                let isLast = idx == route.legs.count - 1
+                // 시작
+                TimelineStartRow(
+                    startPlaceName: route.startPlaceName,
+                    isFirst: true
+                )
                 
-                switch leg.mode {
+                // legs 자동 렌더링
+                ForEach(Array(route.legs.enumerated()), id: \.offset) { idx, leg in
                     
-                case .walk:
-                    WalkTimelineRow(
-                        text: leg.walkDescription ?? "도보 \(leg.distance)m (\(leg.sectionTime)분)",
-                        isFirst: isFirst,
-                        isLast: isLast
-                    )
+                    let isFirst = idx == 0
+                    let isLast = idx == route.legs.count - 1
                     
-                case .bus:
-                    BusTimelineRow(
-                        leg: leg,
-                        isFirst: isFirst,
-                        isLast: isLast
-                    )
-                    
-                case .subway:
-                    SubwayTimelineRow(
-                        leg: leg,
-                        isFirst: isFirst,
-                        isLast: isLast
-                    )
-                    
-                case .unknown:
-                    EmptyView()
+                    switch leg.mode {
+                        
+                    case .walk:
+                        WalkTimelineRow(
+                            text: leg.walkDescription ?? "도보 \(leg.distance)m (\(leg.sectionTime)분)",
+                            isFirst: isFirst,
+                            isLast: isLast
+                        )
+                        
+                    case .bus:
+                        BusTimelineRow(
+                            leg: leg,
+                            isFirst: isFirst,
+                            isLast: isLast
+                        )
+                        
+                    case .subway:
+                        SubwayTimelineRow(
+                            leg: leg,
+                            isFirst: isFirst,
+                            isLast: isLast
+                        )
+                        
+                    case .unknown:
+                        EmptyView()
+                    }
                 }
+                
+                // 도착
+                TimelineEndRow(
+                    title: route.arrivePlaceName,
+                    isLast: true
+                )
             }
-
-            
-            // 도착
-            TimelineEndRow(
-                title: route.arrivePlaceName,
-                isLast: true
-            )
         }
     }
 }
+
     
 extension RouteLegModel {
 
@@ -87,7 +89,7 @@ extension RouteLegModel {
         distance: 0,
         walkDescription: nil,
         startName: "중앙고등학교 정류장",
-        endName: "광운대학교",
+        endName: "학여울역",
         routeName: "지선 1024",
         routeColor: "#00B493",
         stations: ["중앙고등학교", "청량리역", "회기역", "광운대역"],
@@ -134,7 +136,7 @@ extension RouteResultModel {
         startTime: Date(),
         arriveTime: Date().addingTimeInterval(32 * 60),
         startPlaceName: "서울 성동구 하왕십리동 395-3",
-        arrivePlaceName: "광운대학교 S관",
+        arrivePlaceName: "학여울역",
         wayPoints: [],
         legs: [
             .walk1,
