@@ -18,9 +18,7 @@ struct CategorySections: View {
                     .font(.medium14)
                     .foregroundColor(.black)
                 
-                if viewModel.isCategoryAIGenerated {
-                    AIBadge()
-                }
+                AIBadge()
                 
                 Spacer()
                 
@@ -94,10 +92,7 @@ struct CategorySections: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(viewModel.availableCategories) { category in
-                        CategoryButton(
-                            category: category,
-                            isSelected: viewModel.category == category.name
-                        ) {
+                        CategoryButton(category: category) {
                             viewModel.category = category.name
                             viewModel.isCategoryAIGenerated = false
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -106,6 +101,8 @@ struct CategorySections: View {
                         }
                     }
                 }
+                .padding(.vertical, 4)
+                .padding(.horizontal, 4)
             }
             
             // 취소 버튼
@@ -133,23 +130,20 @@ struct CategorySections: View {
 // MARK: - CategoryButton
 struct CategoryButton: View {
     let category: TodoCategory
-    let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
-        // ✅ 1. 팀원의 Custom Color 타입을 SwiftUI Color로 변환
-        let uiColor = Color(hex: category.color.hexCode)
-        
         Button(action: action) {
             Text(category.name)
                 .font(.regular12)
-                // ✅ 2. 변환한 uiColor 사용
-                .foregroundColor(isSelected ? .white : uiColor)
-                .padding(.horizontal, 12)
-                .frame(height: 32)
-                // ✅ 3. 변환한 uiColor 사용 (.opacity 적용 가능해짐)
-                .background(isSelected ? uiColor : uiColor.opacity(0.15))
-                .cornerRadius(8)
+                .foregroundStyle(.black)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
+                )
         }
     }
 }

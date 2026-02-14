@@ -12,6 +12,7 @@ import SwiftUI
 @Observable
 class TodoViewModel {
     var todoItems: [TodoItem] = []
+    private var categoryById: [Int: TodoCategory] = [:]
     
     var newTodoTitle: String = ""
     
@@ -31,15 +32,35 @@ class TodoViewModel {
     func loadTodos(for date: Date) async {
         let dateString = date.toAPIDateString()
         do {
+            if categoryById.isEmpty, let categories = try? await apiService.getCategories() {
+                categoryById = Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0) })
+            }
+
             let response = try await apiService.getTodoList(date: dateString)
             await MainActor.run {
                 let dailyItems = response.dailyTodos.map { dto -> TodoItem in
                     var item = dto.toTodoItem()
+                    if let categoryId = dto.categoryId, let category = categoryById[categoryId] {
+                        if dto.categoryName == nil {
+                            item.category = category.name
+                        }
+                        if dto.categoryColor == nil {
+                            item.categoryColor = Color(hex: category.color.hexCode)
+                        }
+                    }
                     item.date = date
                     return item
                 }
                 let backlogItems = response.backlogTodos.map { dto -> TodoItem in
                     var item = dto.toTodoItem()
+                    if let categoryId = dto.categoryId, let category = categoryById[categoryId] {
+                        if dto.categoryName == nil {
+                            item.category = category.name
+                        }
+                        if dto.categoryColor == nil {
+                            item.categoryColor = Color(hex: category.color.hexCode)
+                        }
+                    }
                     item.date = nil
                     return item
                 }
@@ -68,36 +89,58 @@ class TodoViewModel {
     func addTodo(aiResult: AIInferenceResult?) {
         guard !newTodoTitle.isEmpty else { return }
         
-        let categoryId = aiResult?.categoryId
         let category = aiResult?.category ?? "미지정"
-        let color = aiResult?.categoryColor ?? Color.gray
-        
-        // 1. 처음 생성 시 let으로 선언하여 캡처 안전성 확보
-        let initialItem = TodoItem(
-            id: nil,
-            title: newTodoTitle,
-            categoryId: categoryId,
-            category: category,
-            categoryColor: color,
-            isCompleted: false,
-            date: inputDate,
-            placeName: aiResult?.placeName,
-            address: aiResult?.address,
-            latitude: aiResult?.latitude,
-            longitude: aiResult?.longitude,
-            estimatedMinutes: aiResult?.duration,
-            aiSource: aiResult.map { result in
-                TodoItem.AISourceInfo(
-                    aiSuggestedCategoryName: result.category,
-                    aiSuggestedPlaceName: result.placeName,
-                    aiSuggestedDuration: result.duration
-                )
-            }
-        )
+        let fallbackColor = aiResult?.categoryColor ?? CategoryHelper.color(for: category)
         
         Task {
             do {
-                let requestDTO = initialItem.toCreateRequestDTO(todoCategoryId: categoryId)
+                var resolvedCategoryId = aiResult?.categoryId
+                var resolvedColor = fallbackColor
+
+                if resolvedCategoryId == nil || aiResult?.categoryColor == nil {
+                    if categoryById.isEmpty, let categories = try? await apiService.getCategories() {
+                        categoryById = Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0) })
+                    }
+
+                    let shouldResolveColorFromCategory = (aiResult?.categoryColor == nil)
+
+                    if let categoryId = resolvedCategoryId,
+                       let matchedById = categoryById[categoryId] {
+                        resolvedCategoryId = matchedById.id
+                        if shouldResolveColorFromCategory {
+                            resolvedColor = Color(hex: matchedById.color.hexCode)
+                        }
+                    } else if let matchedByName = categoryById.values.first(where: { $0.name == category }) {
+                        resolvedCategoryId = matchedByName.id
+                        if shouldResolveColorFromCategory {
+                            resolvedColor = Color(hex: matchedByName.color.hexCode)
+                        }
+                    }
+                }
+
+                let initialItem = TodoItem(
+                    id: nil,
+                    title: newTodoTitle,
+                    categoryId: resolvedCategoryId,
+                    category: category,
+                    categoryColor: resolvedColor,
+                    isCompleted: false,
+                    date: inputDate,
+                    placeName: aiResult?.placeName,
+                    address: aiResult?.address,
+                    latitude: aiResult?.latitude,
+                    longitude: aiResult?.longitude,
+                    estimatedMinutes: aiResult?.duration,
+                    aiSource: aiResult.map { result in
+                        TodoItem.AISourceInfo(
+                            aiSuggestedCategoryName: result.category,
+                            aiSuggestedPlaceName: result.placeName,
+                            aiSuggestedDuration: result.duration
+                        )
+                    }
+                )
+
+                let requestDTO = initialItem.toCreateRequestDTO(todoCategoryId: resolvedCategoryId)
                 let response = try await apiService.createTodo(body: requestDTO)
                 
                 // 2. MainActor로 보낼 때 필요한 데이터를 미리 상수로 추출

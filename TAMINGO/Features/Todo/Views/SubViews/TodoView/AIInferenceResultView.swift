@@ -25,7 +25,7 @@ struct AIInferenceResultView: View {
                 
                 CategoryTag(
                     category: result.category,
-                    categoryColor: CategoryHelper.color(for: result.category)
+                    categoryColor: result.categoryColor ?? CategoryHelper.color(for: result.category)
                 )
             }
             

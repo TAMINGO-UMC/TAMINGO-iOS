@@ -100,7 +100,10 @@ class TodoEditViewModel {
         self.address = item.address
         self.latitude = item.latitude
         self.longitude = item.longitude
-        self.isLocationAIGenerated = (item.placeName == nil)
+        self.isLocationAIGenerated = {
+            guard let aiSource = item.aiSource else { return false }
+            return aiSource.aiSuggestedPlaceName == item.placeName
+        }()
         
         self.duration = TodoEditViewModel.formatDuration(minutes: item.estimatedMinutes)
         self.isDurationAIGenerated = (item.estimatedMinutes == nil)
@@ -232,25 +235,42 @@ class TodoEditViewModel {
     }
     
     func saveChanges(to item: inout TodoItem) {
+        let previousCategory = item.category
+        let previousCategoryId = item.categoryId
+        let previousCategoryColor = item.categoryColor
+
         item.title = title
         item.date = selectedDate
         item.placeName = placeName
         item.address = address
         item.latitude = latitude
         item.longitude = longitude
-        item.category = category
-        
-        // ✅ 카테고리 ID 및 **Color** 업데이트
-        if let matchedCategory = availableCategories.first(where: { $0.name == category }) {
+
+        let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // 카테고리 공란일 때만 '미지정'으로 처리
+        if trimmedCategory.isEmpty {
+            item.category = "미지정"
+            item.categoryId = nil
+            item.categoryColor = CategoryHelper.color(for: "미지정")
+            print("⚠️ 카테고리 공란 -> 미지정 처리")
+        } else if let matchedCategory = availableCategories.first(where: { $0.name == trimmedCategory }) {
+            item.category = matchedCategory.name
             item.categoryId = matchedCategory.id
             item.categoryColor = Color(hex: matchedCategory.color.hexCode)
             
             print("✅ 매칭된 카테고리: \(matchedCategory.name), ID: \(matchedCategory.id)")
-        }else {
-            item.categoryId = nil
-            // 미지정이면 기본 회색
-            item.categoryColor = CategoryHelper.color(for: "미지정")
-            print("⚠️ 매칭되는 카테고리 없음 -> categoryId = nil")
+        } else {
+            // 카테고리 목록 로딩 지연/누락 시에도 기존 카테고리 정보를 유지
+            item.category = trimmedCategory
+            item.categoryId = previousCategoryId
+            item.categoryColor = previousCategoryColor
+
+            if trimmedCategory == previousCategory {
+                print("ℹ️ 카테고리 매칭 실패 -> 기존 카테고리 유지")
+            } else {
+                print("⚠️ 카테고리 매칭 실패 -> 이름만 변경, ID/색상은 기존 값 유지")
+            }
         }
         
         item.estimatedMinutes = parsedTotalMinutes

@@ -123,8 +123,8 @@ struct TodoWeeklyCalendarView: View {
                     .padding(.top, 12)
                     
                     // ✅ 카테고리 범례
-                    if !viewModel.visibleCategories.isEmpty {
-                        CategoryLegend(categories: viewModel.visibleCategories)
+                    if !viewModel.legendCategories.isEmpty {
+                        CategoryLegend(categories: viewModel.legendCategories)
                             .padding(.horizontal, 21)
                     }
                 }
