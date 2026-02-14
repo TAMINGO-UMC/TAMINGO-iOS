@@ -40,7 +40,9 @@ struct LocationSection: View {
             }
         }
         .sheet(isPresented: $showingPlaceSearch) {
-            PlaceSearchSheet { place in
+            PlaceSearchSheet(
+                editingPlace: nil
+            ) { place in
                 Task {
                     await viewModel.selectPlace(
                         name: place.name,

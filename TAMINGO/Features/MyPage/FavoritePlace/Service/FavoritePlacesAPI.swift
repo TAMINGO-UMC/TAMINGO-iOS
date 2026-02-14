@@ -51,12 +51,6 @@ extension FavoritePlaceAPI: APITargetType {
             return .requestJSONEncodable(dto)
         }
     }
-    var headers: [String : String]? {
-        [
-            "Content-Type": "application/json",
-            "Authorization": "Bearer \(AuthConstants.accessToken)",
-        ]
-    }
 
 }
 

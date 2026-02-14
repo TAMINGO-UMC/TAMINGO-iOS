@@ -129,7 +129,7 @@ extension SettingsDTO {
             activityTime: ActivityTime(
                 startTime: start ?? ActivityTime.default.startTime,
                 endTime: end ?? ActivityTime.default.endTime,
-                activeDays: []
+                activeDays: [] // 요약 API에는 요일 정보가 포함되지 않음
             ),
             notification: NotificationSetting(
                 departAlertEnabled: importantAlarmEnabled,

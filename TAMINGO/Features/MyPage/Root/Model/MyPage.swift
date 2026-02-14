@@ -38,3 +38,17 @@ enum IntegrationStatus: String {
     case active = "ACTIVE"
     case inactive = "INACTIVE"
 }
+
+struct NotificationSetting {
+    let departAlertEnabled: Bool
+    let departAlertMinutes: ArrivalBufferType?
+    let lateRiskAlertEnabled: Bool
+    let realtimeTransitEnabled: Bool
+    let todoRecommendEnabled: Bool
+    let locationMoveCheckEnabled: Bool
+    let routineAlertEnabled: Bool
+}
+
+struct ErrorLogSetting {
+    let isEnabled: Bool
+}

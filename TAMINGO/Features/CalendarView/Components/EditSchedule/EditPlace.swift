@@ -28,8 +28,11 @@ struct EditPlace: View {
             }
             
             if isEditing {
-                //TODO: 장소 검색 추가
-                placeListScroll
+                if myPlaces.isEmpty {
+                    GuideText(text: "저장된 장소가 없습니다")
+                } else {
+                    placeListScroll
+                }
             } else {
                 SelectedItemRow(
                     title: placeName,
