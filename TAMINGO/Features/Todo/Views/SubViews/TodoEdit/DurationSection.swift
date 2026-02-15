@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/29/26.
-//  Updated: 2/8/26 - TimePicker 표시 수정
+//  Updated: 2/15/26 - 바텀 시트 방식으로 전환
 //
 import SwiftUI
 
@@ -17,9 +17,7 @@ struct DurationSection: View {
                     .font(.medium14)
                     .foregroundColor(.black)
                 
-                if viewModel.isDurationAIGenerated {
-                    AIBadge()
-                }
+                AIBadge()
                 
                 Spacer()
             }
@@ -28,17 +26,22 @@ struct DurationSection: View {
             if viewModel.isInferringCategory {
                 AILoadingRow(text: "소요시간 추론중 ...")
             } else {
-                // 기존 로직 유지
-                ZStack(alignment: .topTrailing) {
-                    durationRow
-                    
-                    if viewModel.showingDurationPicker {
-                        durationPicker
-                    }
-                }
+                durationRow
             }
         }
+        .sheet(isPresented: $viewModel.showingDurationPicker) {
+            TodoEditDurationPickerSheet(
+                selectedHour: $viewModel.selectedHour,
+                selectedMinute: $viewModel.selectedMinute,
+                onValueChanged: {
+                    updateDuration()
+                }
+            )
+            .presentationDetents([.height(260)])
+            .presentationDragIndicator(.visible)
+        }
     }
+
     // MARK: - Duration Row
     private var durationRow: some View {
         HStack(spacing: 8) {
@@ -49,17 +52,9 @@ struct DurationSection: View {
             Spacer()
             
             EditButton(action: {
-                withAnimation(.smooth(duration: 0.4)) {
-                    viewModel.showingDurationPicker.toggle()
-                    
-                    // Picker가 열릴 때 duration 파싱
-                    if viewModel.showingDurationPicker {
-                        viewModel.parseDuration()
-                    } else {
-                        // Picker가 닫힐 때 duration 업데이트
-                        updateDuration()
-                    }
-                }
+                viewModel.showingDatePicker = false
+                viewModel.parseDuration()
+                viewModel.showingDurationPicker = true
             })
             
             if !viewModel.duration.isEmpty {
@@ -68,92 +63,6 @@ struct DurationSection: View {
                     viewModel.isDurationAIGenerated = false
                 })
             }
-        }
-    }
-    
-    // MARK: - Wheel Picker
-    private var durationPicker: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 2) {
-                // 시간 Picker
-                Picker("시간", selection: $viewModel.selectedHour) {
-                    ForEach(0...23, id: \.self) { hour in
-                        Text("\(hour)")
-                            .font(.system(size: 16))
-                            .tag(hour)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-                
-                Text(":")
-                    .font(.system(size: 12))
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 2)
-                
-                // 분 Picker
-                Picker("분", selection: $viewModel.selectedMinute) {
-                    ForEach([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], id: \.self) { minute in
-                        Text(String(format: "%02d", minute))
-                            .font(.system(size: 16))
-                            .tag(minute)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-            }
-            .frame(height: 95)
-            .padding(.horizontal, 4)
-            .padding(.vertical, 4)
-        }
-        .frame(width: 138, height: 95)
-        .background(liquidGlassBackground)
-        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
-        .shadow(color: Color.black.opacity(0.12), radius: 24, x: 0, y: 12)
-        .offset(x: 0, y: 50)
-        .transition(
-            .asymmetric(
-                insertion: .scale(scale: 0.8, anchor: .topTrailing)
-                    .combined(with: .opacity)
-                    .combined(with: .move(edge: .top)),
-                removal: .scale(scale: 0.8, anchor: .topTrailing)
-                    .combined(with: .opacity)
-            )
-        )
-        .zIndex(100)
-    }
-    
-    // MARK: - LiquidGlass Background
-    private var liquidGlassBackground: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
-                .environment(\.colorScheme, .light)
-            
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.3),
-                            Color.white.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            
-            RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.6),
-                            Color.white.opacity(0.2)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
         }
     }
     
@@ -169,5 +78,39 @@ struct DurationSection: View {
             viewModel.duration = "\(viewModel.selectedHour)시간 \(viewModel.selectedMinute)분"
         }
         viewModel.isDurationAIGenerated = false
+    }
+}
+
+private struct TodoEditDurationPickerSheet: View {
+    @Binding var selectedHour: Int
+    @Binding var selectedMinute: Int
+    let onValueChanged: () -> Void
+
+    var body: some View {
+        HStack(spacing: 2) {
+            Picker("시간", selection: $selectedHour) {
+                ForEach(0...23, id: \.self) { hour in
+                    Text("\(hour)").tag(hour)
+                }
+            }
+            .pickerStyle(.wheel)
+            .frame(maxWidth: .infinity)
+
+            Text(":")
+                .font(.system(size: 12))
+                .foregroundColor(.black)
+                .padding(.horizontal, 2)
+
+            Picker("분", selection: $selectedMinute) {
+                ForEach([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], id: \.self) { minute in
+                    Text(String(format: "%02d", minute)).tag(minute)
+                }
+            }
+            .pickerStyle(.wheel)
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.top, 6)
+        .onChange(of: selectedHour) { _, _ in onValueChanged() }
+        .onChange(of: selectedMinute) { _, _ in onValueChanged() }
     }
 }

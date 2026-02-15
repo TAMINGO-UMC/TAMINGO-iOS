@@ -3,7 +3,7 @@
 //  TAMINGO
 //
 //  Created by 엄지용 on 1/31/26.
-//  Updated: WheelDatePickerSheet 연동 및 UI 디자인 반영
+//  Updated: 반복 종료 날짜 시트 UI 통일
 //
 
 import SwiftUI
@@ -81,21 +81,13 @@ struct RoutineSection: View {
             }
         }
         .padding(.vertical, 8)
-        // MARK: - 4. WheelDatePickerSheet 연결
+        // MARK: - 4. 반복 종료 날짜 시트
         .sheet(isPresented: $showingDatePicker) {
-            if #available(iOS 16.0, *) {
-                WheelDatePickerSheet(
-                    selectedDate: $viewModel.routineEndDate,
-                    isPresented: $showingDatePicker
-                )
-                .presentationDetents([.height(380)]) // 적절한 높이 설정
-                .presentationDragIndicator(.visible)
-            } else {
-                WheelDatePickerSheet(
-                    selectedDate: $viewModel.routineEndDate,
-                    isPresented: $showingDatePicker
-                )
-            }
+            TodoRoutineEndDateSheet(
+                selectedDate: $viewModel.routineEndDate
+            )
+            .presentationDetents([.height(260)])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -114,6 +106,21 @@ struct RoutineSection: View {
         formatter.dateFormat = "yyyy.MM.dd"
         formatter.locale = Locale(identifier: "ko_KR")
         return formatter.string(from: date)
+    }
+}
+
+private struct TodoRoutineEndDateSheet: View {
+    @Binding var selectedDate: Date
+
+    var body: some View {
+        DatePicker(
+            "",
+            selection: $selectedDate,
+            displayedComponents: .date
+        )
+        .datePickerStyle(.wheel)
+        .labelsHidden()
+        .padding(.top, 6)
     }
 }
 
