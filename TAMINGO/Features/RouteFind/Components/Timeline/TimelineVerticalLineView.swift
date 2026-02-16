@@ -76,7 +76,7 @@ struct TimelineVerticalLineView: View {
                 .frame(width: 20, height: 20)
 
         // 도보 (사람 이모지)
-        case .walk(let color):
+        case .walk(_):
             Image(systemName: "figure.walk")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.gray2)

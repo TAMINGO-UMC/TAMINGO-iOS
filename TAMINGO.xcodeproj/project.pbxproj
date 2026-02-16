@@ -452,6 +452,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TAMINGO/Info.plist;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "애플 캘린더에서 일정을 가져와 동기화합니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "길찾기를 위해 위치가 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -494,6 +495,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TAMINGO/Info.plist;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "애플 캘린더에서 일정을 가져와 동기화합니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "길찾기를 위해 위치가 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

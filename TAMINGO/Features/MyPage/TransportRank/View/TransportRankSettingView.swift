@@ -19,7 +19,7 @@ struct TransportRankSettingView: View {
         ZStack(alignment: .topLeading) {
 
             content
-            
+            loadingOverlay
             if case let .transport(rank) = activePicker,
                let frame = labelFrames[rank] {
 

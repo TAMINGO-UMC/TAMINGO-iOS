@@ -74,6 +74,7 @@ struct TodoEditSheet: View {
             }
             .task {
                 await viewModel.loadMyPlaces()
+                await viewModel.loadCategories()
             }
         }
     }

@@ -15,6 +15,10 @@ enum PlaceSearchStep {
 struct PlaceSearchSheet: View {
     @Environment(\.dismiss) var dismiss
     @State private var vm = PlaceSearchViewModel()
+    let editingPlace: FavoritePlace?
+    private var isEditMode: Bool {
+        editingPlace != nil
+    }
     let onAdd: (Place) -> Void
 
     var body: some View {
@@ -32,14 +36,24 @@ struct PlaceSearchSheet: View {
                 .padding(.horizontal, 30)
 
             case .nameInput:
-                PlaceNameInputView(vm: $vm)
+                PlaceNameInputView(vm: vm)
                     .padding(.horizontal, 30)
             }
             Spacer()
             Divider()
             buttons
         }
-        
+        .task {
+            if let place = editingPlace {
+                vm.address = place.address
+                vm.placeName = place.name
+                vm.latitude = place.latitude
+                vm.longitude = place.longitude
+                vm.step = .nameInput
+            } else {
+                vm.reset()
+            }
+        }
     }
 
     private var header: some View {
@@ -68,7 +82,7 @@ struct PlaceSearchSheet: View {
             }
 
             Button {
-                if let place = vm.makePlace() {
+                if let place = vm.makePlace(editingPlace: editingPlace) {
                     onAdd(place)
                     vm.reset()
                 }
@@ -97,7 +111,7 @@ struct PlaceSearchSheet: View {
     }
 
     private var addButtonLabel: some View {
-        Text("장소추가")
+        Text(isEditMode ? "수정" : "장소추가")
             .frame(maxWidth: .infinity)
             .frame(height: 47)
             .font(.semiBold14)
@@ -109,7 +123,7 @@ struct PlaceSearchSheet: View {
 
 
 struct PlaceNameInputView : View {
-    @Binding var vm: PlaceSearchViewModel
+    @Bindable var vm: PlaceSearchViewModel
     
     var body: some View {
         VStack{
@@ -119,11 +133,16 @@ struct PlaceNameInputView : View {
         }
     }
     
-    var address : some View {
-        VStack(alignment: .leading){
-            Text(vm.address)
-                .font(.medium14)
-            Divider()
+    var address: some View {
+        Button {
+            vm.step = .addressSearch
+        } label: {
+            VStack(alignment: .leading) {
+                Text(vm.address)
+                    .foregroundStyle(.black00)
+                    .font(.medium14)
+                Divider()
+            }
         }
     }
     
@@ -145,8 +164,28 @@ struct PlaceNameInputView : View {
     }
 }
 
-#Preview {
-    PlaceSearchSheet { place in
-        print("추가된 장소:", place)
+//// 기본
+//#Preview("Add Mode") {
+//    PlaceSearchSheet(
+//        editingPlace: nil
+//    ) { place in
+//        print("추가된 장소:", place)
+//    }
+//}
+
+// 수정
+#Preview("Edit Mode") {
+    PlaceSearchSheet(
+        editingPlace: FavoritePlace(
+            id: 1,
+            name: "집",
+            address: "서울시 강남구 테헤란로 123",
+            latitude: 37.123,
+            longitude: 127.123,
+            weeklyVisitCount: 5
+        )
+    ) { place in
+        print("수정된 장소:", place)
     }
 }
+

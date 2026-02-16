@@ -78,8 +78,8 @@ final class PlaceSearchViewModel {
         step = .nameInput
     }
 
-    // MARK: - Place 모델 생성
-    func makePlace() -> Place? {
+    // MARK: - Place 모델 생성 및 수정
+    func makePlace(editingPlace: FavoritePlace?) -> Place? {
         guard
             canProceed,
             let latitude,
@@ -87,7 +87,7 @@ final class PlaceSearchViewModel {
         else { return nil }
 
         return Place(
-            id: TempPlaceIdGenerator.next(),
+            id: editingPlace?.id ?? TempPlaceIdGenerator.next(),
             name: placeName,
             address: address,
             latitude: latitude,
@@ -108,4 +108,14 @@ final class PlaceSearchViewModel {
         placeName = ""
         step = .addressSearch
     }
+    
+    func setEditingPlace(_ place: FavoritePlace) {
+        address = place.address
+        placeName = place.name
+        latitude = place.latitude
+        longitude = place.longitude
+        step = .nameInput
+    }
+
+    
 }

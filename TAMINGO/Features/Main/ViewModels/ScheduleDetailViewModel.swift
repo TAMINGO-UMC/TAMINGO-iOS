@@ -35,7 +35,7 @@ final class ScheduleDetailViewModel {
         
         do {
             detail = try await service.fetchDetail(scheduleId: scheduleId)
-            print("detail success:", detail)
+            print("detail success:", detail as Any)
         } catch {
             print("detail error:", error)
             errorMessage = error.localizedDescription

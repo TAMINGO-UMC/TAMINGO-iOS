@@ -46,5 +46,3 @@ final class HomeDetailService {
         try await provider.request(.rejectRoute(suggestionId: suggestionId))
     }
 }
-
-struct EmptyResponse: Decodable {}

@@ -9,28 +9,30 @@ import SwiftUI
 
 struct RouteInputCardView: View {
 
-    let route: RouteResultModel
+    let route: RouteResultModel?
     let wayPoints: [String]
 
     var body: some View {
         VStack(spacing: 12) {
 
-            LocationRowView(
-                title: "출발",
-                locationName: route.startPlaceName
-            )
-
-            if !wayPoints.isEmpty {
+            if let route {
                 LocationRowView(
-                    title: "경유",
-                    locationName: wayPoints.joined(separator: ", ")
+                    title: "출발",
+                    locationName: route.startPlaceName
+                )
+
+                if !wayPoints.isEmpty {
+                    LocationRowView(
+                        title: "경유",
+                        locationName: wayPoints.joined(separator: ", ")
+                    )
+                }
+
+                LocationRowView(
+                    title: "도착",
+                    locationName: route.arrivePlaceName
                 )
             }
-
-            LocationRowView(
-                title: "도착",
-                locationName: route.arrivePlaceName
-            )
         }
         .padding(16)
         .background{

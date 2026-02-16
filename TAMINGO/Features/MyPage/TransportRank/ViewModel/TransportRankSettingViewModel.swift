@@ -27,6 +27,31 @@ final class TransportRankSettingViewModel {
         !transportRanks.values.contains(.none)
     }
 
+
+    // MARK: - UI
+    func transport(for rank: Int) -> TransportType? {
+        transportRanks[rank]
+    }
+
+    func isTransportSelected(_ type: TransportType, excluding rank: Int) -> Bool {
+
+        guard type != .none else { return false }
+
+        return transportRanks
+            .filter { $0.key != rank }
+            .contains { $0.value == type }
+    }
+
+    func updateTransport(_ type: TransportType, for rank: Int) {
+        guard !isTransportSelected(type, excluding: rank) else { return }
+        guard transportRanks[rank] != type else { return }
+        transportRanks[rank] = type
+    }
+}
+
+
+@MainActor
+extension TransportRankSettingViewModel{
     // MARK: - 조회
 
     func fetch() async {
@@ -60,14 +85,20 @@ final class TransportRankSettingViewModel {
 
         do {
 
-            let orderedRanks = (1...3).compactMap { transportRanks[$0] }
+            guard
+                let r1 = transportRanks[1],
+                let r2 = transportRanks[2],
+                let r3 = transportRanks[3]
+            else { return }
 
-            let updated = try await service.updateTransportRank(ranks: orderedRanks)
+            let updated = try await service.updateTransportRank(
+                ranks: TransportRanks(rank1: r1, rank2: r2, rank3: r3)
+            )
 
             transportRanks = [
-                1: updated[safe: 0] ?? .none,
-                2: updated[safe: 1] ?? .none,
-                3: updated[safe: 2] ?? .none
+                1: updated.rank1,
+                2: updated.rank2,
+                3: updated.rank3
             ]
 
         } catch {
@@ -83,30 +114,24 @@ final class TransportRankSettingViewModel {
         guard isComplete else { return }
 
         do {
-            let orderedRanks = (1...3).compactMap { transportRanks[$0] }
-            _ = try await service.updateTransportRank(ranks: orderedRanks)
+            guard
+                let r1 = transportRanks[1],
+                let r2 = transportRanks[2],
+                let r3 = transportRanks[3]
+            else { return }
+
+            let updated = try await service.updateTransportRank(
+                ranks: TransportRanks(rank1: r1, rank2: r2, rank3: r3)
+            )
+
+            transportRanks = [
+                1: updated.rank1,
+                2: updated.rank2,
+                3: updated.rank3
+            ]
+
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    // MARK: - UI
-    func transport(for rank: Int) -> TransportType? {
-        transportRanks[rank]
-    }
-
-    func isTransportSelected(_ type: TransportType, excluding rank: Int) -> Bool {
-
-        guard type != .none else { return false }
-
-        return transportRanks
-            .filter { $0.key != rank }
-            .contains { $0.value == type }
-    }
-
-    func updateTransport(_ type: TransportType, for rank: Int) {
-        guard !isTransportSelected(type, excluding: rank) else { return }
-        guard transportRanks[rank] != type else { return }
-        transportRanks[rank] = type
     }
 }
