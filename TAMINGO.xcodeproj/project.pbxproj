@@ -451,7 +451,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TAMINGO/Info.plist;
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "앱에서 캘린더에 접근해 이벤트를 관리합니다";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "애플 캘린더에서 일정을 가져와 동기화합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -493,7 +493,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TAMINGO/Info.plist;
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "앱에서 캘린더에 접근해 이벤트를 관리합니다";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "애플 캘린더에서 일정을 가져와 동기화합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
