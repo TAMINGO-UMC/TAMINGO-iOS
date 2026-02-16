@@ -67,7 +67,10 @@ final class CalendarSyncViewModel {
             try await eventKitManager.requestAccess()
 
             let start = Date().startOfDay
-            let end = Calendar.current.date(byAdding: .month, value: 1, to: start)!
+            guard let end = Calendar.current.date(byAdding: .month, value: 1, to: start) else {
+                errorMessage = "날짜 계산에 실패했습니다."
+                return
+            }
 
             let events = try eventKitManager.fetchEvents(start: start, end: end)
             let dtoList = events.map { $0.toDTO() }

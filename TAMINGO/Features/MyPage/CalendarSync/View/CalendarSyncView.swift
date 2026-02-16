@@ -96,6 +96,7 @@ private extension CalendarSyncView {
                     isOn: Binding(
                         get: { vm.isLinked },
                         set: { newValue in
+                            guard !vm.isLoading else { return }
                             Task {
                                 await vm.toggleLink(newValue)
                             }
