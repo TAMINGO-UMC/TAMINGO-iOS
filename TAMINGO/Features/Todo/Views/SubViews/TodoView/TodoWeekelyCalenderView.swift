@@ -112,6 +112,7 @@ struct TodoWeeklyCalendarView: View {
                                 .padding(.top, 32)
                                 .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
                                     // pageWidth를 유동적인 calendarContentWidth로 변경
+                                    guard calendarContentWidth > 0 else { return }
                                     let newOffset = Int(round(-offset / calendarContentWidth))
                                     if newOffset != currentWeekOffset {
                                         currentWeekOffset = newOffset
