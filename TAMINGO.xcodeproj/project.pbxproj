@@ -443,7 +443,7 @@
 			baseConfigurationReferenceAnchor = 2CB2BA1F2F0F51CF00469454 /* TAMINGO */;
 			baseConfigurationReferenceRelativePath = Common/Network/Config.xcconfig;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "TAMINGO!";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -451,6 +451,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TAMINGO/Info.plist;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "애플 캘린더에서 일정을 가져와 동기화합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "길찾기를 위해 위치가 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -464,7 +465,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.umc.ios.ddodle.TAMINGO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.umc.ddodle.TAMINGO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -485,7 +486,7 @@
 			baseConfigurationReferenceAnchor = 2CB2BA1F2F0F51CF00469454 /* TAMINGO */;
 			baseConfigurationReferenceRelativePath = Common/Network/Config.xcconfig;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "TAMINGO!";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -493,6 +494,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TAMINGO/Info.plist;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "애플 캘린더에서 일정을 가져와 동기화합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "길찾기를 위해 위치가 필요합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
