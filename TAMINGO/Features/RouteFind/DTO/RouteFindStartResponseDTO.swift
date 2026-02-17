@@ -27,16 +27,16 @@ struct WayPointDTO: Decodable {
 extension RouteFindStartResponseDTO {
     
     private static let isoFormatter: ISO8601DateFormatter = {
-            let f = ISO8601DateFormatter()
-            f.formatOptions = [.withInternetDateTime]
-            return f
-       }()
-
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+    
     func toModel() -> RouteResultModel {
         RouteResultModel(
             totalDuration: totalDuration,
-            startTime: Self.isoFormatter.date(from: startTime) ?? Date(),
-            arriveTime: Self.isoFormatter.date(from: arriveTime) ?? Date(),
+            startTime: RouteDateFormatter.isoWithNanoSeconds.date(from: startTime)!,
+            arriveTime: RouteDateFormatter.isoWithNanoSeconds.date(from: arriveTime)!,
             startPlaceName: startPlaceName,
             arrivePlaceName: arrivePlaceName,
             wayPoints: wayPoints.map { $0.toModel() },
