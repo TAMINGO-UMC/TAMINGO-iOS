@@ -47,6 +47,7 @@ struct ToDoView: View {
                         viewModel.addTodo(aiResult: aiResult)
                     }
                 )
+                .padding(.horizontal)
                 
                 // 오늘 할일 Section
                 TodoSection(
@@ -68,7 +69,6 @@ struct ToDoView: View {
                 
                 Spacer(minLength: 80)
             }
-            .padding(.horizontal, 21)
             .padding(.top, 20)
         }
         .task {
