@@ -38,6 +38,7 @@ struct CalendarView: View {
                     onDateSelected: onDateSelected,
                     onAddPress: onAddPress
                 )
+                .padding(.top, 8)
                 VStack(spacing: 0) {
                     WeekdayHeaderView()
                     MonthlyCalendarView(
@@ -178,7 +179,6 @@ struct CalendarHeaderView: View {
                     .foregroundColor(.white)
             }
         }
-        .padding(.horizontal, 10)
         .padding(.bottom, 16)
     }
 }

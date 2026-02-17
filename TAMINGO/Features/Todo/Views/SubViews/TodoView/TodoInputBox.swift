@@ -105,7 +105,6 @@ struct TodoInputBox: View {
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity)
         .background(Color.white)
         .overlay(
             RoundedRectangle(cornerRadius: 8)

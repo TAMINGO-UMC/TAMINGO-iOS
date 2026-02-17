@@ -28,7 +28,7 @@ struct TodoWeeklyCalendarView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // 헤더: 년월 + 주차 + Chevron
+            // 헤더 부분
             Button(action: {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     isExpanded.toggle()
@@ -36,7 +36,7 @@ struct TodoWeeklyCalendarView: View {
             }) {
                 HStack(spacing: 4) {
                     Text(headerText)
-                        .font(.medium14)
+                        .font(.bold18)
                         .foregroundColor(.black)
                     
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
@@ -51,30 +51,34 @@ struct TodoWeeklyCalendarView: View {
             
             // 주간 캘린더 (확장 시)
             if isExpanded {
-                VStack(spacing: 12) {
-                    ZStack {
-                        // 고정된 배경 박스
-                        VStack(spacing: 0) {
-                            HStack(spacing: 7) {
-                                ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { day in
-                                    Text(day)
-                                        .font(.regular13)
-                                        .foregroundColor(.gray2)
-                                        .frame(width: 40)
+                GeometryReader { outerGeometry in
+                    let totalWidth = outerGeometry.size.width
+                    let calendarContentWidth = totalWidth - 42
+                    
+                    VStack(spacing: 12) {
+                        ZStack {
+                            // 고정된 배경 박스
+                            VStack(spacing: 0) {
+                                HStack(spacing: 0) { // 요일 간격 0으로 설정 후 내부에서 등분
+                                    ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { day in
+                                        Text(day)
+                                            .font(.regular13)
+                                            .foregroundColor(.gray2)
+                                            .frame(width: calendarContentWidth / 7) // 수정됨: 7등분
+                                    }
                                 }
+                                .padding(.top, 12)
+                                .padding(.bottom, 8)
+                                
+                                Spacer().frame(height: 48)
                             }
-                            .padding(.top, 12)
-                            .padding(.bottom, 8)
+                            // 정너비 333 제거하고 계산된 너비 적용
+                            .frame(width: calendarContentWidth, height: 107.46)
+                            .background(Color.white)
+                            .cornerRadius(13)
+                            .shadow(color: Color.black.opacity(0.08), radius: 4.75, x: 2, y: 3)
                             
-                            Spacer().frame(height: 48)
-                        }
-                        .frame(width: 333, height: 107.46)
-                        .background(Color.white)
-                        .cornerRadius(13)
-                        .shadow(color: Color.black.opacity(0.08), radius: 4.75, x: 2, y: 3)
-                        
-                        // 스크롤되는 날짜
-                        GeometryReader { geometry in
+                            // 스크롤되는 날짜
                             ScrollViewReader { proxy in
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     LazyHStack(spacing: 0) {
@@ -83,11 +87,13 @@ struct TodoWeeklyCalendarView: View {
                                                 viewModel: viewModel,
                                                 baseDate: baseDate,
                                                 weekOffset: weekOffset,
+                                                // 각 행에 계산된 너비 전달
+                                                rowWidth: calendarContentWidth,
                                                 onDateSelected: { date in
                                                     onDateSelected?(date)
                                                 }
                                             )
-                                            .frame(width: 333)
+                                            .frame(width: calendarContentWidth) // frame 설정
                                             .id(weekOffset)
                                         }
                                     }
@@ -105,8 +111,9 @@ struct TodoWeeklyCalendarView: View {
                                 .scrollTargetBehavior(.paging)
                                 .padding(.top, 32)
                                 .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
-                                    let pageWidth: CGFloat = 333
-                                    let newOffset = Int(round(-offset / pageWidth))
+                                    // pageWidth를 유동적인 calendarContentWidth로 변경
+                                    guard calendarContentWidth > 0 else { return }
+                                    let newOffset = Int(round(-offset / calendarContentWidth))
                                     if newOffset != currentWeekOffset {
                                         currentWeekOffset = newOffset
                                     }
@@ -118,16 +125,18 @@ struct TodoWeeklyCalendarView: View {
                                 }
                             }
                         }
-                        .frame(width: 333, height: 107.46)
-                    }
-                    .padding(.top, 12)
-                    
-                    // ✅ 카테고리 범례
-                    if !viewModel.legendCategories.isEmpty {
-                        CategoryLegend(categories: viewModel.legendCategories)
-                            .padding(.horizontal, 21)
+                        .frame(width: calendarContentWidth, height: 107.46)
+                        // ZStack을 화면 가로 중앙에 배치
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        
+                        // ✅ 카테고리 범례
+                        if !viewModel.legendCategories.isEmpty {
+                            CategoryLegend(categories: viewModel.legendCategories)
+                                .padding(.horizontal, 21)
+                        }
                     }
                 }
+                .frame(height: viewModel.legendCategories.isEmpty ? 120 : 150)
                 .padding(.bottom, 16)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -170,6 +179,7 @@ struct TodoWeekDatesRow: View {
     @Bindable var viewModel: TodoWeeklyCalendarViewModel
     let baseDate: Date
     let weekOffset: Int
+    let rowWidth: CGFloat // 너비 파라미터 추가
     var onDateSelected: ((Date) -> Void)?
     
     private var weekDates: [DateValue] {
@@ -189,12 +199,13 @@ struct TodoWeekDatesRow: View {
     }
     
     var body: some View {
-        HStack(spacing: 7) {
+        HStack(spacing: 0) { // 간격 0으로 수정
             ForEach(weekDates) { dateValue in
                 TodoWeekDayCell(
                     dateValue: dateValue,
                     isToday: dateValue.date.isToday,
                     isSelected: dateValue.date.isSameDay(as: viewModel.selectDate),
+                    cellWidth: rowWidth / 7, // 셀 너비 7등분
                     markers: viewModel.dateMarkers[dateValue.date.startOfDay] ?? [],
                     onSelect: {
                         viewModel.selectDate = dateValue.date.startOfDay
@@ -203,6 +214,7 @@ struct TodoWeekDatesRow: View {
                 )
             }
         }
+        .frame(width: rowWidth)
     }
 }
 
@@ -211,6 +223,7 @@ struct TodoWeekDayCell: View {
     let dateValue: DateValue
     let isToday: Bool
     let isSelected: Bool
+    let cellWidth: CGFloat // 너비 파라미터 추가
     let markers: [TodoMarker]
     let onSelect: () -> Void
     
@@ -234,8 +247,9 @@ struct TodoWeekDayCell: View {
                             .frame(width: 4, height: 4)
                     }
                 }
-                .frame(height: 4) // 마커 영역 고정 높이
+                .frame(height: 4)
             }
+            .frame(width: cellWidth) // 7등분된 너비 적용하여 균등 배분
         }
     }
 }
