@@ -12,4 +12,3 @@ struct RouteFindEndRequestDTO: Encodable {
     let latitude: Double
     let longitude: Double
 }
-
