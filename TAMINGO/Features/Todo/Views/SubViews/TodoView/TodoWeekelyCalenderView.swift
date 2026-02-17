@@ -36,7 +36,7 @@ struct TodoWeeklyCalendarView: View {
             }) {
                 HStack(spacing: 4) {
                     Text(headerText)
-                        .font(.medium14)
+                        .font(.bold18)
                         .foregroundColor(.black)
                     
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
