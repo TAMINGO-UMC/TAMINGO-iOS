@@ -43,6 +43,22 @@ enum Weekday: String, CaseIterable, Identifiable {
     }
 }
 
+extension Weekday {
+    init?(serverValue: String) {
+        switch serverValue.uppercased() {
+        case "MONDAY": self = .mon
+        case "TUESDAY": self = .tue
+        case "WEDNESDAY": self = .wed
+        case "THURSDAY": self = .thu
+        case "FRIDAY": self = .fri
+        case "SATURDAY": self = .sat
+        case "SUNDAY": self = .sun
+        default: return nil
+        }
+    }
+}
+
+
 enum WeekdayGroup: Identifiable, Equatable {
     case weekday(Weekday)
     case weekend

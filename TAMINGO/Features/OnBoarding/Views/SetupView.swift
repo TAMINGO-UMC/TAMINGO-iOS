@@ -62,7 +62,9 @@ struct SetupView: View {
             isCompleted = newValue
         }
         .sheet(isPresented: $isPlaceSearchPresented) {
-            PlaceSearchSheet { place in
+            PlaceSearchSheet(
+                editingPlace: nil
+            ) { place in
                 vm.addPlace(place)
                 isPlaceSearchPresented = false
             }

@@ -36,7 +36,11 @@ struct AddScheduleCategory: View {
             } else if titleInput.isEmpty {
                 GuideText(text: "제목 입력 시 AI가 카테고리를 추론합니다")
             } else if isEditing {
-                categoryListScroll
+                if categories.isEmpty {
+                    GuideText(text: "저장된 카테고리가 없습니다")
+                } else {
+                    categoryListScroll
+                }
             } else {
                 SelectedItemRow(
                     title: categoryName,

@@ -5,13 +5,6 @@
 //  Created by 권예원 on 2/11/26.
 //
 
-struct TransportRankResponseDTO: Decodable {
-    let isSuccess: Bool
-    let code: String
-    let message: String
-    let result: TransportRankResultDTO?
-}
-
 struct TransportRankResultDTO: Decodable {
     let rank1: String
     let rank2: String

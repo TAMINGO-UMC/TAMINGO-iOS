@@ -139,7 +139,7 @@ struct StaticBox: View {
     let stat: String
     
     var body: some View {
-        HStack {
+        HStack(spacing: 20) {
             Image(image)
                 .renderingMode(.template)
                 .resizable()

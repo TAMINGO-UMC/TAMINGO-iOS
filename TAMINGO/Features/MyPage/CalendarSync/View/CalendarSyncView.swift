@@ -10,7 +10,9 @@ import SwiftUI
 
 struct CalendarSyncView: View {
 
-    @State private var vm = CalendarSyncViewModel()
+    @State private var vm = CalendarSyncViewModel(
+        service: CalendarSyncService()
+    )
     let onBack: () -> Void
 
     var body: some View {
@@ -41,8 +43,9 @@ struct CalendarSyncView: View {
         }
         .padding(16)
         .navigationBarBackButtonHidden(true)
-
-        
+        .task {
+            await vm.loadConnectionStatus()
+        }
         
     }
     var header : some View {
@@ -60,15 +63,7 @@ struct CalendarSyncView: View {
                 .foregroundStyle(.black00)
             
             Spacer()
-            
-            Button { } label: {
-                Image("MyPage_icon_plus")
-                    .resizable()
-                    .frame(width: 13, height: 13)
-                    .padding(6)
-                    .background(.mainMint)
-                    .clipShape(RoundedRectangle(cornerRadius: 5))
-            }
+
         }
     }
     var introText: some View {
@@ -98,7 +93,15 @@ private extension CalendarSyncView {
 
                 toggleRow(
                     title: "Apple 캘린더 → TAMINGO!",
-                    isOn: $vm.syncFromApple
+                    isOn: Binding(
+                        get: { vm.isLinked },
+                        set: { newValue in
+                            guard !vm.isLoading else { return }
+                            Task {
+                                await vm.toggleLink(newValue)
+                            }
+                        }
+                    )
                 )
             }
             .padding(.bottom, 23)
@@ -121,7 +124,7 @@ private extension CalendarSyncView {
                 Text("Apple 캘린더")
                     .font(.medium14)
 
-                Text(vm.isSyncing ? "동기화 중" : "동기화 중지")
+                Text(vm.isLoading ? "동기화 중..." : (vm.isLinked ? "동기화 활성화" : "동기화 중지"))
                     .font(.regular12)
                     .foregroundColor(.mainMint)
             }

@@ -1,0 +1,59 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-gray:1.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "Group 2085665796.svg",
+          "name" : "Group 2085665796",
+          "position" : {
+            "scale" : 3.2,
+            "translation-in-points" : [
+              -0.00019531199995981297,
+              319.0078125
+            ]
+          }
+        },
+        {
+          "image-name" : "Group 2085665797 2.png",
+          "name" : "Group 2085665797 2",
+          "position-specializations" : [
+            {
+              "value" : {
+                "scale" : 1,
+                "translation-in-points" : [
+                  0,
+                  -174.671875
+                ]
+              }
+            },
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 3.5,
+                "translation-in-points" : [
+                  -10.0859375,
+                  -92.3203125
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}

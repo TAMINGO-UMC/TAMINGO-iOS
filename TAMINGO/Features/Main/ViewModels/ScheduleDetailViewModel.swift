@@ -50,7 +50,7 @@ final class ScheduleDetailViewModel {
             }
             
             detail = newDetail
-
+          
         } catch {
             let message = error.localizedDescription
             errorMessage = message
