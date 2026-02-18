@@ -24,6 +24,8 @@ final class HomeScheduleViewModel {
 
     var isLoading: Bool = false
     var errorMessage: String?
+    
+    var arrivedScheduleIds: Set<Int> = []
 
     // MARK: - API
     func loadToday() {
@@ -47,6 +49,8 @@ final class HomeScheduleViewModel {
 
             let items = response.result?.items ?? []
             timelineItems = items.compactMap { $0.toModel() }
+            
+            expandedScheduleId = nil
 
             updateNextSchedule()
 
@@ -77,6 +81,7 @@ final class HomeScheduleViewModel {
     // MARK: - 상태 계산
     func scheduleState(for schedule: ScheduleSummary) -> ScheduleCardState {
 
+        
         // 가장 첫 번째 남은 일정이면 .now
         if schedule.id == nextScheduleId {
             return .now
@@ -98,8 +103,14 @@ final class HomeScheduleViewModel {
     // MARK: - UI Interaction
     func toggleDepartureCard(for schedule: ScheduleSummary) {
 
+        // 이미 도착 처리된 일정이면 무조건 무시
+        if arrivedScheduleIds.contains(schedule.id) {
+            print("🚫 arrived schedule - toggle blocked:", schedule.id)
+            return
+        }
+
         print("🔥 toggle called for:", schedule.id)
-        
+
         if expandedScheduleId == schedule.id {
             expandedScheduleId = nil
             return
@@ -157,7 +168,10 @@ final class HomeScheduleViewModel {
             return cached
         }
 
-        let vm = ScheduleDetailViewModel(scheduleId: scheduleId)
+        let vm = ScheduleDetailViewModel(
+            scheduleId: scheduleId,
+            homeViewModel: self 
+        )
         detailViewModels[scheduleId] = vm
         return vm
     }

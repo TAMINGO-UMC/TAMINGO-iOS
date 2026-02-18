@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct MainScheduleView: View {
     
@@ -30,11 +31,15 @@ struct MainScheduleView: View {
                                 
                             case .schedule(let schedule):
                                 let state = viewModel.scheduleState(for: schedule)
+                                let isExpanded = viewModel.expandedScheduleId == schedule.id
+                                let detailVM = viewModel.detailViewModel(for: schedule.id)
+                                let isArrived = viewModel.arrivedScheduleIds.contains(schedule.id)
                                 
                                 ScheduleCardView(
                                     schedule: schedule,
                                     state: state,
-                                    isExpanded: viewModel.expandedScheduleId == schedule.id,
+                                    isExpanded: isExpanded,
+                                    isArrived: isArrived,
                                     onChevronTap: {
                                         viewModel.toggleDepartureCard(for: schedule)
                                     },
@@ -42,8 +47,15 @@ struct MainScheduleView: View {
                                         selectedScheduleId = id
                                         isRouteGuideActive = true
                                     },
-                                    detailVM: viewModel.detailViewModel(for: schedule.id)
+                                    detailVM: detailVM
                                 )
+                                .onChange(of: isExpanded) { _, newValue in
+                                    if newValue {
+                                        detailVM.startLiveRefresh()
+                                    } else {
+                                        detailVM.stopLiveRefresh()
+                                    }
+                                }
                                 
                             case .gap(let gap):
                                 GapTimeCardView(
@@ -65,13 +77,54 @@ struct MainScheduleView: View {
                 viewModel.loadToday()
             }
             .navigationDestination(isPresented: $isRouteGuideActive) {
-                            if let id = selectedScheduleId {
-                                RouteFindView(scheduleId: id)
-                            }
-                        }
+                if let id = selectedScheduleId {
+                    let detailVM = viewModel.detailViewModel(for: id)
+
+                    RouteFindViewWrapper(
+                        scheduleId: id,
+                        detailViewModel: detailVM
+                    )
+                }
+            }
+
+            .onReceive(NotificationCenter.default.publisher(for: .routeDidEnd)) { _ in
+                viewModel.loadToday()
+            }
         }
     }
 }
+
+struct RouteFindViewWrapper: View {
+    let scheduleId: Int
+    let detailViewModel: ScheduleDetailViewModel
+
+    @State private var coord: CLLocationCoordinate2D?
+
+    var body: some View {
+        Group {
+            if let coord {
+                RouteFindView(
+                    scheduleId: scheduleId,
+                    detailViewModel: detailViewModel,
+                    currentLatitude: coord.latitude,
+                    currentLongitude: coord.longitude
+                )
+            } else {
+                ProgressView("위치 확인 중…")
+                    .task {
+                        do {
+                            coord = try await LocationManager
+                                .shared
+                                .requestCurrentCoordinate()
+                        } catch {
+                            coord = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+                        }
+                    }
+            }
+        }
+    }
+}
+
 
 #Preview {
     MainScheduleView()

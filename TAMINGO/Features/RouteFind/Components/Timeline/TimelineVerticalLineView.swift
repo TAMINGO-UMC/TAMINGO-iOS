@@ -14,6 +14,7 @@ struct TimelineVerticalLineView: View {
     let below: LineStyle
 
     private let lineWidth: CGFloat = 6
+    private let walkLineWidth: CGFloat = 2
     private let nodeSize: CGFloat = 22
     private let colWidth: CGFloat = 34
 
@@ -52,7 +53,7 @@ struct TimelineVerticalLineView: View {
                 var path = Path()
                 path.move(to: CGPoint(x: size.width/2, y: 0))
                 path.addLine(to: CGPoint(x: size.width/2, y: size.height))
-                ctx.stroke(path, with: .color(color), style: StrokeStyle(lineWidth: lineWidth, dash: [8, 4]))
+                ctx.stroke(path, with: .color(color), style: StrokeStyle(lineWidth: walkLineWidth, dash: [4, 4]))
             }
         }
     }
@@ -76,7 +77,7 @@ struct TimelineVerticalLineView: View {
                 .frame(width: 20, height: 20)
 
         // 도보 (사람 이모지)
-        case .walk(let color):
+        case .walk:
             Image(systemName: "figure.walk")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(.gray2)

@@ -45,6 +45,9 @@ struct BusTimelineRow: View {
                     time: leg.sectionTime,
                     stations: leg.stations
                 )
+                
+                Text(leg.endName ?? "")
+                    .font(.semiBold14)
             }
             .padding(.vertical, 20)
 
