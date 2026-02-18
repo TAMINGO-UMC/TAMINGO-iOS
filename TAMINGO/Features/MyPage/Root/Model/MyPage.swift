@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct MyPage {
     let profile: UserProfile
@@ -38,6 +39,18 @@ enum IntegrationStatus: String {
     case active = "ACTIVE"
     case inactive = "INACTIVE"
 }
+extension IntegrationStatus {
+
+    var displayColor: Color {
+        switch self {
+        case .active:
+            return .mainMint
+        case .inactive:
+            return .gray2
+        }
+    }
+}
+
 
 struct NotificationSetting {
     let departAlertEnabled: Bool

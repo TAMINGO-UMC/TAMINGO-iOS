@@ -179,7 +179,7 @@ struct SyncSection: View {
                 CategorySettingRowView(
                     title: "캘린더 연동",
                     sub: vm.integrationStatusText,
-                    textColor: .gray2
+                    textColor: vm.integrationStatusColor
                 ) {
                     onTap()
                 }
