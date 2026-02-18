@@ -138,7 +138,7 @@ struct TrafficSection: View {
 
                     RankLabel(
                         rank: rank,
-                        title: transport?.title ?? "Label"
+                        title: displayTitle(for: transport)
                     ) {
                         activePicker = .transport(rank: rank)
                     }
@@ -158,6 +158,11 @@ struct TrafficSection: View {
         .padding(16)
         .cardStyle()
     }
+    private func displayTitle(for type: TransportType?) -> String {
+        guard let type else { return "Label" }
+        return type == .none ? "Label" : type.title
+    }
+
 }
 
 private extension TransportRankSettingView {
