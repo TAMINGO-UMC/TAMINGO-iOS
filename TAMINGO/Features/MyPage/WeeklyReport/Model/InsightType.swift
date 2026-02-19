@@ -38,7 +38,7 @@ extension InsightType {
         case .task:
             return .subBlue3
         case .suggestion:
-            return .subPink1
+            return .subPink2
         case .unknown:
             return .gray1
         }
@@ -53,7 +53,7 @@ extension InsightType {
         case .task:
             return .subBlue1
         case .suggestion:
-            return .subPink
+            return .subPink1
         case .unknown:
             return .gray0
         }
