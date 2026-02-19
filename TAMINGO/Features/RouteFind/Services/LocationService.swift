@@ -7,10 +7,20 @@
 
 import Foundation
 import Moya
+import Alamofire
 
 final class LocationService {
 
-    private let provider = MoyaProvider<LocationTarget>()
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+
+    private let provider: MoyaProvider<LocationTarget>
+
+    init() {
+        self.provider = MoyaProvider<LocationTarget>(session: session)
+    }
     
     func silentGPS(
         scheduleId: Int,

@@ -24,6 +24,7 @@ final class TokenManager {
     private let refreshTokenKey = "com.tamingo.refreshToken"
     private let userIdKey = "com.tamingo.userId"
     private let tokenExpiryKey = "com.tamingo.tokenExpiry"
+    private var refreshHeartbeatTimer: DispatchSourceTimer?
     
     // MARK: - Access Token
     func saveAccessToken(_ token: String, expiresIn: TimeInterval = 3600) {
@@ -174,10 +175,84 @@ final class TokenManager {
     // MARK: - Clear All
     func clearAll() {
         print("🗑️  모든 토큰 삭제")
+        stopRefreshHeartbeat()
         deleteAccessToken()
         deleteRefreshToken()
         deleteUserId()
         deleteTokenExpiry()
+    }
+
+    // MARK: - Heartbeat Refresh (Demo 안정성)
+    func startRefreshHeartbeat() {
+        stopRefreshHeartbeat()
+
+        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
+        timer.schedule(deadline: .now() + .seconds(10), repeating: .seconds(30))
+        timer.setEventHandler { [weak self] in
+            guard let self = self else { return }
+            guard self.getRefreshToken() != nil else { return }
+            guard self.isTokenExpiringSoon() else { return }
+
+            Task {
+                do {
+                    let newAccessToken = try await self.requestNewAccessToken()
+                    self.saveAccessTokenWithJWT(newAccessToken)
+                    print("🔄 하트비트 토큰 갱신 성공")
+                } catch {
+                    print("⚠️ 하트비트 토큰 갱신 실패: \(error)")
+                }
+            }
+        }
+        timer.resume()
+        refreshHeartbeatTimer = timer
+        print("토큰 하트비트 시작")
+    }
+
+    func stopRefreshHeartbeat() {
+        refreshHeartbeatTimer?.cancel()
+        refreshHeartbeatTimer = nil
+    }
+
+    // MARK: - Refresh Token API 호출
+    func requestNewAccessToken() async throws -> String {
+        guard let refreshToken = getRefreshToken() else {
+            throw APIError.transport("Refresh Token이 없습니다.")
+        }
+
+        guard let url = URL(string: "\(Config.baseURL)/api/auth/token/refresh") else {
+            throw APIError.transport("잘못된 URL입니다.")
+        }
+
+        print("Refresh Token API 호출 - URL: \(url)")
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(refreshToken, forHTTPHeaderField: "X-Refresh-Token")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: [:])
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.transport("응답이 없습니다.")
+        }
+
+        if !(200..<300).contains(httpResponse.statusCode) {
+            let errorBody = String(data: data, encoding: .utf8) ?? "알 수 없음"
+            print("토큰 갱신 실패 (Status: \(httpResponse.statusCode))")
+            print("- Response Body: \(errorBody)")
+            throw APIError.server(status: httpResponse.statusCode, message: "토큰 갱신 실패")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(BaseResponse<RefreshTokenResponseDTO>.self, from: data)
+
+        guard let accessToken = baseResponse.result?.accessToken else {
+            throw APIError.transport("새로운 Access Token을 받지 못했습니다.")
+        }
+
+        print("새로운 Access Token 수신 완료")
+        return accessToken
     }
     
     // MARK: - Helper: 시간 포맷팅
@@ -268,15 +343,18 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         
         if TokenManager.shared.isTokenExpiringSoon() {
             print("미리 갱신 시도")
+            let originalRequest = request
             Task {
+                var updatedRequest = originalRequest
                 do {
                     let newAccessToken = try await refreshAccessToken()
-                    TokenManager.shared.saveAccessToken(newAccessToken)
+                    TokenManager.shared.saveAccessTokenWithJWT(newAccessToken)
+                    updatedRequest.setValue("Bearer \(newAccessToken)", forHTTPHeaderField: "Authorization")
                     print("사전 갱신 성공")
                 } catch {
-                    print("사전 갱신 실패 (401 시 재시도 예정): \(error)")
+                    print("사전 갱신 실패 (기존 토큰으로 진행): \(error)")
                 }
-                completion(.success(request))
+                completion(.success(updatedRequest))
             }
         } else {
             completion(.success(request))
@@ -296,11 +374,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         print("- 재시도 횟수: \(request.retryCount + 1)/3")
         
         if request.retryCount >= 3 {
-            print("재시도 횟수 초과 (3회) → 로그아웃 처리")
-            TokenManager.shared.clearAll()
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .userDidLogout, object: nil)
-            }
+            print("재시도 횟수 초과 (3회) → 데모 안정성 모드로 로그인 유지")
             completion(.doNotRetryWithError(error))
             return
         }
@@ -309,15 +383,11 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             do {
                 print("토큰 갱신 시작...")
                 let newAccessToken = try await refreshAccessToken()
-                TokenManager.shared.saveAccessToken(newAccessToken)
+                TokenManager.shared.saveAccessTokenWithJWT(newAccessToken)
                 print("✅ 토큰 갱신 성공! 원래 요청 자동 재시도")
                 completion(.retry)
             } catch {
-                print(" 토큰 갱신 실패: \(error) → 로그아웃 처리")
-                TokenManager.shared.clearAll()
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .userDidLogout, object: nil)
-                }
+                print("⚠️ 토큰 갱신 실패: \(error) → 로그인 화면 전환 없이 현재 화면 유지")
                 completion(.doNotRetryWithError(error))
             }
         }
@@ -325,47 +395,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     
     // MARK: - Private: Refresh Token API 호출
     private func refreshAccessToken() async throws -> String {
-        guard let refreshToken = TokenManager.shared.getRefreshToken() else {
-            throw APIError.transport("Refresh Token이 없습니다.")
-        }
-        
-        // Config.baseURL은 최신 브랜치 사양(non-await)에 맞춰 적용
-        guard let url = URL(string: "\(Config.baseURL)/api/auth/token/refresh") else {
-            throw APIError.transport("잘못된 URL입니다.")
-        }
-        
-        print("Refresh Token API 호출 - URL: \(url)")
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(refreshToken, forHTTPHeaderField: "X-Refresh-Token")
-        
-        // 403 Forbidden 방지를 위해 필요한 경우 빈 Body 추가
-        request.httpBody = try? JSONSerialization.data(withJSONObject: [:])
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.transport("응답이 없습니다.")
-        }
-        
-        if !(200..<300).contains(httpResponse.statusCode) {
-            let errorBody = String(data: data, encoding: .utf8) ?? "알 수 없음"
-            print("토큰 갱신 실패 (Status: \(httpResponse.statusCode))")
-            print("- Response Body: \(errorBody)")
-            throw APIError.server(status: httpResponse.statusCode, message: "토큰 갱신 실패")
-        }
-        
-        let decoder = JSONDecoder()
-        let baseResponse = try decoder.decode(BaseResponse<RefreshTokenResponseDTO>.self, from: data)
-        
-        guard let accessToken = baseResponse.result?.accessToken else {
-            throw APIError.transport("새로운 Access Token을 받지 못했습니다.")
-        }
-        
-        print("새로운 Access Token 수신 완료")
-        return accessToken
+        try await TokenManager.shared.requestNewAccessToken()
     }
 }
 
@@ -385,6 +415,8 @@ extension TokenManager {
         }
         
         var base64String = segments[1]
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
         let remainder = base64String.count % 4
         if remainder > 0 {
             base64String.append(String(repeating: "=", count: 4 - remainder))

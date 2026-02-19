@@ -7,12 +7,23 @@
 
 import Foundation
 import Moya
+import Alamofire
 
 final class RouteFindService {
 
-    private let provider = MoyaProvider<RouteFindTarget>(
-        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
-    )
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+
+    private let provider: MoyaProvider<RouteFindTarget>
+
+    init() {
+        self.provider = MoyaProvider<RouteFindTarget>(
+            session: session,
+            plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
+        )
+    }
 
     // START
     func start(

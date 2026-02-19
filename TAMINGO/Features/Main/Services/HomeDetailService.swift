@@ -7,10 +7,18 @@
 
 import Foundation
 import Moya
+import Alamofire
 
 final class HomeDetailService {
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    private let provider: MoyaProvider<HomeDetailTarget>
     
-    private let provider = MoyaProvider<HomeDetailTarget>()
+    init() {
+        self.provider = MoyaProvider<HomeDetailTarget>(session: session)
+    }
     
     func fetchDetail(scheduleId: Int) async throws -> ScheduleDetail {
         let decoded: ScheduleDetailResponseDTO =

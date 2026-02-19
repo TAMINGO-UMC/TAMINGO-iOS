@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Observation
 import Moya
+import Alamofire
 
 /// 캘린더 마커를 위한 구조체.
 /// Identifiable을 채택하여 같은 색상이라도 고유하게 식별되도록 수정
@@ -19,7 +20,11 @@ struct Marker: Hashable, Identifiable {
 
 @Observable
 class CalendarViewModel {
-    private let provider = MoyaProvider<ScheduleTarget>()
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    private let provider: MoyaProvider<ScheduleTarget>
     
     private let calendar = Calendar.current
     
@@ -35,6 +40,8 @@ class CalendarViewModel {
     var displayedMonthDate: Date = Date()
     
     init() {
+        self.provider = MoyaProvider<ScheduleTarget>(session: session)
+
         let now = Date().startOfDay
         self.selectDate = now
         self.previousMonth = calendar.component(.month, from: now)

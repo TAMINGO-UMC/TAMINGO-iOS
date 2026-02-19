@@ -52,11 +52,13 @@ struct TAMINGOApp: App {
             // 로그인 성공 이벤트 수신 (NotificationCenter 방식도 유지)
             .onReceive(NotificationCenter.default.publisher(for: .userDidLogin)) { _ in
                 print("로그인 알림 감지: 메인 화면으로 전환")
+                TokenManager.shared.startRefreshHeartbeat()
                 isLoggedIn = true
             }
             // 로그아웃 이벤트 수신
             .onReceive(NotificationCenter.default.publisher(for: .userDidLogout)) { _ in
                 print("로그아웃 알림 감지: 로그인 화면으로 전환")
+                TokenManager.shared.stopRefreshHeartbeat()
                 isLoggedIn = false
             }
         }
@@ -73,6 +75,7 @@ struct TAMINGOApp: App {
         
         print("자동 로그인: 저장된 토큰 발견")
         TokenManager.shared.printTokenStatus()
+        TokenManager.shared.startRefreshHeartbeat()
         
         isLoggedIn = true
         isLoading = false

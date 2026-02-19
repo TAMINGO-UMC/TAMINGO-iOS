@@ -9,12 +9,17 @@ import SwiftUI
 import Observation
 import Combine
 import Moya
+import Alamofire
 
 @Observable
 @MainActor
 class EditScheduleViewModel {
     // MARK: - Dependencies
-    let provider = MoyaProvider<ScheduleTarget>()
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    let provider: MoyaProvider<ScheduleTarget>
     
     var cancellables = Set<AnyCancellable>()
     let inputSubject = PassthroughSubject<String, Never>()
@@ -78,6 +83,7 @@ class EditScheduleViewModel {
     var aiInferenceSource = AIInferenceSource(aiSuggestedPlaceName: "", aiSuggestedCategoryName: "")
     
     init() {
+        self.provider = MoyaProvider<ScheduleTarget>(session: session)
         loadPlaces()
         loadCategories()
     }

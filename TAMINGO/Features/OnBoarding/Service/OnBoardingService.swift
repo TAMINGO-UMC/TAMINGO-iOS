@@ -7,14 +7,25 @@
 
 import Moya
 import Foundation
+import Alamofire
 
 final class OnboardingService {
 
-    private let provider = MoyaProvider<OnboardingAPI>(
-        plugins: [
-            NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))
-        ]
-    )
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+
+    private let provider: MoyaProvider<OnboardingAPI>
+
+    init() {
+        self.provider = MoyaProvider<OnboardingAPI>(
+            session: session,
+            plugins: [
+                NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))
+            ]
+        )
+    }
 
     func completeOnboarding(
         request: OnboardingRequestDTO
@@ -48,4 +59,3 @@ final class OnboardingService {
         return decoded.result?.onboardingCompleted == true
     }
 }
-

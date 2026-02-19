@@ -107,6 +107,7 @@ final class LoginViewModel: ObservableObject {
             TokenManager.shared.saveAccessTokenWithJWT(response.accessToken)
             TokenManager.shared.saveRefreshToken(response.refreshToken)
             TokenManager.shared.saveUserId(response.userId)
+            TokenManager.shared.startRefreshHeartbeat()
             print("✅ 토큰 저장 완료")
             
             // 토큰 상태 확인
@@ -183,6 +184,7 @@ final class LoginViewModel: ObservableObject {
             TokenManager.shared.saveAccessTokenWithJWT(response.accessToken)
             TokenManager.shared.saveRefreshToken(response.refreshToken)
             TokenManager.shared.saveUserId(response.userId)
+            TokenManager.shared.startRefreshHeartbeat()
             
             // 토큰 상태 확인
             TokenManager.shared.printTokenStatus()

@@ -7,13 +7,18 @@
 
 import Foundation
 import Moya
+import Alamofire
 import Observation
 import SwiftUI
 
 @Observable
 class SettingsViewModel {
     // MARK: - Properties
-    private let provider = MoyaProvider<SettingsTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    private let provider: MoyaProvider<SettingsTarget>
     
     var appVersion: String = "v1.0.0"
     var isLoading: Bool = false
@@ -24,6 +29,13 @@ class SettingsViewModel {
     // 알림창 제어용
     var showErrorAlert: Bool = false
     var errorMessage: String = ""
+
+    init() {
+        self.provider = MoyaProvider<SettingsTarget>(
+            session: session,
+            plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))]
+        )
+    }
     
     // MARK: - Methods
     

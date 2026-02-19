@@ -7,12 +7,21 @@
 
 import Foundation
 import Moya
+import Alamofire
 
 final class HomeService {
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    private let provider: MoyaProvider<HomeTarget>
 
-    private let provider = MoyaProvider<HomeTarget>(
-        plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
-    )
+    init() {
+        self.provider = MoyaProvider<HomeTarget>(
+            session: session,
+            plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .verbose))]
+        )
+    }
 
     func fetchTodayTimeline() async throws -> HomeScheduleResponseDTO {
         let decoded: HomeScheduleResponseDTO =
