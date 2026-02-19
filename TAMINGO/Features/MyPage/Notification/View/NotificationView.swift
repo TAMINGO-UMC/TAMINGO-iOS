@@ -11,8 +11,9 @@ struct NotificationView: View {
     @State private var viewModel = NotificationSettingViewModel()
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 12) {
             MyPageHeader(title: "알림 설정")
+                .padding(.bottom, 4)
             
             startAlert
             
@@ -26,7 +27,8 @@ struct NotificationView: View {
             
             Spacer()
         }
-        .padding()
+        .padding(.horizontal, 32)
+        .padding(.vertical, 16)
         .task {
             viewModel.fetchSettings()
         }

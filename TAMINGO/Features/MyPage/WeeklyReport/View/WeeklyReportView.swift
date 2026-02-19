@@ -17,7 +17,7 @@ struct WeeklyReportView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 32)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -33,11 +33,12 @@ struct WeeklyReportView: View {
                     
                     Spacer()
                 }
-                .padding(16)
+                .padding(.vertical, 16)
+                .padding(.horizontal, 32)
             }
         }
+        .padding(.vertical, 16)
         .navigationBarBackButtonHidden(true)
-        .padding(.horizontal,16)
         .task {
             await vm.fetchReport()
         }

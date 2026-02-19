@@ -15,57 +15,63 @@ struct SettingsView: View {
     @State private var showWithdrawAlert = false
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 16) {
             MyPageHeader(title: "설정")
-                .padding([.horizontal, .top])
+                .padding(.horizontal, 32)
             
             ScrollView {
-                // 앱 정보
-                SectionContainerView(title: "앱 정보") {
-                    SettingCard(title: "버전 정보", sub: viewModel.appVersion) {
-                        print("버전 정보 탭")
+                VStack(alignment: .leading, spacing: 12){
+                    // 앱 정보
+                    SectionContainerView(title: "앱 정보") {
+                        SettingCard(title: "버전 정보", sub: viewModel.appVersion) {
+                            print("버전 정보 탭")
+                        }
+                        SettingCard(title: "업데이트 확인", sub: "최신 버전", subColor: .mainMint) {
+                            print("업데이트 확인 탭")
+                        }
+                        SettingCard(title: "오픈소스 라이선스") {
+                            print("오픈소스 라이선스 탭")
+                        }
                     }
-                    SettingCard(title: "업데이트 확인", sub: "최신 버전", subColor: .mainMint) {
-                        print("업데이트 확인 탭")
-                    }
-                    SettingCard(title: "오픈소스 라이선스") {
-                        print("오픈소스 라이선스 탭")
-                    }
-                }
-                .padding(.top)
-                
-                // 계정
-                SectionContainerView(title: "계정") {
-                    SettingCard(title: "로그아웃") {
-                        showLogoutAlert = true
-                    }
-                    SettingCard(title: "회원 탈퇴", isRed: true) {
-                        showWithdrawAlert = true
-                    }
-                }
-                
-                // 약관 및 정책
-                SectionContainerView(title: "약관 및 정책") {
-                    SettingCard(title: "서비스 이용약관") {
-                        print("서비스 이용약관 탭")
-                    }
-                    SettingCard(title: "개인정보 처리방침") {
-                        print("개인정보 처리방침 탭")
-                    }
-                    SettingCard(title: "위치 정보 이용약관") {
-                        print("위치 정보 이용약관 탭")
-                    }
-                }
+                    .padding(.horizontal, 32)
                     
-                // 고객센터
-                SectionContainerView(title: "고객센터") {
-                    SettingCard(title: "의견 보내기") {
-                        print("의견 보내기 탭")
+                    // 계정
+                    SectionContainerView(title: "계정") {
+                        SettingCard(title: "로그아웃") {
+                            showLogoutAlert = true
+                        }
+                        SettingCard(title: "회원 탈퇴", isRed: true) {
+                            showWithdrawAlert = true
+                        }
                     }
+                    .padding(.horizontal, 32)
+                    
+                    // 약관 및 정책
+                    SectionContainerView(title: "약관 및 정책") {
+                        SettingCard(title: "서비스 이용약관") {
+                            print("서비스 이용약관 탭")
+                        }
+                        SettingCard(title: "개인정보 처리방침") {
+                            print("개인정보 처리방침 탭")
+                        }
+                        SettingCard(title: "위치 정보 이용약관") {
+                            print("위치 정보 이용약관 탭")
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                        
+                    // 고객센터
+                    SectionContainerView(title: "고객센터") {
+                        SettingCard(title: "의견 보내기") {
+                            print("의견 보내기 탭")
+                        }
+                    }
+                    .padding(.bottom, 80)
+                    .padding(.horizontal, 32)
                 }
-                .padding(.bottom, 80)
             }
         }
+        .padding(.vertical, 16)
         .task {
             viewModel.loadAppVersion()
         }
@@ -118,7 +124,7 @@ struct SettingCard: View {
                     .frame(width: 6, height: 8)
                     .foregroundStyle(.gray2)
             }
-            .padding()
+            .padding(.vertical)
         }
     }
 }
