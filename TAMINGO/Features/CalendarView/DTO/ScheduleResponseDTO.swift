@@ -88,8 +88,8 @@ struct MyPlaceDTO: Decodable, Identifiable {
     let id: Int
     let name: String
     let address: String
-    let latitude: Double
-    let longitude: Double
+    let latitude: Double?
+    let longitude: Double?
 }
 
 // MARK: - 월별 캘린더 조회 결과 (일정 목록 + 카테고리 정보)
