@@ -12,11 +12,11 @@ struct PersonalizationView: View {
     @State private var showResetAlert = false
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 16) {
             MyPageHeader(title: "개인화 학습")
-                .padding([.horizontal, .top])
+                .padding(.horizontal, 32)
             ScrollView {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 12) {
                     ToggleBox(
                         title: "사용자 행동 수집",
                         sub: "사용자의 행동을 학습하여\n 더 정확한 예측을 제공합니다",
@@ -79,9 +79,10 @@ struct PersonalizationView: View {
                     GuideBoxView(title: "학습 데이터 안내", description: "• 이동 패턴이 학습되어 더 정확한 예측이 가능합니다\n• 사용자 수정 내역도 자동으로 학습됩니다\n• 모든 데이터는 기기 내에 안전하게 저장됩니다")
                         .padding(.bottom, 80)
                 }
-                .padding()
+                .padding(.horizontal, 32)
             }
         }
+        .padding(.vertical,16)
         .task {
             async let _ = viewModel.loadSetting()
             async let _ = viewModel.loadStatistics()
