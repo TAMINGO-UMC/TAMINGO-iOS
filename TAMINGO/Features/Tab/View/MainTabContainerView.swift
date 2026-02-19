@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainTabContainerView: View {
     @State private var selectedTab: MainTab = .home
+    @State private var homeViewModel = HomeScheduleViewModel()
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -16,7 +17,11 @@ struct MainTabContainerView: View {
             Group {
                 switch selectedTab {
                 case .home:
-                    MainView()
+                    MainView(homeViewModel: homeViewModel)
+                        .onAppear {
+                            homeViewModel.loadToday()
+                            homeViewModel.correctDepartureIfNeeded()
+                        }
                 case .calendar:
                     ScheduleView()
                 case .todo:

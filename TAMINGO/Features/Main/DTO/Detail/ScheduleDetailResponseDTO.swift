@@ -23,11 +23,17 @@ struct ScheduleDetailResultDTO: Decodable {
 }
 
 extension ScheduleDetailResultDTO {
+
     func toModel() -> ScheduleDetail {
-        ScheduleDetail(
-            travel: scheduleStatus.toTravelStatus(),
+
+        let travel = scheduleStatus.toTravelStatus()
+
+        return ScheduleDetail(
+            travel: travel,   // TravelStatus (status는 기본값)
+            baseDepartureDate: travel.expectedDepartureDate,  // 최초 기준값
             linkedTodos: linkedTodos.map { $0.toModel() },
-            detourRecommendations: routeDetourRecommendations.map { $0.toModel() },
+            detourRecommendations: routeDetourRecommendations.map { $0.toModel() }
         )
     }
 }
+

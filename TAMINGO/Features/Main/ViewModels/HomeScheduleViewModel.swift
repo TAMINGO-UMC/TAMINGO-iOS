@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Observation
+internal import _LocationEssentials
 
 @Observable
 final class HomeScheduleViewModel {
@@ -26,6 +27,10 @@ final class HomeScheduleViewModel {
     var errorMessage: String?
     
     var arrivedScheduleIds: Set<Int> = []
+    
+    private let locationService = LocationService()
+    private let locationManager = LocationManager.shared
+
 
     // MARK: - API
     func loadToday() {
@@ -175,6 +180,44 @@ final class HomeScheduleViewModel {
         detailViewModels[scheduleId] = vm
         return vm
     }
+    
+    func preloadDetailsIfNeeded() {
+        for item in timelineItems {
+            guard case let .schedule(schedule) = item else { continue }
+
+            if detailViewModels[schedule.id] == nil {
+                let vm = ScheduleDetailViewModel(
+                    scheduleId: schedule.id,
+                    homeViewModel: self
+                )
+                detailViewModels[schedule.id] = vm
+                vm.load()
+            }
+        }
+    }
+
+    func correctDepartureIfNeeded() {
+
+        guard let nextId = nextScheduleId else { return }
+
+        Task {
+            do {
+                let coord = try await locationManager.currentLocation()
+
+                _ = try await locationService.silentGPS(
+                    scheduleId: nextId,
+                    latitude: coord.latitude,
+                    longitude: coord.longitude
+                )
+
+                await loadTodayAsync()
+
+            } catch {
+                print("❌ silentGPS error:", error)
+            }
+        }
+    }
+
 }
 
 

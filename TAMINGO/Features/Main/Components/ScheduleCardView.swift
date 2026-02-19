@@ -17,69 +17,69 @@ struct ScheduleCardView: View {
     let onRouteStart: ((Int) -> Void)?
 
     @Bindable var detailVM: ScheduleDetailViewModel
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 17) {
 
-            // 시간
             Text("\(schedule.startTimeText)")
                 .font(.medium14)
                 .foregroundStyle(timeColor)
                 .frame(alignment: .leading)
 
-            // 카드
             VStack(alignment: .leading, spacing: 16) {
-                
-                // 일정 텍스트
+
                 VStack(alignment: .leading, spacing: 6) {
-                    // 상단 라인
                     HStack(alignment: .center) {
-                        
-                        // 제목 + 다음 일정 배지
+
                         HStack(spacing: 8) {
                             Text(schedule.title)
                                 .font(.medium14)
                                 .foregroundStyle(titleColor)
                                 .lineLimit(1)
-                            
+
                             if state == .now {
                                 Text("이번 일정")
                                     .font(.regular12)
                                     .foregroundStyle(Color.mainMint)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 2)
-                                    .background{
+                                    .background {
                                         RoundedRectangle(cornerRadius: 4)
                                             .fill(Color("SubMint"))
                                     }
                             }
-
                         }
-                        
-                        
+
                         Spacer()
-                        
-                        
+
                         rightArea
                     }
-                    
-                    HStack(spacing:2) {
+
+                    HStack(spacing: 2) {
                         Text(schedule.placeName)
                             .font(.regular12)
                             .foregroundStyle(Color("Gray2"))
                             .lineLimit(1)
                     }
                 }
-                
+                .onChange(of: isExpanded) { newValue in
+                    if newValue {
+                        detailVM.load()
+                        detailVM.startLiveRefresh()
+                    } else {
+                        detailVM.stopLiveRefresh()
+                    }
+                }
+
+
                 if isExpanded && !isArrived {
                     @Bindable var vm = detailVM
 
                     if let detail = vm.detail {
-                        
+
                         DepartureStatusCardView(
-                            departureDate: detail.travel.expectedDepartureDate,
-                            departureTime: detail.travel.expectedDepartureTimeText,
-                            arrivalTime: detail.travel.expectedArrivalTimeText,
+                            travel: detail.travel,
+                            lateSeed: detailVM.lateSeed,
                             detours: vm.uiDetours,
                             linkedDetours: detail.linkedTodos.map { todo in
                                 RouteDetour.fromLinkedTodo(
@@ -100,12 +100,8 @@ struct ScheduleCardView: View {
                                 detailVM.rejectRoute(suggestionId: suggestionId)
                             }
                         )
-                        .onAppear {
-                            detailVM.startLiveRefresh()
-                        }
-                        .onDisappear {
-                            detailVM.stopLiveRefresh()
-                        }
+//                        .onAppear { detailVM.startLiveRefresh() }
+//                        .onDisappear { detailVM.stopLiveRefresh() }
                     }
                 }
             }
@@ -130,14 +126,8 @@ struct ScheduleCardView: View {
 
 private extension ScheduleCardView {
 
-    var canShowChevron: Bool {
-        
-        !isArrived
-        
-    }
-}
+    var canShowChevron: Bool { !isArrived }
 
-private extension ScheduleCardView {
     @ViewBuilder
     var rightArea: some View {
         switch state {
@@ -167,10 +157,6 @@ private extension ScheduleCardView {
             EmptyView()
         }
     }
-}
-
-
-private extension ScheduleCardView {
 
     var cardBackgroundColor: Color {
         state == .past ? Color("SubMint") : Color.white
@@ -178,10 +164,8 @@ private extension ScheduleCardView {
 
     var borderColor: Color {
         switch state {
-        case .now:
-            return Color("MainMint")
-        case .upcoming, .past:
-            return Color.clear
+        case .now: return Color("MainMint")
+        case .upcoming, .past: return Color.clear
         }
     }
 
@@ -197,4 +181,3 @@ private extension ScheduleCardView {
         state == .past ? Color("Gray2") : Color("Black00")
     }
 }
-

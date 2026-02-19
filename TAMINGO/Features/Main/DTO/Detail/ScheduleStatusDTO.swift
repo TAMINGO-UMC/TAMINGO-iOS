@@ -27,35 +27,21 @@ extension ScheduleStatusDTO {
 
     func toTravelStatus() -> TravelStatus {
 
-        let status: DepartureStatus
-
-        switch currentStatus {
-        case .ready:
-            status = .preparing(remainingMinutes: leftOrDelayMinutes)
-
-        case .departed:
-            status = .now(remainingMinutes: leftOrDelayMinutes)
-
-        case .departureDelayed:
-            status = .delayed(remainingMinutes: leftOrDelayMinutes)
-
-        case .departureExtremeDelayed:
-            status = .late(
-                remainingMinutes: leftOrDelayMinutes,
-                delayMinutes: lateArrivalMinutes ?? 0
-            )
-        }
-
-        let departureDate =
+        let depDate =
             expectedDepartureTime.toTodayDate()
-            ?? Date().addingTimeInterval(TimeInterval(leftOrDelayMinutes * 60))
+            ?? Date().addingTimeInterval(TimeInterval(max(0, leftOrDelayMinutes) * 60))
+
+        let arrDate =
+            expectedArrivalTime.toTodayDate()
+            ?? depDate.addingTimeInterval(60 * 30)
 
         return TravelStatus(
-            status: status,
+            status: .preparing(remainingMinutes: leftOrDelayMinutes), // ✅ 임시값
             expectedDepartureTimeText: expectedDepartureTime.hhmm,
             expectedArrivalTimeText: expectedArrivalTime.hhmm,
-            expectedDepartureDate: departureDate,
-            lateArrivalMinutes: lateArrivalMinutes ?? 0,
+            expectedDepartureDate: depDate,
+            expectedArrivalDate: arrDate,
+            lateArrivalMinutes: max(0, lateArrivalMinutes ?? 0),
             leftOrDelayMinutes: leftOrDelayMinutes,
             isStarted: isStarted
         )
@@ -63,17 +49,38 @@ extension ScheduleStatusDTO {
 }
 
 
+
+// MARK: - String helpers (기존 유지 + 안전 보강)
 extension String {
     var hhmm: String {
-        // 1) ISO면 T 뒤만
         let tSplit = self.split(separator: "T", maxSplits: 1, omittingEmptySubsequences: true)
         let timePart = (tSplit.count == 2) ? String(tSplit[1]) : self
 
-        // 2) "03:30:00" → "03:30"
         let comps = timePart.split(separator: ":")
         guard comps.count >= 2 else { return self }
-        let h = comps[0]
-        let m = comps[1]
-        return "\(h):\(m)"
+        return "\(comps[0]):\(comps[1])"
+    }
+
+    func toTodayDate() -> Date? {
+        // ISO면 "T" 뒤 시간만 분리
+        let tSplit = self.split(separator: "T", maxSplits: 1, omittingEmptySubsequences: true)
+        let timePart = (tSplit.count == 2) ? String(tSplit[1]) : self
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone.current
+
+        guard let time = formatter.date(from: timePart) else { return nil }
+
+        let cal = Calendar.current
+        let now = Date()
+
+        return cal.date(
+            bySettingHour: cal.component(.hour, from: time),
+            minute: cal.component(.minute, from: time),
+            second: cal.component(.second, from: time),
+            of: now
+        )
     }
 }
