@@ -8,12 +8,12 @@
 import Foundation
 
 enum RouteDateFormatter {
-
+    
     static let isoWithNanoSeconds: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS"
         return formatter
     }()
 }

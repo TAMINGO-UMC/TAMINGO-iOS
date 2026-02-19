@@ -45,3 +45,4 @@ extension HomeDetailTarget: APITargetType {
         }
     }
 }
+

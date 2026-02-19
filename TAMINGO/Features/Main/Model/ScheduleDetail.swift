@@ -11,7 +11,7 @@ struct ScheduleDetail: Identifiable {
     let id = UUID()
     let travel: TravelStatus
     let linkedTodos: [LinkedTodo]
-    let detourRecommendations: [RouteDetour]
+    var detourRecommendations: [RouteDetour]
 }
 
 extension ScheduleDetail {
@@ -30,6 +30,8 @@ struct TravelStatus {
     let status: DepartureStatus
     let expectedDepartureTimeText: String
     let expectedArrivalTimeText: String
+    
+    let expectedDepartureDate: Date
     let lateArrivalMinutes: Int
     let leftOrDelayMinutes: Int
     let isStarted: Bool
@@ -44,4 +46,45 @@ struct LinkedTodo: Identifiable {
     let id: Int
     let title: String
     let placeName: String
+}
+
+extension ScheduleDetail {
+
+    func mergingRouteStates(from old: ScheduleDetail) -> ScheduleDetail {
+        var copy = self
+
+        copy.detourRecommendations = detourRecommendations.map { new in
+            if let oldDetour = old.detourRecommendations.first(
+                where: { $0.suggestionId == new.suggestionId }
+            ) {
+                var updated = new
+                updated.state = oldDetour.state
+                return updated
+            }
+            return new
+        }
+
+        return copy
+    }
+}
+
+extension String {
+    func toTodayDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone.current
+
+        guard let time = formatter.date(from: self) else { return nil }
+
+        let cal = Calendar.current
+        let now = Date()
+
+        return cal.date(
+            bySettingHour: cal.component(.hour, from: time),
+            minute: cal.component(.minute, from: time),
+            second: cal.component(.second, from: time),
+            of: now
+        )
+    }
 }
