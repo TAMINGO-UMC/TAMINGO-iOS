@@ -20,6 +20,11 @@ final class ScheduleDetailViewModel {
     unowned let homeViewModel: HomeScheduleViewModel
     
     var detail: ScheduleDetail?
+    
+    private var acceptedDetourIds: Set<Int> = []
+    private var rejectedDetourIds: Set<Int> = []
+    
+    var uiDetours: [RouteDetour] = []
     var isLoading: Bool = false
     var errorMessage: String?
     
@@ -42,32 +47,31 @@ final class ScheduleDetailViewModel {
 
         do {
             let newDetail = try await service.fetchDetail(scheduleId: scheduleId)
-            
+
             if routeEndReason == .manual {
-                print("🚫 auto-arrival ignored (manual end)")
                 isLoading = false
                 return
             }
-            
+
+            if uiDetours.isEmpty {
+                uiDetours = newDetail.detourRecommendations
+            }
+
             detail = newDetail
           
         } catch {
             let message = error.localizedDescription
             errorMessage = message
 
-            // 이미 도착 처리된 일정
             if message.contains("이미 도착") || message.contains("HOME-005") {
-                print("✅ arrived confirmed from server:", scheduleId)
-
                 homeViewModel.arrivedScheduleIds.insert(scheduleId)
-
-                // UI 즉시 반영
                 homeViewModel.expandedScheduleId = nil
             }
         }
 
         isLoading = false
     }
+
     
     // MARK: - Live Update
     func startLiveRefresh() {
@@ -116,41 +120,53 @@ final class ScheduleDetailViewModel {
         baseScheduleId: Int,
         detour: RouteDetour
     ) {
-        let request = RouteAcceptRequestDTO(
-            baseScheduleId: baseScheduleId,
-            title: detour.title,
-            location: .init(
-                name: detour.location,
-                lat: detour.lat,
-                lng: detour.lng
-            ),
-            requiredMinutes: detour.detourMinutes
-        )
-
         Task { @MainActor in
             do {
                 try await service.acceptRoute(
                     suggestionId: suggestionId,
-                    request: request
+                    request: RouteAcceptRequestDTO(
+                        baseScheduleId: baseScheduleId,
+                        title: detour.title,
+                        location: .init(
+                            name: detour.location,
+                            lat: detour.lat,
+                            lng: detour.lng
+                        ),
+                        requiredMinutes: detour.detourMinutes
+                    )
                 )
+
+                if let idx = uiDetours.firstIndex(where: { $0.suggestionId == suggestionId }) {
+                    uiDetours[idx].state = .accepted
+                }
+                
                 await loadAsync()
+
             } catch {
                 errorMessage = error.localizedDescription
             }
         }
     }
+
+
 
     // MARK: - Route reject
     func rejectRoute(suggestionId: Int) {
         Task { @MainActor in
             do {
                 try await service.rejectRoute(suggestionId: suggestionId)
-                await loadAsync()
+
+                uiDetours.removeAll {
+                    $0.suggestionId == suggestionId
+                }
+
             } catch {
                 errorMessage = error.localizedDescription
             }
         }
     }
+
+
 
     deinit {
         stopLiveRefresh()

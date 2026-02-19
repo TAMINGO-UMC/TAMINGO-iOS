@@ -72,7 +72,7 @@ struct MainScheduleView: View {
                 }
             }
             .padding(.horizontal, 18)
-            .padding(.top, 32)
+            .padding(.vertical, 32)
             .onAppear {
                 viewModel.loadToday()
             }

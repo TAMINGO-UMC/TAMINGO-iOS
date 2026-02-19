@@ -12,11 +12,13 @@ struct DepartureStatusCardView: View {
     let status: DepartureStatus
     let departureTime: String
     let arrivalTime: String
-    let routeLink: RouteDetour?
+
+    let detours: [RouteDetour]
+    
+    let linkedDetours: [RouteDetour]
     
     let scheduleId: Int
     let onRouteStart: ((Int) -> Void)?
-    
     let onRouteAccept: ((RouteDetour) -> Void)?
     let onRouteReject: ((Int) -> Void)?
 
@@ -103,17 +105,25 @@ struct DepartureStatusCardView: View {
                 .fill(status.backgroundColor)
         )
         
-        if let routeLink, showRouteLink {
+        ForEach(detours) { detour in
             RouteLinkCardView(
-                detour: routeLink,
-                state: .normal,
+                detour: detour,
+                state: detour.state,
                 onVisitTap: {
-                    onRouteAccept?(routeLink)
+                    onRouteAccept?(detour)
                 },
                 onDeleteTap: {
-                    showRouteLink = false
-                    onRouteReject?(routeLink.suggestionId)
+                    onRouteReject?(detour.suggestionId)
                 }
+            )
+        }
+        
+        ForEach(linkedDetours) { detour in
+            RouteLinkCardView(
+                detour: detour,
+                state: .accepted,
+                onVisitTap: {},
+                onDeleteTap: {}
             )
         }
         

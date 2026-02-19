@@ -35,6 +35,7 @@ struct BusTimelineRow: View {
                 
                 Text(leg.startName ?? "버스 정류장")
                     .font(.semiBold14)
+                    .padding(.bottom, 5)
                 
                 ForEach(leg.options) { option in
                     optionRow(option)
@@ -48,6 +49,7 @@ struct BusTimelineRow: View {
                 
                 Text(leg.endName ?? "")
                     .font(.semiBold14)
+                    .padding(.top, 20)
             }
             .padding(.vertical, 20)
 

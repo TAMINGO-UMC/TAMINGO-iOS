@@ -11,7 +11,7 @@ struct ScheduleDetail: Identifiable {
     let id = UUID()
     let travel: TravelStatus
     let linkedTodos: [LinkedTodo]
-    let detourRecommendations: [RouteDetour]
+    var detourRecommendations: [RouteDetour]
 }
 
 extension ScheduleDetail {
@@ -44,4 +44,24 @@ struct LinkedTodo: Identifiable {
     let id: Int
     let title: String
     let placeName: String
+}
+
+extension ScheduleDetail {
+
+    func mergingRouteStates(from old: ScheduleDetail) -> ScheduleDetail {
+        var copy = self
+
+        copy.detourRecommendations = detourRecommendations.map { new in
+            if let oldDetour = old.detourRecommendations.first(
+                where: { $0.suggestionId == new.suggestionId }
+            ) {
+                var updated = new
+                updated.state = oldDetour.state
+                return updated
+            }
+            return new
+        }
+
+        return copy
+    }
 }

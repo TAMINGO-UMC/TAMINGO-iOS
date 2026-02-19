@@ -41,6 +41,7 @@ struct SubwayTimelineRow: View {
                 HStack(spacing: 10) {
                     Text(leg.startName ?? "")
                         .font(.semiBold14)
+                        .padding(.bottom, 10)
 
                     Text(leg.routeName ?? "")
                         .font(.regular12)
@@ -76,6 +77,7 @@ struct SubwayTimelineRow: View {
                 
                 Text(leg.endName ?? "")
                     .font(.semiBold14)
+                    .padding(.top, 20)
             }
             .padding(.vertical, 20)
 

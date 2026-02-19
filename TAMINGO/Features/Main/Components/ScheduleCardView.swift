@@ -80,7 +80,13 @@ struct ScheduleCardView: View {
                             status: detail.travel.status,
                             departureTime: detail.travel.expectedDepartureTimeText,
                             arrivalTime: detail.travel.expectedArrivalTimeText,
-                            routeLink: detail.detourRecommendations.first,
+                            detours: vm.uiDetours,
+                            linkedDetours: detail.linkedTodos.map { todo in
+                                RouteDetour.fromLinkedTodo(
+                                    todo,
+                                    previousDetours: detail.detourRecommendations
+                                )
+                            },
                             scheduleId: schedule.id,
                             onRouteStart: onRouteStart,
                             onRouteAccept: { detour in
