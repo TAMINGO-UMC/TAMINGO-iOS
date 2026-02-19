@@ -41,12 +41,12 @@ struct SubwayTimelineRow: View {
                 HStack(spacing: 10) {
                     Text(leg.startName ?? "")
                         .font(.semiBold14)
-                        .padding(.bottom, 10)
 
                     Text(leg.routeName ?? "")
                         .font(.regular12)
                         .foregroundStyle(.gray2)
                 }
+                .padding(.bottom, 10)
 
                 // 중단
                 HStack(spacing: 10) {

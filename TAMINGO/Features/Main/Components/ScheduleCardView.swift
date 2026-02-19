@@ -77,7 +77,7 @@ struct ScheduleCardView: View {
                     if let detail = vm.detail {
                         
                         DepartureStatusCardView(
-                            status: detail.travel.status,
+                            departureDate: detail.travel.expectedDepartureDate,
                             departureTime: detail.travel.expectedDepartureTimeText,
                             arrivalTime: detail.travel.expectedArrivalTimeText,
                             detours: vm.uiDetours,

@@ -30,6 +30,8 @@ struct TravelStatus {
     let status: DepartureStatus
     let expectedDepartureTimeText: String
     let expectedArrivalTimeText: String
+    
+    let expectedDepartureDate: Date
     let lateArrivalMinutes: Int
     let leftOrDelayMinutes: Int
     let isStarted: Bool
@@ -63,5 +65,26 @@ extension ScheduleDetail {
         }
 
         return copy
+    }
+}
+
+extension String {
+    func toTodayDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.timeZone = TimeZone.current
+
+        guard let time = formatter.date(from: self) else { return nil }
+
+        let cal = Calendar.current
+        let now = Date()
+
+        return cal.date(
+            bySettingHour: cal.component(.hour, from: time),
+            minute: cal.component(.minute, from: time),
+            second: cal.component(.second, from: time),
+            of: now
+        )
     }
 }
