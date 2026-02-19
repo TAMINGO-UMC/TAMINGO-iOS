@@ -46,10 +46,15 @@ extension ScheduleStatusDTO {
             )
         }
 
+        let departureDate =
+            expectedDepartureTime.toTodayDate()
+            ?? Date().addingTimeInterval(TimeInterval(leftOrDelayMinutes * 60))
+
         return TravelStatus(
             status: status,
             expectedDepartureTimeText: expectedDepartureTime.hhmm,
             expectedArrivalTimeText: expectedArrivalTime.hhmm,
+            expectedDepartureDate: departureDate,
             lateArrivalMinutes: lateArrivalMinutes ?? 0,
             leftOrDelayMinutes: leftOrDelayMinutes,
             isStarted: isStarted

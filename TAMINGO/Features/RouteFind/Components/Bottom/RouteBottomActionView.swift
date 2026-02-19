@@ -15,17 +15,18 @@ struct RouteBottomActionView: View {
         VStack {
             Button {
                 onEndTap?()
+                
             } label: {
                 Text("안내 종료")
                     .font(.semiBold14)
                     .foregroundStyle(Color("MainPink"))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
-                    .background{
+                    .background {
                         RoundedRectangle(cornerRadius: 5)
                             .fill(Color("SubPink"))
                     }
-                    .overlay{
+                    .overlay {
                         RoundedRectangle(cornerRadius: 5)
                             .stroke(Color("MainPink"), lineWidth: 1)
                     }

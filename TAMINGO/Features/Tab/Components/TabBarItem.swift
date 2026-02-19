@@ -22,13 +22,14 @@ struct TabBarItem: View {
                 Image(systemName: tab.icon)
                     .font(.regular20)
                     .foregroundStyle(isSelected ? .mainMint : .gray2)
+                    .padding(.horizontal, 8)
                 
                 Text(tab.title)
                     .font(.regular10)
                     .foregroundStyle(isSelected ? .mainMint : .gray2)
             }
-            .padding(.vertical, 17)
-            .padding(.horizontal, 30)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
         }
         .contentShape(Rectangle())
         .onTapGesture {

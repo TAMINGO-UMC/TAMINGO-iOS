@@ -151,6 +151,8 @@ struct LocationSection: View {
                             }
                         }
                     }
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 4)
                 }
             }
             
@@ -177,7 +179,7 @@ struct LocationSection: View {
     }
 }
 
-// MARK: - TodoLocationButton (아이콘 제거, ID 기반 색상)
+// MARK: - TodoLocationButton (EditPlace 스타일)
 struct TodoLocationButton: View {
     let location: TodoMyLocation
     let action: () -> Void
@@ -186,11 +188,14 @@ struct TodoLocationButton: View {
         Button(action: action) {
             Text(location.name)
                 .font(.regular12)
-                .foregroundColor(location.color)
-                .padding(.horizontal, 12)
-                .frame(height: 32)
-                .background(location.color.opacity(0.15))
-                .cornerRadius(8)
+                .foregroundStyle(.black)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
+                )
         }
     }
 }

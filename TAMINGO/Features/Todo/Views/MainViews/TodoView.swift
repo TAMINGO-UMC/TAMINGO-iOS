@@ -47,6 +47,7 @@ struct ToDoView: View {
                         viewModel.addTodo(aiResult: aiResult)
                     }
                 )
+                .padding(.horizontal)
                 
                 // 오늘 할일 Section
                 TodoSection(
@@ -68,10 +69,10 @@ struct ToDoView: View {
                 
                 Spacer(minLength: 80)
             }
-            .padding(.horizontal, 21)
             .padding(.top, 20)
         }
         .task {
+            await weeklyCalendarViewModel.loadLegendCategories()
             await viewModel.loadTodos(for: Date())
             updateCalendarMarkers()
         }
@@ -105,17 +106,15 @@ struct ToDoView: View {
             }
         }
         .sheet(isPresented: $showingCalendar) {
-            WheelDatePickerSheet(
-                selectedDate: inputBoxDateBinding,
-                isPresented: $showingCalendar
-            )
+            TodoInputDatePickerSheet(selectedDate: inputBoxDateBinding)
+                .presentationDetents([.height(260)])
+                .presentationDragIndicator(.visible)
         }
         // ✅ showingDatePicker 시트 (WheelDatePicker)
         .sheet(isPresented: $viewModel.showingDatePicker) {
-            WheelDatePickerSheet(
-                selectedDate: inputBoxDateBinding,
-                isPresented: $viewModel.showingDatePicker
-            )
+            TodoInputDatePickerSheet(selectedDate: inputBoxDateBinding)
+                .presentationDetents([.height(260)])
+                .presentationDragIndicator(.visible)
         }
         .onChange(of: viewModel.todoItems) {
             updateCalendarMarkers()
@@ -146,5 +145,20 @@ struct ToDoView: View {
         formatter.dateFormat = "E"
         formatter.locale = Locale(identifier: "ko_KR")
         return formatter.string(from: date)
+    }
+}
+
+private struct TodoInputDatePickerSheet: View {
+    @Binding var selectedDate: Date
+
+    var body: some View {
+        DatePicker(
+            "",
+            selection: $selectedDate,
+            displayedComponents: .date
+        )
+        .datePickerStyle(.wheel)
+        .labelsHidden()
+        .padding(.top, 6)
     }
 }

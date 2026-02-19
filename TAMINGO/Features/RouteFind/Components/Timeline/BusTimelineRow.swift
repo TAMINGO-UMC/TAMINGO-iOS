@@ -32,9 +32,14 @@ struct BusTimelineRow: View {
             )
 
             VStack(alignment: .leading, spacing: 10) {
+   
+                Text(leg.startName ?? "")
+                        .font(.semiBold14)
                 
-                Text(leg.startName ?? "버스 정류장")
+                Text(leg.routeName ?? "")
                     .font(.semiBold14)
+                    .padding(.horizontal, 7)
+                
                 
                 ForEach(leg.options) { option in
                     optionRow(option)
@@ -45,6 +50,10 @@ struct BusTimelineRow: View {
                     time: leg.sectionTime,
                     stations: leg.stations
                 )
+                
+                Text(leg.endName ?? "")
+                    .font(.semiBold14)
+                    .padding(.top, 20)
             }
             .padding(.vertical, 20)
 

@@ -19,9 +19,11 @@ struct TodoMarker: Hashable {
 @Observable
 class TodoWeeklyCalendarViewModel {
     private let calendar = Calendar.current
+    private let apiService = TodoAPIService.shared
     
     var selectDate: Date = Date()
     var dateMarkers: [Date: [TodoMarker]] = [:]
+    var fixedLegendCategories: [(category: String, color: Color)] = []
     
     init() {
         self.selectDate = Date().startOfDay
@@ -39,13 +41,29 @@ class TodoWeeklyCalendarViewModel {
         }
     }
     
-    // 현재 표시 중인 카테고리 목록
-    var visibleCategories: [(category: String, color: Color)] {
+    // 범례 카테고리: 저장된 전체 카테고리(고정) 우선
+    var legendCategories: [(category: String, color: Color)] {
+        if !fixedLegendCategories.isEmpty {
+            return fixedLegendCategories
+        }
+        
+        // 로딩 실패 시에만 마커 기반 fallback
         let allMarkers = dateMarkers.values.flatMap { $0 }
-        let uniqueCategories = Dictionary(grouping: allMarkers, by: { $0.category })
+        return Dictionary(grouping: allMarkers, by: { $0.category })
             .map { (category: $0.key, color: $0.value.first?.color ?? .gray) }
             .sorted { $0.category < $1.category }
-        return uniqueCategories
+    }
+    
+    @MainActor
+    func loadLegendCategories() async {
+        do {
+            let categories = try await apiService.getCategories()
+            fixedLegendCategories = categories
+                .map { (category: $0.name, color: Color(hex: $0.color.hexCode)) }
+                .sorted { $0.category < $1.category }
+        } catch {
+            print("주간 캘린더 카테고리 로딩 실패: \(error)")
+        }
     }
     
     func setMarkers(_ markers: [Date: [TodoMarker]]) {

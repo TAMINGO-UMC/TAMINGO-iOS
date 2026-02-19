@@ -15,7 +15,8 @@ struct MyPageView: View {
         ScrollView{
             VStack(alignment:.leading){
                 Text("마이페이지")
-                    .font(.semiBold18)
+                    .font(.bold18)
+                    .padding(.top, 32)
                 profile
                 WeeklyReportSection(
                     metrics: vm.weeklyMetrics,
@@ -178,7 +179,7 @@ struct SyncSection: View {
                 CategorySettingRowView(
                     title: "캘린더 연동",
                     sub: vm.integrationStatusText,
-                    textColor: .gray2
+                    textColor: vm.integrationStatusColor
                 ) {
                     onTap()
                 }

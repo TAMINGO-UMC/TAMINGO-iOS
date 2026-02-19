@@ -66,7 +66,7 @@ extension TodoTarget: APITargetType {
         case .deleteTodo(let id):
             return "/api/todos/\(id)"
         case .getCategories:
-            return "/api/categories"
+            return "/api/todo-categories"
         }
     }
     

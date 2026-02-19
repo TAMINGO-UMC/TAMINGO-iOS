@@ -81,7 +81,7 @@ final class RouteFindService {
 
 
     // END
-    func end(
+    func endRoute(
         scheduleId: Int,
         latitude: Double,
         longitude: Double

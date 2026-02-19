@@ -56,4 +56,11 @@ final class LocationService {
 
         return result.isArrived
     }
+    
+    func postCheck(scheduleId: Int) async throws -> Bool {
+        let response: BaseResponse<EmptyResponse> =
+            try await provider.request(.postCheck(scheduleId: scheduleId))
+
+        return response.isSuccess
+    }
 }

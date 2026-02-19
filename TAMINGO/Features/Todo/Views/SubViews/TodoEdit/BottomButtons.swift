@@ -12,6 +12,7 @@ struct BottomButtons: View {
     @Binding var viewModel: TodoEditViewModel
     @Binding var item: TodoItem
     @Binding var isPresented: Bool
+    @State private var showDeleteConfirmAlert = false
     
     // ✅ 저장/삭제 콜백 추가
     var onSave: ((TodoItem) -> Void)?
@@ -21,9 +22,7 @@ struct BottomButtons: View {
         VStack(spacing: 12) {
             // 할일 삭제 버튼
             Button(action: {
-                // ✅ 삭제 콜백 호출
-                onDelete?(item)
-                isPresented = false
+                showDeleteConfirmAlert = true
             }) {
                 HStack {
                     Image(systemName: "trash")
@@ -80,5 +79,12 @@ struct BottomButtons: View {
             }
         }
         .padding(.bottom, 30)
+        .alert("할일을 삭제하시겠습니까?", isPresented: $showDeleteConfirmAlert) {
+            Button("취소", role: .cancel) {}
+            Button("삭제", role: .destructive) {
+                onDelete?(item)
+                isPresented = false
+            }
+        }
     }
 }

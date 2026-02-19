@@ -131,32 +131,41 @@ struct TrafficSection: View {
                 Spacer()
             }
             .padding(.bottom, 15)
+            
+            ViewThatFits {
+                HStack(spacing: 12) {
+                    rankViews
+                }
 
-            HStack(spacing: 18) {
-                ForEach(1...3, id: \.self) { rank in
-                    let transport = vm.transport(for: rank)
-
-                    RankLabel(
-                        rank: rank,
-                        title: transport?.title ?? "Label"
-                    ) {
-                        activePicker = .transport(rank: rank)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear
-                                .onAppear {
-                                    labelFrames[rank] =
-                                        geo.frame(in: .named("TransportRankSpace"))
-                                }
-                        }
-                    )
+                VStack(spacing: 12) {
+                    rankViews
                 }
             }
         }
         .padding(16)
         .cardStyle()
+    }
+    private var rankViews: some View {
+        ForEach(1...3, id: \.self) { rank in
+            let transport = vm.transport(for: rank)
+
+            RankLabel(
+                rank: rank,
+                title: transport?.title ?? "Label"
+            ) {
+                activePicker = .transport(rank: rank)
+            }
+            .frame(maxWidth: .infinity)
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear {
+                            labelFrames[rank] =
+                                geo.frame(in: .named("TransportRankSpace"))
+                        }
+                }
+            )
+        }
     }
 }
 

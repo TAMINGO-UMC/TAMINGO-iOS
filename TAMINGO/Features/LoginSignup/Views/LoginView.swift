@@ -22,20 +22,23 @@ struct LoginView: View {
     }
     
     var body: some View {
-        content
-            .onReceive(vm.actionPublisher) { action in
-                switch action {
-                case .goSignup:
-                    break
-                    
-                case .loginSuccess(let userId, _):
-                    print("로그인 성공:", userId)
-                    // TODO: onboardingCompleted에 따라 OnboardingView 또는 HomeView로 이동
-                    
-                case .kakaoLogin:
-                    print("카카오 로그인 시작")
+        ScrollView {
+            content
+                .onReceive(vm.actionPublisher) { action in
+                    switch action {
+                    case .goSignup:
+                        break
+                        
+                    case .loginSuccess(let userId, _):
+                        print("로그인 성공:", userId)
+                        // TODO: onboardingCompleted에 따라 OnboardingView 또는 HomeView로 이동
+                        
+                    case .kakaoLogin:
+                        print("카카오 로그인 시작")
+                    }
                 }
-            }
+                .padding(.bottom)
+        }
     }
     
     private var content: some View {
