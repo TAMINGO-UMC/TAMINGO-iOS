@@ -5,6 +5,7 @@
 //  Created by 권예원 on 1/24/26.
 //
 
+import SwiftUI
 import Foundation
 import Observation
 
@@ -125,10 +126,22 @@ final class MyPageViewModel {
         }
 
         if integration.linked {
-            return integration.status == .active ? "연동 중" : "연동 비활성"
+            return integration.status == .active ? "연동 중" : "연동되지 않음"
         } else {
             return "연동 안 됨"
         }
+    }
+    
+    var integrationStatusColor: Color {
+        guard
+            let integration = myPage?.integration,
+            integration.linked,
+            let status = integration.status
+        else {
+            return .gray2
+        }
+
+        return status.displayColor
     }
 
     // 카테고리
