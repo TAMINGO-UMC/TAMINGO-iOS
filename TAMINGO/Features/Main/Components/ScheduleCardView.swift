@@ -12,6 +12,7 @@ struct ScheduleCardView: View {
     let schedule: ScheduleSummary
     let state: ScheduleCardState
     let isExpanded: Bool
+    let isArrived: Bool
     let onChevronTap: (() -> Void)?
     let onRouteStart: ((Int) -> Void)?
 
@@ -52,6 +53,7 @@ struct ScheduleCardView: View {
                                             .fill(Color("SubMint"))
                                     }
                             }
+
                         }
                         
                         
@@ -66,30 +68,27 @@ struct ScheduleCardView: View {
                             .font(.regular12)
                             .foregroundStyle(Color("Gray2"))
                             .lineLimit(1)
-                        
-//                        Text("·")
-//                            .font(.regular12)
-//                            .foregroundStyle(Color("Gray2"))
-                        
-//                        Text("\(schedule.duration)분")
-//                            .font(.regular12)
-//                            .foregroundStyle(Color("Gray2"))
-//                            .lineLimit(1)
                     }
                 }
                 
-                if isExpanded {
+                if isExpanded && !isArrived {
                     @Bindable var vm = detailVM
 
                     if let detail = vm.detail {
                         
                         DepartureStatusCardView(
-                            status: detail.travel.status,
+                            departureDate: detail.travel.expectedDepartureDate,
                             departureTime: detail.travel.expectedDepartureTimeText,
                             arrivalTime: detail.travel.expectedArrivalTimeText,
-                            routeLink: detail.detourRecommendations.first,
+                            detours: vm.uiDetours,
+                            linkedDetours: detail.linkedTodos.map { todo in
+                                RouteDetour.fromLinkedTodo(
+                                    todo,
+                                    previousDetours: detail.detourRecommendations
+                                )
+                            },
                             scheduleId: schedule.id,
-                                onRouteStart: onRouteStart,
+                            onRouteStart: onRouteStart,
                             onRouteAccept: { detour in
                                 detailVM.acceptRoute(
                                     suggestionId: detour.suggestionId,
@@ -101,7 +100,12 @@ struct ScheduleCardView: View {
                                 detailVM.rejectRoute(suggestionId: suggestionId)
                             }
                         )
-
+                        .onAppear {
+                            detailVM.startLiveRefresh()
+                        }
+                        .onDisappear {
+                            detailVM.stopLiveRefresh()
+                        }
                     }
                 }
             }
@@ -125,13 +129,22 @@ struct ScheduleCardView: View {
 }
 
 private extension ScheduleCardView {
+
+    var canShowChevron: Bool {
+        
+        !isArrived
+        
+    }
+}
+
+private extension ScheduleCardView {
     @ViewBuilder
     var rightArea: some View {
         switch state {
-            
+
         case .now:
             Group {
-                if let onChevronTap {
+                if canShowChevron, let onChevronTap {
                     Button {
                         print("👉 Chevron tapped:", schedule.id)
                         onChevronTap()
@@ -144,12 +157,12 @@ private extension ScheduleCardView {
                     EmptyView()
                 }
             }
-            
+
         case .upcoming:
             Text(schedule.leftMinuteText)
                 .font(.regular12)
                 .foregroundStyle(Color("Gray2"))
-            
+
         case .past:
             EmptyView()
         }

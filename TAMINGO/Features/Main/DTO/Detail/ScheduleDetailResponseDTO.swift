@@ -27,7 +27,7 @@ extension ScheduleDetailResultDTO {
         ScheduleDetail(
             travel: scheduleStatus.toTravelStatus(),
             linkedTodos: linkedTodos.map { $0.toModel() },
-            detourRecommendations: routeDetourRecommendations.map { $0.toModel() }
+            detourRecommendations: routeDetourRecommendations.map { $0.toModel() },
         )
     }
 }

@@ -8,19 +8,50 @@
 import SwiftUI
 
 struct DepartureStatusCardView: View {
-
-    let status: DepartureStatus
     let departureTime: String
     let arrivalTime: String
-    let routeLink: RouteDetour?
+
+    let detours: [RouteDetour]
+    let linkedDetours: [RouteDetour]
     
     let scheduleId: Int
     let onRouteStart: ((Int) -> Void)?
-    
     let onRouteAccept: ((RouteDetour) -> Void)?
     let onRouteReject: ((Int) -> Void)?
 
-    @State private var showRouteLink: Bool = true   // 삭제용
+    private var status: DepartureStatus {
+        countdownVM.derivedStatus
+    }
+
+    @State private var countdownVM: DepartureCountdownViewModel
+    
+    init(
+        departureDate: Date,
+        departureTime: String,
+        arrivalTime: String,
+        detours: [RouteDetour],
+        linkedDetours: [RouteDetour],
+        scheduleId: Int,
+        onRouteStart: ((Int) -> Void)?,
+        onRouteAccept: ((RouteDetour) -> Void)?,
+        onRouteReject: ((Int) -> Void)?
+    ) {
+        self.departureTime = departureTime
+        self.arrivalTime = arrivalTime
+        self.detours = detours
+        self.linkedDetours = linkedDetours
+        self.scheduleId = scheduleId
+        self.onRouteStart = onRouteStart
+        self.onRouteAccept = onRouteAccept
+        self.onRouteReject = onRouteReject
+
+        _countdownVM = State(
+            initialValue: DepartureCountdownViewModel(
+                departureDate: departureDate
+            )
+        )
+    }
+
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -46,7 +77,7 @@ struct DepartureStatusCardView: View {
 
                 Grid(horizontalSpacing: 6, verticalSpacing: 0) {
                     GridRow {
-                        Text(status.timeText)
+                        Text(countdownVM.timeText)
                             .font(.bold24)
                             .foregroundStyle(status.timeColor)
 
@@ -103,17 +134,25 @@ struct DepartureStatusCardView: View {
                 .fill(status.backgroundColor)
         )
         
-        if let routeLink, showRouteLink {
+        ForEach(detours) { detour in
             RouteLinkCardView(
-                detour: routeLink,
-                state: .normal,
+                detour: detour,
+                state: detour.state,
                 onVisitTap: {
-                    onRouteAccept?(routeLink)
+                    onRouteAccept?(detour)
                 },
                 onDeleteTap: {
-                    showRouteLink = false
-                    onRouteReject?(routeLink.suggestionId)
+                    onRouteReject?(detour.suggestionId)
                 }
+            )
+        }
+        
+        ForEach(linkedDetours) { detour in
+            RouteLinkCardView(
+                detour: detour,
+                state: .accepted,
+                onVisitTap: {},
+                onDeleteTap: {}
             )
         }
         

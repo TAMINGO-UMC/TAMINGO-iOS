@@ -46,6 +46,7 @@ struct SubwayTimelineRow: View {
                         .font(.regular12)
                         .foregroundStyle(.gray2)
                 }
+                .padding(.bottom, 10)
 
                 // 중단
                 HStack(spacing: 10) {
@@ -73,6 +74,10 @@ struct SubwayTimelineRow: View {
                     time: leg.sectionTime,
                     stations: leg.stations
                 )
+                
+                Text(leg.endName ?? "")
+                    .font(.semiBold14)
+                    .padding(.top, 20)
             }
             .padding(.vertical, 20)
 
