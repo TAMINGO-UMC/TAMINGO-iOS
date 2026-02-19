@@ -12,7 +12,11 @@ import Alamofire
 @Observable
 @MainActor
 class PersonalizationViewModel {
-    let provider = MoyaProvider<PersonalizationTarget>(plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))])
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    private let provider: MoyaProvider<PersonalizationTarget>
     
     private var isFetching: Bool = false
     
@@ -23,6 +27,13 @@ class PersonalizationViewModel {
     var fvpCount: Int = 0
     
     var recentPersonalized : [PersonalizationDTO] = []
+
+    init() {
+        self.provider = MoyaProvider<PersonalizationTarget>(
+            session: session,
+            plugins: [NetworkLoggerPlugin(configuration: .init(logOptions: .successResponseBody))]
+        )
+    }
     
     func loadSetting() async {
         isFetching = true

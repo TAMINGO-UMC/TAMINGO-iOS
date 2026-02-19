@@ -7,12 +7,17 @@
 
 import Foundation
 import Moya
+import Alamofire
 import Observation
 import Combine
 
 @Observable
 final class NotificationSettingViewModel {
-    private let provider = MoyaProvider<NotificationTarget>()
+    private let session: Session = {
+        let interceptor = TokenInterceptor()
+        return Session(interceptor: interceptor)
+    }()
+    private let provider: MoyaProvider<NotificationTarget>
     
     // UI 상태값
     var departureAlertEnabled: Bool = false
@@ -44,6 +49,7 @@ final class NotificationSettingViewModel {
     }
 
     init() {
+        self.provider = MoyaProvider<NotificationTarget>(session: session)
         setupPipeline()
     }
     
