@@ -21,6 +21,8 @@ final class ScheduleDetailViewModel {
     
     var detail: ScheduleDetail?
     
+    private var baseDepartureDate: Date?
+    
     private var acceptedDetourIds: Set<Int> = []
     private var rejectedDetourIds: Set<Int> = []
     
@@ -40,51 +42,78 @@ final class ScheduleDetailViewModel {
         Task { await loadAsync() }
     }
     
+    private var lateSeedMinutes: Int?
+    private var lateSeedCapturedAt: Date?
+
+    var lateSeed: (minutes: Int, capturedAt: Date)? {
+        guard let m = lateSeedMinutes, let t = lateSeedCapturedAt else { return nil }
+        return (m, t)
+    }
+
     @MainActor
     private func loadAsync() async {
-        isLoading = true
-        errorMessage = nil
-
         do {
-            let newDetail = try await service.fetchDetail(scheduleId: scheduleId)
-
-            if routeEndReason == .manual {
-                isLoading = false
-                return
+            let fetched = try await service.fetchDetail(scheduleId: scheduleId)
+            // fetched.travel 은 TravelStatus
+            
+            if fetched.travel.lateArrivalMinutes > 0 {
+                if lateSeedMinutes == nil || lateSeedCapturedAt == nil {
+                    lateSeedMinutes = fetched.travel.lateArrivalMinutes
+                    lateSeedCapturedAt = Date()
+                }
+            } else {
+                lateSeedMinutes = nil
+                lateSeedCapturedAt = nil
             }
 
-            if uiDetours.isEmpty {
-                uiDetours = newDetail.detourRecommendations
+            if baseDepartureDate == nil {
+                baseDepartureDate = fetched.travel.expectedDepartureDate
             }
 
-            detail = newDetail
-          
+            let newStatus = deriveDepartureStatus(
+                travel: fetched.travel,
+                baseDepartureDate: baseDepartureDate
+            )
+
+            
+            let updatedTravel = TravelStatus(
+                status: newStatus,
+                expectedDepartureTimeText: fetched.travel.expectedDepartureTimeText,
+                expectedArrivalTimeText: fetched.travel.expectedArrivalTimeText,
+                expectedDepartureDate: fetched.travel.expectedDepartureDate,
+                expectedArrivalDate: fetched.travel.expectedArrivalDate,
+                lateArrivalMinutes: fetched.travel.lateArrivalMinutes,
+                leftOrDelayMinutes: fetched.travel.leftOrDelayMinutes,
+                isStarted: fetched.travel.isStarted
+            )
+
+            detail = ScheduleDetail(
+                travel: updatedTravel,
+                baseDepartureDate: baseDepartureDate!,
+                linkedTodos: fetched.linkedTodos,
+                detourRecommendations: fetched.detourRecommendations
+            )
+
         } catch {
-            let message = error.localizedDescription
-            errorMessage = message
-
-            if message.contains("이미 도착") || message.contains("HOME-005") {
-                homeViewModel.arrivedScheduleIds.insert(scheduleId)
-                homeViewModel.expandedScheduleId = nil
-            }
+            print("❌ load error:", error)
         }
-
-        isLoading = false
     }
 
     
     // MARK: - Live Update
+    var now: Date = Date()
+
     func startLiveRefresh() {
         stopLiveRefresh()
 
-        // 열리자마자 1회 갱신
-        Task { await loadAsync() }
+        now = Date()
 
         timer = Timer.scheduledTimer(
             withTimeInterval: 60,
             repeats: true
         ) { [weak self] _ in
             guard let self else { return }
+            self.now = Date()
             Task { await self.loadAsync() }
         }
     }
@@ -136,10 +165,11 @@ final class ScheduleDetailViewModel {
                     )
                 )
 
-                if let idx = uiDetours.firstIndex(where: { $0.suggestionId == suggestionId }) {
-                    uiDetours[idx].state = .accepted
+                uiDetours.removeAll {
+                    $0.suggestionId == suggestionId
                 }
-                
+
+                // 서버 기준 linkedTodos 갱신
                 await loadAsync()
 
             } catch {
@@ -177,4 +207,33 @@ enum RouteEndReason {
     case none
     case manual
     case auto
+}
+
+private extension ScheduleDetailViewModel {
+
+    func deriveDepartureStatus(
+        travel: TravelStatus,
+        baseDepartureDate: Date?
+    ) -> DepartureStatus {
+
+        // 🔴 1. 도착 지각 (최우선)
+        if travel.lateArrivalMinutes > 0 {
+            return .late(delayMinutes: travel.lateArrivalMinutes)
+        }
+
+        // 🟠 2. 출발 지연 (출발 시간이 늦어졌는가)
+        if travel.expectedDepartureDate < now {
+            return .delayed(
+                delayMinutes: abs(travel.leftOrDelayMinutes)
+            )
+        }
+
+        // 🟢 3. 지금 출발
+        if travel.leftOrDelayMinutes <= 20 {
+            return .now(remainingMinutes: max(0, travel.leftOrDelayMinutes))
+        }
+
+        // 🔵 4. 출발 준비
+        return .preparing(remainingMinutes: travel.leftOrDelayMinutes)
+    }
 }

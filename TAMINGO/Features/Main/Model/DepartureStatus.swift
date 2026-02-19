@@ -15,16 +15,15 @@ enum DepartureStatus {
     /// 🔵 출발 준비
     case preparing(remainingMinutes: Int)
 
-    /// 🟠 출발 지연 (지각 X)
-    case delayed(remainingMinutes: Int)
+    /// 🟠 출발 지연 (지각 X) : 출발 예상 시간이 늦어짐
+    case delayed(delayMinutes: Int)
 
-    /// 🔴 출발 지연 (지각 O)
-    case late(remainingMinutes: Int, delayMinutes: Int)
-    
+    /// 🔴 출발 지연 (지각 O) : 도착 예상 시간이 일정(약속)보다 늦음
+    case late(delayMinutes: Int)
+
     case arrivedSoon
     case arrivedDone
 }
-
 
 extension DepartureStatus {
 
@@ -57,16 +56,17 @@ extension DepartureStatus {
         default: return Color("Gray1")
         }
     }
-    
-    var subTimeText: String? {
+
+    /// 빨강일 때만 “(n분 지각)” 표시 (※ n은 "도착 지각분"이어야 함)
+    func subTimeText(lateArrivalMinutes: Int) -> String? {
         switch self {
-        case .late(_, let delay):
-            return "(\(delay)분 지각)" 
+        case .late:
+            return "(\(max(0, lateArrivalMinutes))분 지각)"
         default:
             return nil
         }
     }
-    
+
     var arrivalTimeColor: Color {
         switch self {
         case .delayed:
@@ -75,6 +75,13 @@ extension DepartureStatus {
             return Color("SubRed2")
         default:
             return Color("Black00")
+        }
+    }
+
+    var isDelayStyle: Bool {
+        switch self {
+        case .delayed, .late: return true
+        default: return false
         }
     }
 }

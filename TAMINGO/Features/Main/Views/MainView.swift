@@ -8,12 +8,9 @@
 import SwiftUI
 
 struct MainView: View {
-
+    @Bindable var homeViewModel: HomeScheduleViewModel
+    
     var body: some View {
             MainScheduleView()
     }
-}
-
-#Preview {
-    MainView()
 }

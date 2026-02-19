@@ -37,6 +37,18 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             manager.requestLocation()
         }
     }
+    
+    func requestPermission() {
+        manager.requestWhenInUseAuthorization()
+    }
+
+    func currentLocation() async throws -> CLLocationCoordinate2D {
+        try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+            manager.requestLocation()
+        }
+    }
+
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let coord = locations.last?.coordinate else { return }

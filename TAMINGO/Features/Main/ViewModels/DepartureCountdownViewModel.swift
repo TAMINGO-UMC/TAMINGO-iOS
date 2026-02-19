@@ -11,20 +11,26 @@ import Observation
 @Observable
 final class DepartureCountdownViewModel {
 
-    // MARK: - Core
-    let departureDate: Date
+    // MARK: - Inputs
+    private let departureDate: Date
+    private let status: DepartureStatus
+
+    // MARK: - Timer
     private var timer: Timer?
 
+    // MARK: - State
     var remainingMinutes: Int = 0
 
-    // MARK: - Init
-    init(departureDate: Date) {
+    init(
+        departureDate: Date,
+        status: DepartureStatus
+    ) {
         self.departureDate = departureDate
+        self.status = status
         update()
         start()
     }
 
-    // MARK: - Timer
     private func start() {
         timer = Timer.scheduledTimer(
             withTimeInterval: 60,
@@ -48,63 +54,24 @@ final class DepartureCountdownViewModel {
         stop()
     }
 
-    // MARK: - UI 전용 계산
+    // MARK: - UI Formatting
+
+    /// ✅ 규칙:
+    /// - 기본: "0시간 5분" 포함해서 무조건 시간 표시
+    /// - 주황/빨강(지연): "-0시간 5분" 형태로 항상 마이너스 표시
     var timeText: String {
-        let m = abs(remainingMinutes)
-        let h = m / 60
-        let min = m % 60
+        let absM = abs(remainingMinutes)
+        let h = absM / 60
+        let m = absM % 60
 
-        if h > 0 {
-            return "\(h)시간 \(min)분"
+        let base = "\(h)시간 \(m)분"
+
+        if status.isDelayStyle {
+            // 주황/빨강은 "지연" 강조 목적이라 항상 '-'로 보이게 고정
+            return "-\(base)"
         } else {
-            return "\(min)분"
-        }
-    }
-
-    var subTimeText: String? {
-        remainingMinutes < 0
-        ? "(\(abs(remainingMinutes))분 지각)"
-        : nil
-    }
-
-    /// DepartureStatus → 기존 UI 그대로 사용
-    var derivedStatus: DepartureStatus {
-        let m = remainingMinutes
-
-        if m < 0 {
-            return .late(
-                remainingMinutes: abs(m),
-                delayMinutes: abs(m)
-            )
-        } else if m <= 10 {
-            return .now(remainingMinutes: m)
-        } else {
-            return .preparing(remainingMinutes: m)
+            // 정상 상태에서는 실제 남은 시간이 음수면 -로 표시(안전장치)
+            return remainingMinutes < 0 ? "-\(base)" : base
         }
     }
 }
-
-// MARK: - Utils
-extension DepartureCountdownViewModel {
-
-    static func todayDate(from timeString: String) -> Date {
-        let now = Date()
-        let calendar = Calendar.current
-
-        let parts = timeString
-            .split(separator: ":")
-            .compactMap { Int($0) }
-
-        let hour = parts[safe: 0] ?? 0
-        let minute = parts[safe: 1] ?? 0
-        let second = parts[safe: 2] ?? 0
-
-        return calendar.date(
-            bySettingHour: hour,
-            minute: minute,
-            second: second,
-            of: now
-        )!
-    }
-}
-
